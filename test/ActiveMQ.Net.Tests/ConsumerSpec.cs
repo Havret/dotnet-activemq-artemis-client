@@ -1,9 +1,11 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using ActiveMQ.Net.Tests.Utils;
 using Amqp.Framing;
 using Amqp.Handler;
+using Amqp.Types;
 using Xunit;
 
 namespace ActiveMQ.Net.Tests
@@ -97,6 +99,44 @@ namespace ActiveMQ.Net.Tests
             Assert.NotNull(attachFrame);
             Assert.IsType<Source>(attachFrame.Source);
             Assert.Contains(((Source) attachFrame.Source).Capabilities, symbol => RoutingCapabilities.Anycast.Equals(symbol));
+        }
+
+        [Theory, MemberData(nameof(RoutingTypesData))]
+        public async Task Consumer_should_attach_to_address_with_specified_RoutingType(RoutingType routingType, Symbol routingCapability)
+        {
+            var consumerAttached = new ManualResetEvent(false);
+            Attach attachFrame = null;
+
+            var testHandler = new TestHandler(@event =>
+            {
+                switch (@event.Id)
+                {
+                    case EventId.LinkRemoteOpen when @event.Context is Attach attach:
+                        attachFrame = attach;
+                        consumerAttached.Set();
+                        break;
+                }
+            });
+
+            using var host = new TestContainerHost(_address, testHandler);
+            host.Open();
+
+            await using var connection = await CreateConnection(_address);
+            await using var consumer = connection.CreateConsumer("test-consumer", routingType);
+
+            Assert.True(consumerAttached.WaitOne(TimeSpan.FromSeconds(10)));
+            Assert.NotNull(attachFrame);
+            Assert.IsType<Source>(attachFrame.Source);
+            Assert.Contains(((Source) attachFrame.Source).Capabilities, routingCapability.Equals);
+        }
+
+        public static IEnumerable<object[]> RoutingTypesData()
+        {
+            return new[]
+            {
+                new object[] { RoutingType.Anycast, RoutingCapabilities.Anycast },
+                new object[] { RoutingType.Multicast, RoutingCapabilities.Multicast }
+            };
         }
 
         private static Task<IConnection> CreateConnection(string address)

@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using Amqp;
 using Amqp.Framing;
+using Amqp.Types;
 
 namespace ActiveMQ.Net
 {
@@ -23,12 +24,24 @@ namespace ActiveMQ.Net
 
         public IConsumer CreateConsumer(string address, RoutingType routingType)
         {
+            var routingCapability = GetRoutingCapability(routingType);
+
             var receiverLink = new ReceiverLink(_session, Guid.NewGuid().ToString(), new Source()
             {
                 Address = address,
-                Capabilities = new[] { RoutingCapabilities.Anycast }
+                Capabilities = new[] { routingCapability }
             }, null);
             return new Consumer(receiverLink);
+        }
+
+        private static Symbol GetRoutingCapability(RoutingType routingType)
+        {
+            return routingType switch
+            {
+                RoutingType.Anycast => RoutingCapabilities.Anycast,
+                RoutingType.Multicast => RoutingCapabilities.Multicast,
+                _ => throw new ArgumentOutOfRangeException(nameof(routingType), $"RoutingType {routingType.ToString()} is not supported.")
+            };
         }
 
         public IConsumer CreateConsumer(string address, RoutingType routingType, ConsumerConfig config)
