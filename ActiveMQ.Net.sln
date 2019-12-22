@@ -1,0 +1,22 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ActiveMQ.Net.Tests", "test\ActiveMQ.Net.Tests\ActiveMQ.Net.Tests.csproj", "{042B0533-6AEA-4353-8723-CEFFFCB78398}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ActiveMQ.Net", "src\ActiveMQ.Net\ActiveMQ.Net.csproj", "{FECF1F2E-2DD5-40FE-970E-B0F1BB8152E9}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{042B0533-6AEA-4353-8723-CEFFFCB78398}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{042B0533-6AEA-4353-8723-CEFFFCB78398}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{042B0533-6AEA-4353-8723-CEFFFCB78398}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{042B0533-6AEA-4353-8723-CEFFFCB78398}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FECF1F2E-2DD5-40FE-970E-B0F1BB8152E9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FECF1F2E-2DD5-40FE-970E-B0F1BB8152E9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FECF1F2E-2DD5-40FE-970E-B0F1BB8152E9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FECF1F2E-2DD5-40FE-970E-B0F1BB8152E9}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal

@@ -1,0 +1,13 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.1</TargetFramework>
+    <RootNamespace>ActiveMQ.Net</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="AMQPNetLite" Version="2.3.0" />
+    <PackageReference Include="System.Threading.Channels" Version="4.7.0" />
+  </ItemGroup>
+
+</Project>
