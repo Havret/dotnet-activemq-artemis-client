@@ -69,6 +69,36 @@ namespace ActiveMQ.Net.Tests
             Assert.IsType<Source>(attachFrame.Source);
             Assert.Equal("test-consumer", ((Source) attachFrame.Source).Address);
         }
+
+        [Fact]
+        public async Task Consumer_should_attach_to_anycast_address_when_no_routing_type_specified()
+        {
+            var consumerAttached = new ManualResetEvent(false);
+            Attach attachFrame = null;
+
+            var testHandler = new TestHandler(@event =>
+            {
+                switch (@event.Id)
+                {
+                    case EventId.LinkRemoteOpen when @event.Context is Attach attach:
+                        attachFrame = attach;
+                        consumerAttached.Set();
+                        break;
+                }
+            });
+
+            using var host = new TestContainerHost(_address, testHandler);
+            host.Open();
+
+            await using var connection = await CreateConnection(_address);
+            await using var consumer = connection.CreateConsumer("test-consumer");
+
+            Assert.True(consumerAttached.WaitOne(TimeSpan.FromSeconds(10)));
+            Assert.NotNull(attachFrame);
+            Assert.IsType<Source>(attachFrame.Source);
+            Assert.Contains(((Source) attachFrame.Source).Capabilities, symbol => RoutingCapabilities.Anycast.Equals(symbol));
+        }
+
         private static Task<IConnection> CreateConnection(string address)
         {
             var connectionFactory = new ConnectionFactory();

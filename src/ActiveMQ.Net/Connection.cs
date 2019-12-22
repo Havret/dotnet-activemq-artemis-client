@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Amqp;
+using Amqp.Framing;
 
-namespace ActiveMQ.Net {
-    
-    
+namespace ActiveMQ.Net
+{
     internal class Connection : IConnection
     {
         private readonly Amqp.IConnection _connection;
@@ -23,7 +23,11 @@ namespace ActiveMQ.Net {
 
         public IConsumer CreateConsumer(string address, RoutingType routingType)
         {
-            var receiverLink = new ReceiverLink(_session, Guid.NewGuid().ToString(), address);
+            var receiverLink = new ReceiverLink(_session, Guid.NewGuid().ToString(), new Source()
+            {
+                Address = address,
+                Capabilities = new[] { RoutingCapabilities.Anycast }
+            }, null);
             return new Consumer(receiverLink);
         }
 
