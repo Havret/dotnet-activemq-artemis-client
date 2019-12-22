@@ -15,7 +15,7 @@ namespace ActiveMQ.Net.Tests
         private readonly string _address = "amqp://guest:guest@localhost:15672";
 
         [Fact]
-        public async Task Should_create_and_close_consumer()
+        public async Task Should_be_created_and_closed()
         {
             var consumerAttached = new ManualResetEvent(false);
             var consumerClosed = new ManualResetEvent(false);
@@ -45,7 +45,7 @@ namespace ActiveMQ.Net.Tests
         }
 
         [Fact]
-        public async Task Consumer_should_attach_to_specified_address()
+        public async Task Should_attach_to_specified_address()
         {
             var consumerAttached = new ManualResetEvent(false);
             Attach attachFrame = null;
@@ -73,7 +73,7 @@ namespace ActiveMQ.Net.Tests
         }
 
         [Fact]
-        public async Task Consumer_should_attach_to_anycast_address_when_no_routing_type_specified()
+        public async Task Should_attach_to_anycast_address_when_no_RoutingType_specified()
         {
             var consumerAttached = new ManualResetEvent(false);
             Attach attachFrame = null;
@@ -102,7 +102,7 @@ namespace ActiveMQ.Net.Tests
         }
 
         [Theory, MemberData(nameof(RoutingTypesData))]
-        public async Task Consumer_should_attach_to_address_with_specified_RoutingType(RoutingType routingType, Symbol routingCapability)
+        public async Task Should_attach_to_address_with_specified_RoutingType(RoutingType routingType, Symbol routingCapability)
         {
             var consumerAttached = new ManualResetEvent(false);
             Attach attachFrame = null;
