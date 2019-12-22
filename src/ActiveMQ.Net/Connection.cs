@@ -55,11 +55,6 @@ namespace ActiveMQ.Net
             return new Producer(senderLink);
         }
 
-        public Task CloseAsync()
-        {
-            return _connection.CloseAsync();
-        }
-
         public async ValueTask DisposeAsync()
         {
             await _connection.CloseAsync().ConfigureAwait(false);
