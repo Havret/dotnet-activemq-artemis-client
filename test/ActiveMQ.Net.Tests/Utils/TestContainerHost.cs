@@ -8,8 +8,8 @@ namespace ActiveMQ.Net.Tests.Utils
     public class TestContainerHost : IDisposable
     {
         private readonly ContainerHost _host;
-
-        public TestContainerHost(string address, IHandler handler)
+        
+        public TestContainerHost(string address, IHandler handler = null)
         {
             var uri = new Uri(address);
             _host = new ContainerHost(new List<Uri> { uri }, null, uri.UserInfo);
