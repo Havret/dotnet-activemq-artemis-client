@@ -27,5 +27,10 @@ namespace ActiveMQ.Net
         {
             return _reader.ReadAsync();
         }
+
+        public async ValueTask DisposeAsync()
+        {
+            await _receiverLink.CloseAsync().ConfigureAwait(false);
+        }
     }
 }

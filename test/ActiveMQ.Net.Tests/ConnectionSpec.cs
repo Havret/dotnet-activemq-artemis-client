@@ -1,5 +1,6 @@
 ﻿using System.Threading;
 using System.Threading.Tasks;
+using ActiveMQ.Net.Tests.Utils;
 using Amqp.Handler;
 using Xunit;
 

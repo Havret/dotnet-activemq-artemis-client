@@ -16,6 +16,11 @@ namespace ActiveMQ.Net {
             _session = session;
         }
 
+        public IConsumer CreateConsumer(string address)
+        {
+            return CreateConsumer(address, RoutingType.Anycast);
+        }
+
         public IConsumer CreateConsumer(string address, RoutingType routingType)
         {
             var receiverLink = new ReceiverLink(_session, Guid.NewGuid().ToString(), address);

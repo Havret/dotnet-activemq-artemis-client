@@ -1,7 +1,7 @@
 ﻿using System;
 using Amqp.Handler;
 
-namespace ActiveMQ.Net.Tests
+namespace ActiveMQ.Net.Tests.Utils
 {
     public class TestHandler : IHandler
     {

@@ -1,8 +1,9 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 
 namespace ActiveMQ.Net
 {
-    public interface IConsumer
+    public interface IConsumer : IAsyncDisposable
     {
         ValueTask<Message> ConsumeAsync();
     }
