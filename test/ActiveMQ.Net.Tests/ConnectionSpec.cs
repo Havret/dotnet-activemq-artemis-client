@@ -38,6 +38,29 @@ namespace ActiveMQ.Net.Tests
             Assert.True(connectionClosed.WaitOne());
         }
 
+        [Fact]
+        public async Task New_connection_should_implicitly_open_new_session()
+        {
+            var sessionOpened = new ManualResetEvent(false);
+
+            var testHandler = new TestHandler(@event =>
+            {
+                switch (@event.Id)
+                {
+                    case EventId.SessionRemoteOpen:
+                        sessionOpened.Set();
+                        break;
+                }
+            });
+
+            using var host = new TestContainerHost(_address, testHandler);
+            host.Open();
+
+            await using var connection = await CreateConnection(_address);
+
+            Assert.True(sessionOpened.WaitOne());
+        }
+
         private static Task<IConnection> CreateConnection(string address)
         {
             var connectionFactory = new ConnectionFactory();
