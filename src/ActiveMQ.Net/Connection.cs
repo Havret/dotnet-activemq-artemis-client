@@ -34,6 +34,17 @@ namespace ActiveMQ.Net
             return new Consumer(receiverLink);
         }
 
+        public IConsumer CreateConsumer(string address, RoutingType routingType, string queue)
+        {
+            var fullyQualifiedQueueName = CreateFullyQualifiedQueueName(address, queue);
+            return CreateConsumer(fullyQualifiedQueueName, routingType);
+        }
+
+        private string CreateFullyQualifiedQueueName(string address, string queue)
+        {
+            return $"{address}::{queue}";
+        }
+
         private static Symbol GetRoutingCapability(RoutingType routingType)
         {
             return routingType switch

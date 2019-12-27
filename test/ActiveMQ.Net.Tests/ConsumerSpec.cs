@@ -152,6 +152,38 @@ namespace ActiveMQ.Net.Tests
             Assert.Throws<ArgumentOutOfRangeException>(() => connection.CreateConsumer("test-consumer", (RoutingType) 99));
         }
 
+        [Fact]
+        public async Task Should_connect_to_a_custom_queue_on_specified_address_with_an_anycast_routing_type()
+        {
+            var address = AddressUtil.GetAddress();
+            var consumerAttached = new ManualResetEvent(false);
+            Attach attachFrame = null;
+
+            var testHandler = new TestHandler(@event =>
+            {
+                switch (@event.Id)
+                {
+                    case EventId.LinkRemoteOpen when @event.Context is Attach attach:
+                        attachFrame = attach;
+                        consumerAttached.Set();
+                        break;
+                }
+            });
+
+            using var host = new TestContainerHost(address, testHandler);
+            host.Open();
+
+            await using var connection = await CreateConnection(address);
+            await using var consumer = connection.CreateConsumer("test-consumer", RoutingType.Anycast, "q1");
+
+            Assert.True(consumerAttached.WaitOne(TimeSpan.FromSeconds(10)));
+            Assert.NotNull(attachFrame);
+            Assert.IsType<Source>(attachFrame.Source);
+            var sourceFrame = (Source) attachFrame.Source;
+            Assert.Equal("test-consumer::q1", sourceFrame.Address);
+            Assert.Contains(sourceFrame.Capabilities, RoutingCapabilities.Anycast.Equals);
+        }
+
         private static Task<IConnection> CreateConnection(string address)
         {
             var connectionFactory = new ConnectionFactory();
