@@ -12,11 +12,10 @@ namespace ActiveMQ.Net.Tests
 {
     public class ConsumerSpec
     {
-        private readonly string _address = "amqp://guest:guest@localhost:15672";
-
         [Fact]
         public async Task Should_be_created_and_closed()
         {
+            var address = AddressUtil.GetAddress();
             var consumerAttached = new ManualResetEvent(false);
             var consumerClosed = new ManualResetEvent(false);
 
@@ -33,10 +32,10 @@ namespace ActiveMQ.Net.Tests
                 }
             });
 
-            using var host = new TestContainerHost(_address, testHandler);
+            using var host = new TestContainerHost(address, testHandler);
             host.Open();
 
-            await using var connection = await CreateConnection(_address);
+            await using var connection = await CreateConnection(address);
             var consumer = connection.CreateConsumer("test-consumer");
             await consumer.DisposeAsync();
 
@@ -47,6 +46,7 @@ namespace ActiveMQ.Net.Tests
         [Fact]
         public async Task Should_attach_to_specified_address()
         {
+            var address = AddressUtil.GetAddress();
             var consumerAttached = new ManualResetEvent(false);
             Attach attachFrame = null;
 
@@ -61,10 +61,10 @@ namespace ActiveMQ.Net.Tests
                 }
             });
 
-            using var host = new TestContainerHost(_address, testHandler);
+            using var host = new TestContainerHost(address, testHandler);
             host.Open();
 
-            await using var connection = await CreateConnection(_address);
+            await using var connection = await CreateConnection(address);
             await using var consumer = connection.CreateConsumer("test-consumer");
 
             Assert.True(consumerAttached.WaitOne(TimeSpan.FromSeconds(10)));
@@ -75,6 +75,7 @@ namespace ActiveMQ.Net.Tests
         [Fact]
         public async Task Should_attach_to_anycast_address_when_no_RoutingType_specified()
         {
+            var address = AddressUtil.GetAddress();
             var consumerAttached = new ManualResetEvent(false);
             Attach attachFrame = null;
 
@@ -89,10 +90,10 @@ namespace ActiveMQ.Net.Tests
                 }
             });
 
-            using var host = new TestContainerHost(_address, testHandler);
+            using var host = new TestContainerHost(address, testHandler);
             host.Open();
 
-            await using var connection = await CreateConnection(_address);
+            await using var connection = await CreateConnection(address);
             await using var consumer = connection.CreateConsumer("test-consumer");
 
             Assert.True(consumerAttached.WaitOne(TimeSpan.FromSeconds(10)));
@@ -104,6 +105,7 @@ namespace ActiveMQ.Net.Tests
         [Theory, MemberData(nameof(RoutingTypesData))]
         public async Task Should_attach_to_address_with_specified_RoutingType(RoutingType routingType, Symbol routingCapability)
         {
+            var address = AddressUtil.GetAddress();
             var consumerAttached = new ManualResetEvent(false);
             Attach attachFrame = null;
 
@@ -118,10 +120,10 @@ namespace ActiveMQ.Net.Tests
                 }
             });
 
-            using var host = new TestContainerHost(_address, testHandler);
+            using var host = new TestContainerHost(address, testHandler);
             host.Open();
 
-            await using var connection = await CreateConnection(_address);
+            await using var connection = await CreateConnection(address);
             await using var consumer = connection.CreateConsumer("test-consumer", routingType);
 
             Assert.True(consumerAttached.WaitOne(TimeSpan.FromSeconds(10)));
@@ -142,10 +144,11 @@ namespace ActiveMQ.Net.Tests
         [Fact]
         public async Task Throws_when_created_with_invalid_RoutingType()
         {
-            using var host = new TestContainerHost(_address);
+            var address = AddressUtil.GetAddress();
+            using var host = new TestContainerHost(address);
             host.Open();
 
-            await using var connection = await CreateConnection(_address);
+            await using var connection = await CreateConnection(address);
             Assert.Throws<ArgumentOutOfRangeException>(() => connection.CreateConsumer("test-consumer", (RoutingType) 99));
         }
 

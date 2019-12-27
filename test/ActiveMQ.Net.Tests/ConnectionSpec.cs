@@ -8,11 +8,10 @@ namespace ActiveMQ.Net.Tests
 {
     public class ConnectionSpec
     {
-        private readonly string _address = "amqp://guest:guest@localhost:15672";
-
         [Fact]
         public async Task Should_create_and_close_connection()
         {
+            var address = AddressUtil.GetAddress();
             var connectionOpened = new ManualResetEvent(false);
             var connectionClosed = new ManualResetEvent(false);
 
@@ -29,10 +28,10 @@ namespace ActiveMQ.Net.Tests
                 }
             });
 
-            using var host = new TestContainerHost(_address, testHandler);
+            using var host = new TestContainerHost(address, testHandler);
             host.Open();
 
-            var connection = await CreateConnection(_address);
+            var connection = await CreateConnection(address);
             await connection.DisposeAsync();
 
             Assert.True(connectionOpened.WaitOne());
@@ -42,6 +41,7 @@ namespace ActiveMQ.Net.Tests
         [Fact]
         public async Task New_connection_should_implicitly_open_new_session()
         {
+            var address = AddressUtil.GetAddress();
             var sessionOpened = new ManualResetEvent(false);
 
             var testHandler = new TestHandler(@event =>
@@ -54,10 +54,10 @@ namespace ActiveMQ.Net.Tests
                 }
             });
 
-            using var host = new TestContainerHost(_address, testHandler);
+            using var host = new TestContainerHost(address, testHandler);
             host.Open();
 
-            await using var connection = await CreateConnection(_address);
+            await using var connection = await CreateConnection(address);
 
             Assert.True(sessionOpened.WaitOne());
         }
