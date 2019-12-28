@@ -141,6 +141,17 @@ namespace ActiveMQ.Net.Tests
             };
         }
 
+        [Fact]
+        public async Task Throws_when_created_with_invalid_RoutingType()
+        {
+            var address = AddressUtil.GetAddress();
+            using var host = new TestContainerHost(address);
+            host.Open();
+
+            await using var connection = await CreateConnection(address);
+            Assert.Throws<ArgumentOutOfRangeException>(() => connection.CreateProducer("a1", (RoutingType) 99));
+        }
+
         private static Task<IConnection> CreateConnection(string address)
         {
             var connectionFactory = new ConnectionFactory();
