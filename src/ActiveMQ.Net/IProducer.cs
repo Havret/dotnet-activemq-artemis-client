@@ -1,8 +1,9 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 
 namespace ActiveMQ.Net
 {
-    public interface IProducer
+    public interface IProducer : IAsyncDisposable
     {
         Task ProduceAsync(Message message);
     }

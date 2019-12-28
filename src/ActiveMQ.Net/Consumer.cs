@@ -8,7 +8,7 @@ namespace ActiveMQ.Net
     {
         private readonly ReceiverLink _receiverLink;
         private readonly ChannelReader<Message> _reader;
-        private ChannelWriter<Message> _writer;
+        private readonly ChannelWriter<Message> _writer;
 
         public Consumer(ReceiverLink receiverLink)
         {

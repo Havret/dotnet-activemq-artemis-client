@@ -60,6 +60,11 @@ namespace ActiveMQ.Net
             throw new NotImplementedException();
         }
 
+        public IProducer CreateProducer(string address)
+        {
+            return CreateProducer(address, RoutingType.Anycast);
+        }
+
         public IProducer CreateProducer(string address, RoutingType routingType)
         {
             var senderLink = new SenderLink(_session, Guid.NewGuid().ToString(), address);
