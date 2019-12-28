@@ -45,16 +45,6 @@ namespace ActiveMQ.Net
             return $"{address}::{queue}";
         }
 
-        private static Symbol GetRoutingCapability(RoutingType routingType)
-        {
-            return routingType switch
-            {
-                RoutingType.Anycast => RoutingCapabilities.Anycast,
-                RoutingType.Multicast => RoutingCapabilities.Multicast,
-                _ => throw new ArgumentOutOfRangeException(nameof(routingType), $"RoutingType {routingType.ToString()} is not supported.")
-            };
-        }
-
         public IConsumer CreateConsumer(string address, RoutingType routingType, ConsumerConfig config)
         {
             throw new NotImplementedException();
@@ -67,8 +57,24 @@ namespace ActiveMQ.Net
 
         public IProducer CreateProducer(string address, RoutingType routingType)
         {
-            var senderLink = new SenderLink(_session, Guid.NewGuid().ToString(), address);
+            var routingCapability = GetRoutingCapability(routingType);
+            
+            var senderLink = new SenderLink(_session, Guid.NewGuid().ToString(), new Target
+            {
+                Address = address,
+                Capabilities = new[] { routingCapability }
+            }, null);
             return new Producer(senderLink);
+        }
+
+        private static Symbol GetRoutingCapability(RoutingType routingType)
+        {
+            return routingType switch
+            {
+                RoutingType.Anycast => RoutingCapabilities.Anycast,
+                RoutingType.Multicast => RoutingCapabilities.Multicast,
+                _ => throw new ArgumentOutOfRangeException(nameof(routingType), $"RoutingType {routingType.ToString()} is not supported.")
+            };
         }
 
         public async ValueTask DisposeAsync()
