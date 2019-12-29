@@ -1,15 +1,14 @@
-﻿using System;
+﻿using System.Threading;
 
 namespace ActiveMQ.Net.Tests.Utils
 {
     public static class AddressUtil
     {
-        private static readonly Random PortGenerator = new Random();
+        private static int _port = 10000;
 
         public static string GetAddress()
         {
-            var port = PortGenerator.Next(10000, 65535);
-            return $"amqp: //guest:guest@localhost:{port}";
+            return $"amqp: //guest:guest@localhost:{Interlocked.Increment(ref _port)}";
         }
     }
 }
