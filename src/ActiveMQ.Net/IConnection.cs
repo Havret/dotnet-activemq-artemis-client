@@ -1,13 +1,14 @@
 ﻿using System;
+using System.Threading.Tasks;
 
 namespace ActiveMQ.Net
 {
     public interface IConnection : IAsyncDisposable
     {
-        IConsumer CreateConsumer(string address);
-        IConsumer CreateConsumer(string address, RoutingType routingType);
-        IConsumer CreateConsumer(string address, RoutingType routingType, string queue);
-        IConsumer CreateConsumer(string address, RoutingType routingType, ConsumerConfig config);
+        Task<IConsumer> CreateConsumerAsync(string address);
+        Task<IConsumer> CreateConsumerAsync(string address, RoutingType routingType);
+        Task<IConsumer> CreateConsumerAsync(string address, RoutingType routingType, string queue);
+        IConsumer CreateConsumerAsync(string address, RoutingType routingType, ConsumerConfig config);
         IProducer CreateProducer(string address);
         IProducer CreateProducer(string address, RoutingType routingType);
     }

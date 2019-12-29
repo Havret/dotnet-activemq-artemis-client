@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using ActiveMQ.Net.Tests.Utils;
+using Amqp;
 using Amqp.Framing;
 using Amqp.Handler;
 using Amqp.Types;
@@ -36,7 +37,7 @@ namespace ActiveMQ.Net.Tests
             host.Open();
 
             await using var connection = await CreateConnection(address);
-            var consumer = connection.CreateConsumer("test-consumer");
+            var consumer = await connection.CreateConsumerAsync("test-consumer");
             await consumer.DisposeAsync();
 
             Assert.True(consumerAttached.WaitOne(TimeSpan.FromSeconds(10)));
@@ -65,7 +66,7 @@ namespace ActiveMQ.Net.Tests
             host.Open();
 
             await using var connection = await CreateConnection(address);
-            await using var consumer = connection.CreateConsumer("test-consumer");
+            await using var consumer = await connection.CreateConsumerAsync("test-consumer");
 
             Assert.True(consumerAttached.WaitOne(TimeSpan.FromSeconds(10)));
             Assert.IsType<Source>(attachFrame.Source);
@@ -94,7 +95,7 @@ namespace ActiveMQ.Net.Tests
             host.Open();
 
             await using var connection = await CreateConnection(address);
-            await using var consumer = connection.CreateConsumer("test-consumer");
+            await using var consumer = await connection.CreateConsumerAsync("test-consumer");
 
             Assert.True(consumerAttached.WaitOne(TimeSpan.FromSeconds(10)));
             Assert.NotNull(attachFrame);
@@ -124,7 +125,7 @@ namespace ActiveMQ.Net.Tests
             host.Open();
 
             await using var connection = await CreateConnection(address);
-            await using var consumer = connection.CreateConsumer("test-consumer", routingType);
+            await using var consumer = await connection.CreateConsumerAsync("test-consumer", routingType);
 
             Assert.True(consumerAttached.WaitOne(TimeSpan.FromSeconds(10)));
             Assert.NotNull(attachFrame);
@@ -149,7 +150,7 @@ namespace ActiveMQ.Net.Tests
             host.Open();
 
             await using var connection = await CreateConnection(address);
-            Assert.Throws<ArgumentOutOfRangeException>(() => connection.CreateConsumer("test-consumer", (RoutingType) 99));
+            await Assert.ThrowsAsync<ArgumentOutOfRangeException>(() => connection.CreateConsumerAsync("test-consumer", (RoutingType) 99));
         }
 
         [Fact]
@@ -174,7 +175,7 @@ namespace ActiveMQ.Net.Tests
             host.Open();
 
             await using var connection = await CreateConnection(address);
-            await using var consumer = connection.CreateConsumer("test-consumer", RoutingType.Anycast, "q1");
+            await using var consumer = await connection.CreateConsumerAsync("test-consumer", RoutingType.Anycast, "q1");
 
             Assert.True(consumerAttached.WaitOne(TimeSpan.FromSeconds(10)));
             Assert.NotNull(attachFrame);
@@ -182,6 +183,38 @@ namespace ActiveMQ.Net.Tests
             var sourceFrame = (Source) attachFrame.Source;
             Assert.Equal("test-consumer::q1", sourceFrame.Address);
             Assert.Contains(sourceFrame.Capabilities, RoutingCapabilities.Anycast.Equals);
+        }
+
+        [Fact]
+        public async Task Should_throw_exception_when_selected_queue_doesnt_exist()
+        {
+            var address = AddressUtil.GetAddress();
+            
+            var testHandler = new TestHandler(@event =>
+            {
+                switch (@event.Id)
+                {
+                    case EventId.LinkLocalOpen when @event.Context is Attach attach:
+                        attach.Source = null;
+                        Task.Run(async () =>
+                        {
+                            await Task.Delay(TimeSpan.FromMilliseconds(5));
+                            await @event.Link.CloseAsync(Timeout.InfiniteTimeSpan, new Error(ErrorCode.NotFound)
+                            {
+                                Description = "Queue: 'q1' does not exist"
+                            });
+                        });
+                        break;
+                }
+            });
+
+            using var host = new TestContainerHost(address, testHandler);
+            host.Open();
+
+            await using var connection = await CreateConnection(address);
+            var exception = await Assert.ThrowsAsync<CannotCreateConsumerException>(() => connection.CreateConsumerAsync("a1", RoutingType.Anycast, "q1"));
+            Assert.Contains("Queue: 'q1' does not exist", exception.Message);
+            Assert.Equal(ErrorCode.NotFound, exception.Condition);
         }
 
         private static Task<IConnection> CreateConnection(string address)

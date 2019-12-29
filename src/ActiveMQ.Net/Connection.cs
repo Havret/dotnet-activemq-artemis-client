@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
+using System.Threading.Tasks.Sources;
 using Amqp;
 using Amqp.Framing;
 using Amqp.Types;
@@ -17,27 +18,21 @@ namespace ActiveMQ.Net
             _session = session;
         }
 
-        public IConsumer CreateConsumer(string address)
+        public Task<IConsumer> CreateConsumerAsync(string address)
         {
-            return CreateConsumer(address, RoutingType.Anycast);
+            return CreateConsumerAsync(address, RoutingType.Anycast);
         }
 
-        public IConsumer CreateConsumer(string address, RoutingType routingType)
-        {
-            var routingCapability = GetRoutingCapability(routingType);
-
-            var receiverLink = new ReceiverLink(_session, Guid.NewGuid().ToString(), new Source()
-            {
-                Address = address,
-                Capabilities = new[] { routingCapability }
-            }, null);
-            return new Consumer(receiverLink);
-        }
-
-        public IConsumer CreateConsumer(string address, RoutingType routingType, string queue)
+        public Task<IConsumer> CreateConsumerAsync(string address, RoutingType routingType, string queue)
         {
             var fullyQualifiedQueueName = CreateFullyQualifiedQueueName(address, queue);
-            return CreateConsumer(fullyQualifiedQueueName, routingType);
+            return CreateConsumerAsync(fullyQualifiedQueueName, routingType);
+        }
+
+        public Task<IConsumer> CreateConsumerAsync(string address, RoutingType routingType)
+        {
+            var consumerBuilder = new ConsumerBuilder(_session);
+            return consumerBuilder.CreateAsync(address, routingType);
         }
 
         private string CreateFullyQualifiedQueueName(string address, string queue)
@@ -45,7 +40,7 @@ namespace ActiveMQ.Net
             return $"{address}::{queue}";
         }
 
-        public IConsumer CreateConsumer(string address, RoutingType routingType, ConsumerConfig config)
+        public IConsumer CreateConsumerAsync(string address, RoutingType routingType, ConsumerConfig config)
         {
             throw new NotImplementedException();
         }
@@ -57,24 +52,13 @@ namespace ActiveMQ.Net
 
         public IProducer CreateProducer(string address, RoutingType routingType)
         {
-            var routingCapability = GetRoutingCapability(routingType);
-            
+            var routingCapability = routingType.GetRoutingCapability();
             var senderLink = new SenderLink(_session, Guid.NewGuid().ToString(), new Target
             {
                 Address = address,
                 Capabilities = new[] { routingCapability }
             }, null);
             return new Producer(senderLink);
-        }
-
-        private static Symbol GetRoutingCapability(RoutingType routingType)
-        {
-            return routingType switch
-            {
-                RoutingType.Anycast => RoutingCapabilities.Anycast,
-                RoutingType.Multicast => RoutingCapabilities.Multicast,
-                _ => throw new ArgumentOutOfRangeException(nameof(routingType), $"RoutingType {routingType.ToString()} is not supported.")
-            };
         }
 
         public async ValueTask DisposeAsync()
