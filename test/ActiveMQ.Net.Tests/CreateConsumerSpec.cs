@@ -11,7 +11,7 @@ using Xunit;
 
 namespace ActiveMQ.Net.Tests
 {
-    public class ConsumerSpec
+    public class CreateConsumerSpec
     {
         [Fact]
         public async Task Should_be_created_and_closed()
