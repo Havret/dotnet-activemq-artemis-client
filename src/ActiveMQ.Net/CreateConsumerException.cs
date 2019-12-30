@@ -3,18 +3,18 @@ using Amqp.Framing;
 
 namespace ActiveMQ.Net
 {
-    public class CannotCreateConsumerException : Exception
+    public class CreateConsumerException : Exception
     {
         public string Condition { get; }
 
-        private CannotCreateConsumerException(string condition, string description) : base(description)
+        private CreateConsumerException(string condition, string description) : base(description)
         {
             Condition = condition;
         }
 
-        internal static CannotCreateConsumerException FromError(Error error)
+        internal static CreateConsumerException FromError(Error error)
         {
-            return new CannotCreateConsumerException(error.Condition, error.Description);
+            return new CreateConsumerException(error.Condition, error.Description);
         }
     }
 }

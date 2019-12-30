@@ -44,7 +44,7 @@ namespace ActiveMQ.Net
         {
             if (error != null)
             {
-                _tcs.TrySetException(CannotCreateConsumerException.FromError(error));
+                _tcs.TrySetException(CreateConsumerException.FromError(error));
             }
         }
     }
