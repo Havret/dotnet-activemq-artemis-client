@@ -8,7 +8,7 @@ namespace ActiveMQ.Net.Tests.Utils
     public class TestContainerHost : IDisposable
     {
         private readonly ContainerHost _host;
-        
+
         public TestContainerHost(string address, IHandler handler = null)
         {
             var uri = new Uri(address);
@@ -19,5 +19,12 @@ namespace ActiveMQ.Net.Tests.Utils
 
         public void Dispose() => _host.Close();
         public void Open() => _host.Open();
+        
+        public MessageSource CreateMessageSource(string address)
+        {
+            var messageSource = new MessageSource();
+            _host.RegisterMessageSource(address, messageSource);
+            return messageSource;
+        }
     }
 }
