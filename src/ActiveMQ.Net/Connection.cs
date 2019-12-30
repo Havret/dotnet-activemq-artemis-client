@@ -40,11 +40,6 @@ namespace ActiveMQ.Net
             return $"{address}::{queue}";
         }
 
-        public IConsumer CreateConsumerAsync(string address, RoutingType routingType, ConsumerConfig config)
-        {
-            throw new NotImplementedException();
-        }
-
         public IProducer CreateProducer(string address)
         {
             return CreateProducer(address, RoutingType.Anycast);

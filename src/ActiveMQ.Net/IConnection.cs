@@ -7,8 +7,7 @@ namespace ActiveMQ.Net
     {
         Task<IConsumer> CreateConsumerAsync(string address);
         Task<IConsumer> CreateConsumerAsync(string address, RoutingType routingType);
-        Task<IConsumer> CreateConsumerAsync(string address, RoutingType routingType, string queue);
-        IConsumer CreateConsumerAsync(string address, RoutingType routingType, ConsumerConfig config);
+        Task<IConsumer> CreateConsumerAsync(string address, RoutingType routingType, string queue);        
         IProducer CreateProducer(string address);
         IProducer CreateProducer(string address, RoutingType routingType);
     }
