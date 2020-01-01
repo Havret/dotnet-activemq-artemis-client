@@ -26,5 +26,12 @@ namespace ActiveMQ.Net.Tests.Utils
             _host.RegisterMessageSource(address, messageSource);
             return messageSource;
         }
+
+        public MessageProcessor CreateMessageProcessor(string address)
+        {
+            var messageProcessor = new MessageProcessor();
+            _host.RegisterMessageProcessor(address, messageProcessor);
+            return messageProcessor;
+        }
     }
 }
