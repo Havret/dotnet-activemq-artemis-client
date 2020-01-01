@@ -38,6 +38,36 @@ namespace ActiveMQ.Net.Tests
             Assert.True(deliveryReceived.WaitOne(TimeSpan.FromSeconds(10)));
             Assert.False(deliverySettled);
         }
+        
+        [Fact]
+        public async Task Should_send_msg_with_Settled_delivery_frame_when_used_in_fire_and_forget_manner()
+        {
+            var address = AddressUtil.GetAddress();
+            var deliveryReceived = new ManualResetEvent(false);
+            var deliverySettled = false;
+
+            var testHandler = new TestHandler(@event =>
+            {
+                switch (@event.Id)
+                {
+                    case EventId.ReceiveDelivery when @event.Context is IDelivery delivery:
+                        deliverySettled = delivery.Settled;
+                        deliveryReceived.Set();
+                        break;
+                }
+            });
+
+            using var host = new TestContainerHost(address, testHandler);
+            host.Open();
+
+            await using var connection = await CreateConnection(address);
+            var producer = connection.CreateProducer("a1");
+
+            producer.Produce(new Message("foo"));
+
+            Assert.True(deliveryReceived.WaitOne(TimeSpan.FromSeconds(10)));
+            Assert.True(deliverySettled);
+        }
 
         private static Task<IConnection> CreateConnection(string address)
         {

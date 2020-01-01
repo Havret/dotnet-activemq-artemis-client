@@ -17,6 +17,11 @@ namespace ActiveMQ.Net
             return _senderLink.SendAsync(message.InnerMessage);
         }
 
+        public void Produce(Message message)
+        {
+            _senderLink.Send(message.InnerMessage, null, null, null);
+        }
+
         public async ValueTask DisposeAsync()
         {
             await _senderLink.CloseAsync().ConfigureAwait(false);
