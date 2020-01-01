@@ -28,6 +28,11 @@ namespace ActiveMQ.Net
             return _reader.ReadAsync();
         }
 
+        public void Accept(Message message)
+        {
+            _receiverLink.Accept(message.InnerMessage);
+        }
+
         public async ValueTask DisposeAsync()
         {
             await _receiverLink.CloseAsync().ConfigureAwait(false);
