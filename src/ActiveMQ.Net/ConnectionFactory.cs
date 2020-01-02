@@ -1,5 +1,6 @@
-﻿using System;
+using System;
 using System.Threading.Tasks;
+using ActiveMQ.Net.AutoRecovering;
 using Amqp;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -10,10 +11,9 @@ namespace ActiveMQ.Net
     {
         public async Task<IConnection> CreateAsync(string address)
         {
-            var connectionFactory = new Amqp.ConnectionFactory();
-            var connection = await connectionFactory.CreateAsync(new Address(address)).ConfigureAwait(false);
-            var session = new Session(connection);
-            return new Connection(connection, session);
+            var autoRecoveringConnection = new AutoRecoveringConnection(address);
+            await autoRecoveringConnection.InitAsync().ConfigureAwait(false);
+            return autoRecoveringConnection;
         }
 
         public ILoggerFactory LoggerFactory { get; set; } = new NullLoggerFactory();
