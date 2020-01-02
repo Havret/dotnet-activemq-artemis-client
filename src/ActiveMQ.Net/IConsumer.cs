@@ -7,5 +7,6 @@ namespace ActiveMQ.Net
     {
         ValueTask<Message> ConsumeAsync();
         void Accept(Message message);
+        void Reject(Message message);
     }
 }
