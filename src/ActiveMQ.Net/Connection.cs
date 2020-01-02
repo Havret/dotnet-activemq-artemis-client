@@ -30,5 +30,11 @@ namespace ActiveMQ.Net
         {
             await _connection.CloseAsync().ConfigureAwait(false);
         }
+
+        public event ClosedCallback ConnectionClosed
+        {
+            add => _connection.AddClosedCallback(value);
+            remove => _connection.Closed -= value;
+        }
     }
 }
