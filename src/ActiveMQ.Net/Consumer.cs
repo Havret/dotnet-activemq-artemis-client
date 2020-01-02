@@ -33,6 +33,11 @@ namespace ActiveMQ.Net
             _receiverLink.Accept(message.InnerMessage);
         }
 
+        public void Reject(Message message)
+        {
+            _receiverLink.Reject(message.InnerMessage);
+        }
+
         public async ValueTask DisposeAsync()
         {
             await _receiverLink.CloseAsync().ConfigureAwait(false);

@@ -47,6 +47,26 @@ namespace ActiveMQ.Net.Tests
             Assert.True(dispositionContext.Settled);
         }
 
+        [Fact]
+        public async Task Should_send_rejected_disposition_frame_when_message_rejected()
+        {
+            var address = AddressUtil.GetAddress();
+            using var host = new TestContainerHost(address);
+            host.Open();
+            
+            var messageSource = host.CreateMessageSource("a1");
+            await using var connection = await CreateConnection(address);
+            var consumer = await connection.CreateConsumerAsync("a1");
+            
+            messageSource.Enqueue(new Message("foo"));
+            var message = await consumer.ConsumeAsync();
+            consumer.Reject(message);
+
+            var dispositionContext = messageSource.GetNextDisposition(TimeSpan.FromSeconds(1));
+            Assert.IsType<Rejected>(dispositionContext.DeliveryState);
+            Assert.True(dispositionContext.Settled);
+        }
+
         private static Task<IConnection> CreateConnection(string address)
         {
             var connectionFactory = new ConnectionFactory();
