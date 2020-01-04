@@ -1,6 +1,9 @@
-﻿using System.Threading.Channels;
+﻿using System.Collections.Generic;
+using System.Threading.Channels;
 using System.Threading.Tasks;
+using ActiveMQ.Net.InternalUtilities;
 using Amqp;
+using Amqp.Framing;
 
 namespace ActiveMQ.Net.AutoRecovering
 {
@@ -10,6 +13,7 @@ namespace ActiveMQ.Net.AutoRecovering
         private Connection _connection;
         private readonly ChannelReader<ConnectCommand> _reader;
         private readonly ChannelWriter<ConnectCommand> _writer;
+        private readonly ConcurrentHashSet<AutoRecoveringProducer> _producers = new ConcurrentHashSet<AutoRecoveringProducer>();
 
         public AutoRecoveringConnection(string address)
         {
@@ -24,11 +28,21 @@ namespace ActiveMQ.Net.AutoRecovering
                 while (true)
                 {
                     var connectCommand = await _reader.ReadAsync();
-                    _connection = await CreateConnection().ConfigureAwait(false);
-                    _connection.ConnectionClosed += (sender, args) => _writer.TryWrite(ConnectCommand.Empty);
+                    var connection = await CreateConnection().ConfigureAwait(false);
+                    foreach (var producer in _producers.Values)
+                    {
+                        producer.Recover(connection);
+                    }
+                    _connection = connection;
+                    _connection.ConnectionClosed += OnConnectionClosed;
                     connectCommand.NotifyWaiter();
                 }
             });
+        }
+
+        private void OnConnectionClosed(IAmqpObject sender, Error error)
+        {
+            _writer.TryWrite(ConnectCommand.Empty);
         }
 
         public Task InitAsync()
@@ -46,33 +60,22 @@ namespace ActiveMQ.Net.AutoRecovering
             return new Connection(connection, session);
         }
 
-        public Task<IConsumer> CreateConsumerAsync(string address)
-        {
-            return _connection.CreateConsumerAsync(address);
-        }
-
         public Task<IConsumer> CreateConsumerAsync(string address, RoutingType routingType)
         {
             return _connection.CreateConsumerAsync(address, routingType);
         }
 
-        public Task<IConsumer> CreateConsumerAsync(string address, RoutingType routingType, string queue)
-        {
-            return _connection.CreateConsumerAsync(address, routingType, queue);
-        }
-
-        public IProducer CreateProducer(string address)
-        {
-            return _connection.CreateProducer(address);
-        }
-
         public IProducer CreateProducer(string address, RoutingType routingType)
         {
-            return _connection.CreateProducer(address, routingType);
+            var autoRecoveringProducer = new AutoRecoveringProducer(address, routingType);
+            autoRecoveringProducer.Recover(_connection);
+            _producers.Add(autoRecoveringProducer);
+            return autoRecoveringProducer;
         }
 
         public ValueTask DisposeAsync()
         {
+            _connection.ConnectionClosed -= OnConnectionClosed;
             return _connection.DisposeAsync();
         }
     }
