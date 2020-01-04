@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
-using System.Threading.Tasks.Sources;
 using Amqp;
 using Amqp.Framing;
-using Amqp.Types;
 
 namespace ActiveMQ.Net
 {
@@ -18,31 +16,10 @@ namespace ActiveMQ.Net
             _session = session;
         }
 
-        public Task<IConsumer> CreateConsumerAsync(string address)
-        {
-            return CreateConsumerAsync(address, RoutingType.Anycast);
-        }
-
-        public Task<IConsumer> CreateConsumerAsync(string address, RoutingType routingType, string queue)
-        {
-            var fullyQualifiedQueueName = CreateFullyQualifiedQueueName(address, queue);
-            return CreateConsumerAsync(fullyQualifiedQueueName, routingType);
-        }
-
         public Task<IConsumer> CreateConsumerAsync(string address, RoutingType routingType)
         {
             var consumerBuilder = new ConsumerBuilder(_session);
             return consumerBuilder.CreateAsync(address, routingType);
-        }
-
-        private string CreateFullyQualifiedQueueName(string address, string queue)
-        {
-            return $"{address}::{queue}";
-        }
-
-        public IProducer CreateProducer(string address)
-        {
-            return CreateProducer(address, RoutingType.Anycast);
         }
 
         public IProducer CreateProducer(string address, RoutingType routingType)
