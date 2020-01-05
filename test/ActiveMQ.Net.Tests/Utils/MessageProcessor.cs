@@ -1,23 +1,24 @@
-﻿using System.Collections.Concurrent;
+﻿using System;
+using System.Collections.Concurrent;
 using Amqp.Listener;
 
 namespace ActiveMQ.Net.Tests.Utils
 {
     public class MessageProcessor : IMessageProcessor
     {
-        private readonly ConcurrentQueue<Message> _messages = new ConcurrentQueue<Message>();
+        private readonly BlockingCollection<Message> _messages = new BlockingCollection<Message>();
 
         void IMessageProcessor.Process(MessageContext messageContext)
         {
-            _messages.Enqueue(new Message(messageContext.Message));
+            _messages.TryAdd(new Message(messageContext.Message));
             messageContext.Complete();
         }
 
         int IMessageProcessor.Credit { get; } = 30;
 
-        public Message Dequeue()
+        public Message Dequeue(TimeSpan timeout)
         {
-            if (_messages.TryDequeue(out  var message))
+            if (_messages.TryTake(out  var message, timeout))
             {
                 return message;
             }
