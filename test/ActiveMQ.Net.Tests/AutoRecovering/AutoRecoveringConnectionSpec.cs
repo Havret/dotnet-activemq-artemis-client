@@ -67,5 +67,36 @@ namespace ActiveMQ.Net.Tests.AutoRecovering
 
             Assert.False(connectionOpened.WaitOne(TimeSpan.FromMilliseconds(50)));
         }
+        
+        [Fact]
+        public async Task Should_recreate_producers_on_connection_recovery()
+        {
+            var address = GetUniqueAddress();
+            var producersAttached = new CountdownEvent(2);
+            var testHandler = new TestHandler(@event =>
+            {
+                switch (@event.Id)
+                {
+                    case EventId.LinkRemoteOpen when @event.Context is Attach attach && attach.Role:
+                        producersAttached.Signal();
+                        break;
+                }
+            });
+
+            var host1 = CreateOpenedContainerHost(address, testHandler);
+
+            var connection = await CreateConnection(address);
+            connection.CreateProducer("a1");
+            connection.CreateProducer("a2");
+
+            Assert.True(producersAttached.Wait(TimeSpan.FromSeconds(1)));
+            producersAttached.Reset();
+
+            host1.Dispose();
+
+            using var host2 = CreateOpenedContainerHost(address, testHandler);
+
+            Assert.True(producersAttached.Wait(TimeSpan.FromSeconds(1)));
+        }
     }
 }
