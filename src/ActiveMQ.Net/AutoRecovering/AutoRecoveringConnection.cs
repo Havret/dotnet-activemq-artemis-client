@@ -12,7 +12,7 @@ namespace ActiveMQ.Net.AutoRecovering
         private readonly string _address;
         private readonly ChannelReader<ConnectCommand> _reader;
         private readonly ChannelWriter<ConnectCommand> _writer;
-        private readonly ConcurrentHashSet<AutoRecoveringProducer> _producers = new ConcurrentHashSet<AutoRecoveringProducer>();
+        private readonly ConcurrentHashSet<IRecoverable> _recoverables = new ConcurrentHashSet<IRecoverable>();
 
         public AutoRecoveringConnection(string address)
         {
@@ -26,12 +26,13 @@ namespace ActiveMQ.Net.AutoRecovering
             {
                 while (true)
                 {
-                    var connectCommand = await _reader.ReadAsync();
+                    var connectCommand = await _reader.ReadAsync().ConfigureAwait(false);
                     var connection = await CreateConnection().ConfigureAwait(false);
-                    foreach (var producer in _producers.Values)
+                    foreach (var recoverable in _recoverables.Values)
                     {
-                        producer.Recover(connection);
+                        await recoverable.RecoverAsync(connection).ConfigureAwait(false);
                     }
+
                     _connection = connection;
                     _connection.ConnectionClosed += OnConnectionClosed;
                     connectCommand.NotifyWaiter();
@@ -59,24 +60,32 @@ namespace ActiveMQ.Net.AutoRecovering
             return new Connection(connection, session);
         }
 
-        public Task<IConsumer> CreateConsumerAsync(string address, RoutingType routingType)
+        public async Task<IConsumer> CreateConsumerAsync(string address, RoutingType routingType)
         {
-            return _connection.CreateConsumerAsync(address, routingType);
+            var autoRecoveringConsumer = new AutoRecoveringConsumer(address, routingType);
+            await PrepareRecoverable(autoRecoveringConsumer).ConfigureAwait(false);
+            return autoRecoveringConsumer;
         }
 
         public IProducer CreateProducer(string address, RoutingType routingType)
         {
             var autoRecoveringProducer = new AutoRecoveringProducer(address, routingType);
-            autoRecoveringProducer.Recover(_connection);
-            _producers.Add(autoRecoveringProducer);
-            autoRecoveringProducer.Closed += OnAutoRecoveringProducerClosed;
+            // TODO: Remove GetAwaiter when CreateProducer changed to async https://github.com/Havret/ActiveMQ.Net/issues/7
+            PrepareRecoverable(autoRecoveringProducer).ConfigureAwait(false).GetAwaiter().GetResult();
             return autoRecoveringProducer;
         }
 
-        private void OnAutoRecoveringProducerClosed(AutoRecoveringProducer producer)
+        private async Task PrepareRecoverable(IRecoverable recoverable)
         {
-            producer.Closed -= OnAutoRecoveringProducerClosed;
-            _producers.Remove(producer);
+            await recoverable.RecoverAsync(_connection).ConfigureAwait(false);
+            _recoverables.Add(recoverable);
+            recoverable.Closed += OnRecoverableClosed;
+        }
+
+        private void OnRecoverableClosed(IRecoverable recoverable)
+        {
+            recoverable.Closed -= OnRecoverableClosed;
+            _recoverables.Remove(recoverable);
         }
 
         public ValueTask DisposeAsync()
