@@ -11,12 +11,12 @@ using Xunit;
 
 namespace ActiveMQ.Net.Tests
 {
-    public class CreateConsumerSpec
+    public class CreateConsumerSpec : ActiveMQNetSpec
     {
         [Fact]
         public async Task Should_be_created_and_closed()
         {
-            var address = AddressUtil.GetAddress();
+            var address = GetUniqueAddress();
             var consumerAttached = new ManualResetEvent(false);
             var consumerClosed = new ManualResetEvent(false);
 
@@ -33,9 +33,7 @@ namespace ActiveMQ.Net.Tests
                 }
             });
 
-            using var host = new TestContainerHost(address, testHandler);
-            host.Open();
-
+            using var host = CreateOpenedContainerHost(address, testHandler);
             await using var connection = await CreateConnection(address);
             var consumer = await connection.CreateConsumerAsync("test-consumer");
             await consumer.DisposeAsync();
@@ -47,7 +45,7 @@ namespace ActiveMQ.Net.Tests
         [Fact]
         public async Task Should_attach_to_specified_address()
         {
-            var address = AddressUtil.GetAddress();
+            var address = GetUniqueAddress();
             var consumerAttached = new ManualResetEvent(false);
             Attach attachFrame = null;
 
@@ -62,8 +60,7 @@ namespace ActiveMQ.Net.Tests
                 }
             });
 
-            using var host = new TestContainerHost(address, testHandler);
-            host.Open();
+            using var host = CreateOpenedContainerHost(address, testHandler);
 
             await using var connection = await CreateConnection(address);
             await using var consumer = await connection.CreateConsumerAsync("test-consumer");
@@ -76,7 +73,7 @@ namespace ActiveMQ.Net.Tests
         [Fact]
         public async Task Should_attach_to_anycast_address_when_no_RoutingType_specified()
         {
-            var address = AddressUtil.GetAddress();
+            var address = GetUniqueAddress();
             var consumerAttached = new ManualResetEvent(false);
             Attach attachFrame = null;
 
@@ -91,8 +88,7 @@ namespace ActiveMQ.Net.Tests
                 }
             });
 
-            using var host = new TestContainerHost(address, testHandler);
-            host.Open();
+            using var host = CreateOpenedContainerHost(address, testHandler);
 
             await using var connection = await CreateConnection(address);
             await using var consumer = await connection.CreateConsumerAsync("test-consumer");
@@ -106,7 +102,7 @@ namespace ActiveMQ.Net.Tests
         [Theory, MemberData(nameof(RoutingTypesData))]
         public async Task Should_attach_to_address_with_specified_RoutingType(RoutingType routingType, Symbol routingCapability)
         {
-            var address = AddressUtil.GetAddress();
+            var address = GetUniqueAddress();
             var consumerAttached = new ManualResetEvent(false);
             Attach attachFrame = null;
 
@@ -121,8 +117,7 @@ namespace ActiveMQ.Net.Tests
                 }
             });
 
-            using var host = new TestContainerHost(address, testHandler);
-            host.Open();
+            using var host = CreateOpenedContainerHost(address, testHandler);
 
             await using var connection = await CreateConnection(address);
             await using var consumer = await connection.CreateConsumerAsync("test-consumer", routingType);
@@ -145,9 +140,8 @@ namespace ActiveMQ.Net.Tests
         [Fact]
         public async Task Throws_when_created_with_invalid_RoutingType()
         {
-            var address = AddressUtil.GetAddress();
-            using var host = new TestContainerHost(address);
-            host.Open();
+            var address = GetUniqueAddress();
+            using var host = CreateOpenedContainerHost(address);
 
             await using var connection = await CreateConnection(address);
             await Assert.ThrowsAsync<ArgumentOutOfRangeException>(() => connection.CreateConsumerAsync("test-consumer", (RoutingType) 99));
@@ -156,7 +150,7 @@ namespace ActiveMQ.Net.Tests
         [Fact]
         public async Task Should_connect_to_a_custom_queue_on_specified_address_with_an_anycast_routing_type()
         {
-            var address = AddressUtil.GetAddress();
+            var address = GetUniqueAddress();
             var consumerAttached = new ManualResetEvent(false);
             Attach attachFrame = null;
 
@@ -171,8 +165,7 @@ namespace ActiveMQ.Net.Tests
                 }
             });
 
-            using var host = new TestContainerHost(address, testHandler);
-            host.Open();
+            using var host = CreateOpenedContainerHost(address, testHandler);
 
             await using var connection = await CreateConnection(address);
             await using var consumer = await connection.CreateConsumerAsync("test-consumer", RoutingType.Anycast, "q1");
@@ -188,7 +181,7 @@ namespace ActiveMQ.Net.Tests
         [Fact]
         public async Task Should_throw_exception_when_selected_queue_doesnt_exist()
         {
-            var address = AddressUtil.GetAddress();
+            var address = GetUniqueAddress();
             
             var testHandler = new TestHandler(@event =>
             {
@@ -208,19 +201,13 @@ namespace ActiveMQ.Net.Tests
                 }
             });
 
-            using var host = new TestContainerHost(address, testHandler);
+            using var host = CreateOpenedContainerHost(address, testHandler);
             host.Open();
 
             await using var connection = await CreateConnection(address);
             var exception = await Assert.ThrowsAsync<CreateConsumerException>(() => connection.CreateConsumerAsync("a1", RoutingType.Anycast, "q1"));
             Assert.Contains("Queue: 'q1' does not exist", exception.Message);
             Assert.Equal(ErrorCode.NotFound, exception.Condition);
-        }
-
-        private static Task<IConnection> CreateConnection(string address)
-        {
-            var connectionFactory = new ConnectionFactory();
-            return connectionFactory.CreateAsync(address);
         }
     }
 }

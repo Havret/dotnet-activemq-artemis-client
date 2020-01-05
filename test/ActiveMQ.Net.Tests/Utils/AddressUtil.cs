@@ -6,7 +6,7 @@ namespace ActiveMQ.Net.Tests.Utils
     {
         private static int _port = 10000;
 
-        public static string GetAddress()
+        public static string GetUniqueAddress()
         {
             return $"amqp: //guest:guest@localhost:{Interlocked.Increment(ref _port)}";
         }

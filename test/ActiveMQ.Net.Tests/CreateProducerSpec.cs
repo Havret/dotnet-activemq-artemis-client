@@ -10,12 +10,12 @@ using Xunit;
 
 namespace ActiveMQ.Net.Tests
 {
-    public class ProducerSpec
+    public class ProducerSpec : ActiveMQNetSpec
     {
         [Fact]
         public async Task Should_be_created_and_closed()
         {
-            var address = AddressUtil.GetAddress();
+            var address = GetUniqueAddress();
             var producerAttached = new ManualResetEvent(false);
             var producerClosed = new ManualResetEvent(false);
 
@@ -32,8 +32,7 @@ namespace ActiveMQ.Net.Tests
                 }
             });
 
-            using var host = new TestContainerHost(address, testHandler);
-            host.Open();
+            using var host = CreateOpenedContainerHost(address, testHandler);
 
             await using var connection = await CreateConnection(address);
             var producer = connection.CreateProducer("a1");
@@ -46,7 +45,7 @@ namespace ActiveMQ.Net.Tests
         [Fact]
         public async Task Should_attach_to_specified_address()
         {
-            var address = AddressUtil.GetAddress();
+            var address = GetUniqueAddress();
             var producerAttached = new ManualResetEvent(false);
             Attach attachFrame = null;
 
@@ -61,8 +60,7 @@ namespace ActiveMQ.Net.Tests
                 }
             });
 
-            using var host = new TestContainerHost(address, testHandler);
-            host.Open();
+            using var host = CreateOpenedContainerHost(address, testHandler);
 
             await using var connection = await CreateConnection(address);
             await using var producer = connection.CreateProducer("a1");
@@ -75,7 +73,7 @@ namespace ActiveMQ.Net.Tests
         [Fact]
         public async Task Should_attach_to_anycast_address_when_no_RoutingType_specified()
         {
-            var address = AddressUtil.GetAddress();
+            var address = GetUniqueAddress();
             var producerAttached = new ManualResetEvent(false);
             Attach attachFrame = null;
 
@@ -90,8 +88,7 @@ namespace ActiveMQ.Net.Tests
                 }
             });
 
-            using var host = new TestContainerHost(address, testHandler);
-            host.Open();
+            using var host = CreateOpenedContainerHost(address, testHandler);
 
             await using var connection = await CreateConnection(address);
             await using var producer = connection.CreateProducer("a1");
@@ -105,7 +102,7 @@ namespace ActiveMQ.Net.Tests
         [Theory, MemberData(nameof(RoutingTypesData))]
         public async Task Should_attach_to_address_with_specified_RoutingType(RoutingType routingType, Symbol routingCapability)
         {
-            var address = AddressUtil.GetAddress();
+            var address = GetUniqueAddress();
             var producerAttached = new ManualResetEvent(false);
             Attach attachFrame = null;
 
@@ -120,8 +117,7 @@ namespace ActiveMQ.Net.Tests
                 }
             });
 
-            using var host = new TestContainerHost(address, testHandler);
-            host.Open();
+            using var host = CreateOpenedContainerHost(address, testHandler);
 
             await using var connection = await CreateConnection(address);
             await using var consumer = connection.CreateProducer("a1", routingType);
@@ -144,18 +140,11 @@ namespace ActiveMQ.Net.Tests
         [Fact]
         public async Task Throws_when_created_with_invalid_RoutingType()
         {
-            var address = AddressUtil.GetAddress();
-            using var host = new TestContainerHost(address);
-            host.Open();
+            var address = AddressUtil.GetUniqueAddress();
+            using var host = CreateOpenedContainerHost(address);
 
             await using var connection = await CreateConnection(address);
             Assert.Throws<ArgumentOutOfRangeException>(() => connection.CreateProducer("a1", (RoutingType) 99));
-        }
-
-        private static Task<IConnection> CreateConnection(string address)
-        {
-            var connectionFactory = new ConnectionFactory();
-            return connectionFactory.CreateAsync(address);
         }
     }
 }
