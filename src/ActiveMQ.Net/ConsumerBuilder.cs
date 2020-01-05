@@ -26,7 +26,7 @@ namespace ActiveMQ.Net
             };
             var receiverLink = new ReceiverLink(_session, Guid.NewGuid().ToString(), source, OnAttached);
             receiverLink.AddClosedCallback(OnClosed);
-            var consumer = await _tcs.Task;
+            var consumer = await _tcs.Task.ConfigureAwait(false);
             receiverLink.Closed -= OnClosed;
 
             return consumer;
