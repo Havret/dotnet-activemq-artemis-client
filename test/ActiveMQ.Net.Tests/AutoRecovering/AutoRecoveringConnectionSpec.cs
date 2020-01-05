@@ -5,11 +5,16 @@ using ActiveMQ.Net.Tests.Utils;
 using Amqp.Framing;
 using Amqp.Handler;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace ActiveMQ.Net.Tests.AutoRecovering
 {
     public class AutoRecoveringConnectionSpec : ActiveMQNetSpec
     {
+        public AutoRecoveringConnectionSpec(ITestOutputHelper output) : base(output)
+        {
+        }
+        
         [Fact]
         public async Task Should_reconnect_when_broker_is_available_after_outage_is_over()
         {

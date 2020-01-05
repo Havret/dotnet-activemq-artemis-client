@@ -1,7 +1,9 @@
-﻿using System.Threading;
+﻿using System;
+using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
 using Amqp;
+using Microsoft.Extensions.Logging;
 
 namespace ActiveMQ.Net
 {
@@ -19,8 +21,7 @@ namespace ActiveMQ.Net
             _writer = channel.Writer;
             _receiverLink.Start(200, (receiver, m) =>
             {
-                var message = new Message(m);
-                _writer.TryWrite(message);
+                _writer.TryWrite(new Message(m));
             });
         }
 
@@ -41,7 +42,11 @@ namespace ActiveMQ.Net
 
         public async ValueTask DisposeAsync()
         {
-            await _receiverLink.CloseAsync().ConfigureAwait(false);
+            _writer.TryComplete();
+            if (!_receiverLink.IsClosed)
+            {
+                await _receiverLink.CloseAsync().ConfigureAwait(false);
+            }
         }
     }
 }
