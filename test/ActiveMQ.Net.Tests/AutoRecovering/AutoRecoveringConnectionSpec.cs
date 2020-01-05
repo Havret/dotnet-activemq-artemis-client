@@ -160,5 +160,36 @@ namespace ActiveMQ.Net.Tests.AutoRecovering
 
             Assert.True(consumersAttached.Wait(TimeSpan.FromSeconds(1)));
         }
+        
+        [Fact]
+        public async Task Should_not_recreate_disposed_consumers()
+        {
+            var address = GetUniqueAddress();
+            var consumerAttached = new ManualResetEvent(false);
+            var testHandler = new TestHandler(@event =>
+            {
+                switch (@event.Id)
+                {
+                    case EventId.LinkRemoteOpen when @event.Context is Attach attach && !attach.Role:
+                        consumerAttached.Set();
+                        break;
+                }
+            });
+
+            var host1 = CreateOpenedContainerHost(address, testHandler);
+
+            var connection = await CreateConnection(address);
+            var consumer = await connection.CreateConsumerAsync("a1");
+
+            Assert.True(consumerAttached.WaitOne(TimeSpan.FromSeconds(1)));
+            await consumer.DisposeAsync();
+            
+            consumerAttached.Reset();
+            host1.Dispose();
+
+            using var host2 = CreateOpenedContainerHost(address, testHandler);
+
+            Assert.False(consumerAttached.WaitOne(TimeSpan.FromMilliseconds(50)));
+        }
     }
 }
