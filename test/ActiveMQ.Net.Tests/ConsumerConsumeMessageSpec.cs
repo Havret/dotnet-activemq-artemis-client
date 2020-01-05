@@ -1,4 +1,6 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading;
+using System.Threading.Tasks;
 using Xunit;
 
 namespace ActiveMQ.Net.Tests
@@ -20,6 +22,21 @@ namespace ActiveMQ.Net.Tests
 
             Assert.NotNull(message);
             Assert.Equal("foo", message.GetBody<string>());
+        }
+
+        [Fact]
+        public async Task Should_be_able_to_cancel_ConsumeAsync_when_no_message_available()
+        {
+            var address = GetUniqueAddress();
+            using var host = CreateOpenedContainerHost(address);
+
+            host.CreateMessageSource("a1");
+            await using var connection = await CreateConnection(address);
+            var consumer = await connection.CreateConsumerAsync("a1");
+
+            var cts = new CancellationTokenSource();
+            cts.CancelAfter(TimeSpan.FromMilliseconds(50));
+            await Assert.ThrowsAsync<OperationCanceledException>(async () => await consumer.ConsumeAsync(cts.Token));
         }
     }
 }
