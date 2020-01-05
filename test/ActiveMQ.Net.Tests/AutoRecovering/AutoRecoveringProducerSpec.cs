@@ -5,11 +5,16 @@ using ActiveMQ.Net.Tests.Utils;
 using Amqp.Framing;
 using Amqp.Handler;
 using Xunit;
+using Xunit.Abstractions;
 
-namespace ActiveMQ.Net.Tests
+namespace ActiveMQ.Net.Tests.AutoRecovering
 {
     public class AutoRecoveringProducerSpec : ActiveMQNetSpec
     {
+        public AutoRecoveringProducerSpec(ITestOutputHelper output) : base(output)
+        {
+        }
+        
         [Fact]
         public async Task Should_be_able_to_produce_messages_when_connection_restored()
         {
