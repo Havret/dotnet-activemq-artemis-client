@@ -45,7 +45,7 @@ namespace ActiveMQ.Net.Tests
             
             await producer.ProduceAsync(new Message("foo"));
 
-            var message = messageProcessor.Dequeue(TimeSpan.FromMilliseconds(100));
+            var message = messageProcessor.Dequeue(TimeSpan.FromSeconds(1));
             Assert.NotNull(message);
             Assert.Equal("foo", message.GetBody<string>());
         }
