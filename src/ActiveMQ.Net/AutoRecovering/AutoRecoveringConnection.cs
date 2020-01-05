@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Threading.Channels;
+﻿using System.Threading.Channels;
 using System.Threading.Tasks;
 using ActiveMQ.Net.InternalUtilities;
 using Amqp;
@@ -9,8 +8,8 @@ namespace ActiveMQ.Net.AutoRecovering
 {
     internal class AutoRecoveringConnection : IConnection
     {
-        private readonly string _address;
         private Connection _connection;
+        private readonly string _address;
         private readonly ChannelReader<ConnectCommand> _reader;
         private readonly ChannelWriter<ConnectCommand> _writer;
         private readonly ConcurrentHashSet<AutoRecoveringProducer> _producers = new ConcurrentHashSet<AutoRecoveringProducer>();
@@ -70,7 +69,14 @@ namespace ActiveMQ.Net.AutoRecovering
             var autoRecoveringProducer = new AutoRecoveringProducer(address, routingType);
             autoRecoveringProducer.Recover(_connection);
             _producers.Add(autoRecoveringProducer);
+            autoRecoveringProducer.Closed += OnAutoRecoveringProducerClosed;
             return autoRecoveringProducer;
+        }
+
+        private void OnAutoRecoveringProducerClosed(AutoRecoveringProducer producer)
+        {
+            producer.Closed -= OnAutoRecoveringProducerClosed;
+            _producers.Remove(producer);
         }
 
         public ValueTask DisposeAsync()

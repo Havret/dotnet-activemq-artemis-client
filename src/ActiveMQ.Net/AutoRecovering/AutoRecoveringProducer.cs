@@ -2,6 +2,8 @@
 
 namespace ActiveMQ.Net.AutoRecovering
 {
+    internal delegate void AutoRecoveringProducerClosed(AutoRecoveringProducer producer);
+    
     internal class AutoRecoveringProducer : IProducer
     {
         private readonly string _address;
@@ -12,11 +14,6 @@ namespace ActiveMQ.Net.AutoRecovering
         {
             _address = address;
             _routingType = routingType;
-        }
-
-        public ValueTask DisposeAsync()
-        {
-            return _producer.DisposeAsync();
         }
 
         public Task ProduceAsync(Message message)
@@ -33,5 +30,13 @@ namespace ActiveMQ.Net.AutoRecovering
         {
             _producer = connection.CreateProducer(_address, _routingType);
         }
+
+        public async ValueTask DisposeAsync()
+        {
+            await _producer.DisposeAsync();
+            Closed?.Invoke(this);
+        }
+
+        public event AutoRecoveringProducerClosed Closed;
     }
 }

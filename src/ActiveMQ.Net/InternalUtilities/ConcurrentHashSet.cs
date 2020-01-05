@@ -12,6 +12,11 @@ namespace ActiveMQ.Net.InternalUtilities
             _dictionary.TryAdd(item, item);
         }
 
+        public void Remove(T item)
+        {
+            _dictionary.TryRemove(item, out _);
+        }
+
         public IEnumerable<T> Values => _dictionary.Values;
     }
 }
