@@ -1,4 +1,5 @@
-﻿using System.Threading.Channels;
+﻿using System.Threading;
+using System.Threading.Channels;
 using System.Threading.Tasks;
 using Amqp;
 
@@ -23,9 +24,9 @@ namespace ActiveMQ.Net
             });
         }
 
-        public ValueTask<Message> ConsumeAsync()
+        public ValueTask<Message> ConsumeAsync(CancellationToken cancellationToken = default)
         {
-            return _reader.ReadAsync();
+            return _reader.ReadAsync(cancellationToken);
         }
 
         public void Accept(Message message)
