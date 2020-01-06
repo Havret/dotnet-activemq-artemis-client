@@ -26,11 +26,17 @@ namespace ActiveMQ.Net.Tests.Logging
 
         public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter)
         {
-            if (!IsEnabled(logLevel)) return;
+            if (!IsEnabled(logLevel))
+            {
+                return;
+            }
 
             var message = formatter(state, exception);
 
-            if (!string.IsNullOrEmpty(message) || exception != null) WriteMessage(logLevel, _name, message, exception);
+            if (!string.IsNullOrEmpty(message) || exception != null)
+            {
+                WriteMessage(logLevel, _name, message, exception);
+            }
         }
 
         public bool IsEnabled(LogLevel logLevel)
@@ -49,30 +55,26 @@ namespace ActiveMQ.Net.Tests.Logging
 
             _output.WriteLine($"{logLevelString}: {logName}");
 
-            if (!string.IsNullOrEmpty(message)) _output.WriteLine($"{MessagePadding}{message}");
-
-            if (exception != null) _output.WriteLine(exception.ToString());
-        }
-
-        private static string GetLogLevelString(LogLevel logLevel)
-        {
-            switch (logLevel)
+            if (!string.IsNullOrEmpty(message))
             {
-                case LogLevel.Trace:
-                    return "trce";
-                case LogLevel.Debug:
-                    return "dbug";
-                case LogLevel.Information:
-                    return "info";
-                case LogLevel.Warning:
-                    return "warn";
-                case LogLevel.Error:
-                    return "fail";
-                case LogLevel.Critical:
-                    return "crit";
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(logLevel));
+                _output.WriteLine($"{MessagePadding}{message}");
+            }
+
+            if (exception != null)
+            {
+                _output.WriteLine(exception.ToString());
             }
         }
+
+        private static string GetLogLevelString(LogLevel logLevel) => logLevel switch
+        {
+            LogLevel.Trace => "trce",
+            LogLevel.Debug => "dbug",
+            LogLevel.Information => "info",
+            LogLevel.Warning => "warn",
+            LogLevel.Error => "fail",
+            LogLevel.Critical => "crit",
+            _ => throw new ArgumentOutOfRangeException(nameof(logLevel))
+        };
     }
 }
