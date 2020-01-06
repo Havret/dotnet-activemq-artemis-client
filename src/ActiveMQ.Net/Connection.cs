@@ -1,7 +1,5 @@
-﻿using System;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Amqp;
-using Amqp.Framing;
 
 namespace ActiveMQ.Net
 {
@@ -22,15 +20,10 @@ namespace ActiveMQ.Net
             return consumerBuilder.CreateAsync(address, routingType);
         }
 
-        public IProducer CreateProducer(string address, RoutingType routingType)
+        public Task<IProducer> CreateProducer(string address, RoutingType routingType)
         {
-            var routingCapability = routingType.GetRoutingCapability();
-            var senderLink = new SenderLink(_session, Guid.NewGuid().ToString(), new Target
-            {
-                Address = address,
-                Capabilities = new[] { routingCapability }
-            }, null);
-            return new Producer(senderLink);
+            var producerBuilder = new ProducerBuilder(_session);
+            return producerBuilder.CreateAsync(address, routingType);
         }
 
         public async ValueTask DisposeAsync()

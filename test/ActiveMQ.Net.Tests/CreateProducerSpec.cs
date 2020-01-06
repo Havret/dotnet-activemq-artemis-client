@@ -40,7 +40,7 @@ namespace ActiveMQ.Net.Tests
             using var host = CreateOpenedContainerHost(address, testHandler);
 
             await using var connection = await CreateConnection(address);
-            var producer = connection.CreateProducer("a1");
+            var producer = await connection.CreateProducer("a1");
             await producer.DisposeAsync();
 
             Assert.True(producerAttached.WaitOne(TimeSpan.FromSeconds(10)));
@@ -68,7 +68,7 @@ namespace ActiveMQ.Net.Tests
             using var host = CreateOpenedContainerHost(address, testHandler);
 
             await using var connection = await CreateConnection(address);
-            await using var producer = connection.CreateProducer("a1");
+            await using var producer = await connection.CreateProducer("a1");
 
             Assert.True(producerAttached.WaitOne(TimeSpan.FromSeconds(10)));
             Assert.IsType<Target>(attachFrame.Target);
@@ -96,7 +96,7 @@ namespace ActiveMQ.Net.Tests
             using var host = CreateOpenedContainerHost(address, testHandler);
 
             await using var connection = await CreateConnection(address);
-            await using var producer = connection.CreateProducer("a1");
+            await using var producer = await connection.CreateProducer("a1");
 
             Assert.True(producerAttached.WaitOne(TimeSpan.FromSeconds(10)));
             Assert.NotNull(attachFrame);
@@ -125,7 +125,7 @@ namespace ActiveMQ.Net.Tests
             using var host = CreateOpenedContainerHost(address, testHandler);
 
             await using var connection = await CreateConnection(address);
-            await using var consumer = connection.CreateProducer("a1", routingType);
+            await using var consumer = await connection.CreateProducer("a1", routingType);
 
             Assert.True(producerAttached.WaitOne(TimeSpan.FromSeconds(10)));
             Assert.NotNull(attachFrame);
@@ -149,7 +149,7 @@ namespace ActiveMQ.Net.Tests
             using var host = CreateOpenedContainerHost(address);
 
             await using var connection = await CreateConnection(address);
-            Assert.Throws<ArgumentOutOfRangeException>(() => connection.CreateProducer("a1", (RoutingType) 99));
+            await Assert.ThrowsAsync<ArgumentOutOfRangeException>(() => connection.CreateProducer("a1", (RoutingType) 99));
         }
     }
 }
