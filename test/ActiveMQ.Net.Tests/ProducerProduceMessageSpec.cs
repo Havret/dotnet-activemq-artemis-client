@@ -35,7 +35,7 @@ namespace ActiveMQ.Net.Tests
             using var host = CreateOpenedContainerHost(address, testHandler);
 
             await using var connection = await CreateConnection(address);
-            var producer = connection.CreateProducer("a1");
+            var producer = await connection.CreateProducer("a1");
 
             await producer.ProduceAsync(new Message("foo"));
 
@@ -64,7 +64,7 @@ namespace ActiveMQ.Net.Tests
             using var host = CreateOpenedContainerHost(address, testHandler);
 
             await using var connection = await CreateConnection(address);
-            var producer = connection.CreateProducer("a1");
+            var producer = await connection.CreateProducer("a1");
 
             producer.Produce(new Message("foo"));
 
