@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
 using ActiveMQ.Net.InternalUtilities;
@@ -17,6 +18,8 @@ namespace ActiveMQ.Net.AutoRecovering
         private readonly ChannelReader<ConnectCommand> _reader;
         private readonly ChannelWriter<ConnectCommand> _writer;
         private readonly ConcurrentHashSet<IRecoverable> _recoverables = new ConcurrentHashSet<IRecoverable>();
+        private readonly CancellationTokenSource _recoveryCancellationToken = new CancellationTokenSource();
+        private readonly Task _recoveryLoopTask;
 
         public AutoRecoveringConnection(ILoggerFactory loggerFactory, string address)
         {
@@ -28,13 +31,13 @@ namespace ActiveMQ.Net.AutoRecovering
             _reader = channel.Reader;
             _writer = channel.Writer;
 
-            Task.Run(async () =>
+            _recoveryLoopTask = Task.Run(async () =>
             {
                 try
                 {
                     while (true)
                     {
-                        var connectCommand = await _reader.ReadAsync().ConfigureAwait(false);
+                        var connectCommand = await _reader.ReadAsync(_recoveryCancellationToken.Token).ConfigureAwait(false);
                         _connection = await CreateConnection().ConfigureAwait(false);
 
                         foreach (var recoverable in _recoverables.Values)
@@ -46,11 +49,15 @@ namespace ActiveMQ.Net.AutoRecovering
                         connectCommand.NotifyWaiter();
                     }
                 }
+                catch (OperationCanceledException)
+                {
+                    // expected when recovery cancellation token is set.
+                }
                 catch (Exception e)
                 {
                     Log.MainRecoveryLoopException(_logger, e);
                 }
-            });
+            }, _recoveryCancellationToken.Token);
         }
 
         private void OnConnectionClosed(IAmqpObject sender, Error error)
@@ -79,7 +86,7 @@ namespace ActiveMQ.Net.AutoRecovering
             {
                 await Task.Delay(100);
                 Log.FailedToCreateConnection(_logger, e);
-                return await CreateConnection();
+                return await CreateConnection().ConfigureAwait(false);
             }
         }
 
@@ -111,10 +118,12 @@ namespace ActiveMQ.Net.AutoRecovering
             _recoverables.Remove(recoverable);
         }
 
-        public ValueTask DisposeAsync()
+        public async ValueTask DisposeAsync()
         {
             _connection.ConnectionClosed -= OnConnectionClosed;
-            return _connection.DisposeAsync();
+            _recoveryCancellationToken.Cancel();
+            await _recoveryLoopTask.ConfigureAwait(false);
+            await _connection.DisposeAsync().ConfigureAwait(false);
         }
 
         private static class Log
