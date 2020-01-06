@@ -13,7 +13,7 @@ namespace ActiveMQ.Net
         public ConsumerBuilder(Session session)
         {
             _session = session;
-            _tcs = new TaskCompletionSource<IConsumer>();
+            _tcs = new TaskCompletionSource<IConsumer>(TaskCreationOptions.RunContinuationsAsynchronously);
         }
 
         public async Task<IConsumer> CreateAsync(string address, RoutingType routingType)
