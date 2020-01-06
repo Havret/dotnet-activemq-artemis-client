@@ -97,11 +97,10 @@ namespace ActiveMQ.Net.AutoRecovering
             return autoRecoveringConsumer;
         }
 
-        public IProducer CreateProducer(string address, RoutingType routingType)
+        public async Task<IProducer> CreateProducer(string address, RoutingType routingType)
         {
-            var autoRecoveringProducer = new AutoRecoveringProducer(address, routingType);
-            // TODO: Remove GetAwaiter when CreateProducer changed to async https://github.com/Havret/ActiveMQ.Net/issues/7
-            PrepareRecoverable(autoRecoveringProducer).ConfigureAwait(false).GetAwaiter().GetResult();
+            var autoRecoveringProducer = new AutoRecoveringProducer(_loggerFactory, address, routingType);
+            await PrepareRecoverable(autoRecoveringProducer).ConfigureAwait(false);
             return autoRecoveringProducer;
         }
 
@@ -132,7 +131,7 @@ namespace ActiveMQ.Net.AutoRecovering
                 LogLevel.Error,
                 0,
                 "Failed to create connection.");
-            
+
             private static readonly Action<ILogger, Exception> _mainRecoveryLoopException = LoggerMessage.Define(
                 LogLevel.Error,
                 0,
@@ -145,7 +144,7 @@ namespace ActiveMQ.Net.AutoRecovering
                     _mainRecoveryLoopException(logger, e);
                 }
             }
-            
+
             public static void MainRecoveryLoopException(ILogger logger, Exception e)
             {
                 if (logger.IsEnabled(LogLevel.Error))

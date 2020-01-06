@@ -16,5 +16,10 @@ namespace ActiveMQ.Net
         {
             return new MessageSendException(error.Condition, error.Description);
         }
+
+        public static MessageSendException FromMessage(string message)
+        {
+            return new MessageSendException(null, message);
+        }
     }
 }
