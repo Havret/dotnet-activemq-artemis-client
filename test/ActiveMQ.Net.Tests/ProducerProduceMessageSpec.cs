@@ -4,11 +4,16 @@ using System.Threading.Tasks;
 using ActiveMQ.Net.Tests.Utils;
 using Amqp.Handler;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace ActiveMQ.Net.Tests
 {
     public class ProducerProduceMessageSpec : ActiveMQNetSpec
     {
+        public ProducerProduceMessageSpec(ITestOutputHelper output) : base(output)
+        {
+        }
+
         [Fact]
         public async Task Should_send_msg_and_wait_for_confirmation_from_the_server()
         {

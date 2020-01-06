@@ -2,11 +2,16 @@
 using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace ActiveMQ.Net.Tests
 {
     public class ConsumerConsumeMessageSpec : ActiveMQNetSpec
     {
+        public ConsumerConsumeMessageSpec(ITestOutputHelper output) : base(output)
+        {
+        }
+
         [Fact]
         public async Task Should_consume_message()
         {

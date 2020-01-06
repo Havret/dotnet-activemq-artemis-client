@@ -7,11 +7,16 @@ using Amqp.Framing;
 using Amqp.Handler;
 using Amqp.Types;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace ActiveMQ.Net.Tests
 {
     public class ProducerSpec : ActiveMQNetSpec
     {
+        public ProducerSpec(ITestOutputHelper output) : base(output)
+        {
+        }
+        
         [Fact]
         public async Task Should_be_created_and_closed()
         {

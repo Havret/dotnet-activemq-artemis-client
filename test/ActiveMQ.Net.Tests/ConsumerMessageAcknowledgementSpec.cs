@@ -1,13 +1,17 @@
 ﻿using System;
 using System.Threading.Tasks;
-using ActiveMQ.Net.Tests.Utils;
 using Amqp.Framing;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace ActiveMQ.Net.Tests
 {
     public class ConsumerMessageAcknowledgementSpec : ActiveMQNetSpec
     {
+        public ConsumerMessageAcknowledgementSpec(ITestOutputHelper output) : base(output)
+        {
+        }
+
         [Fact]
         public async Task Should_not_send_any_disposition_frames_until_message_is_accepted()
         {

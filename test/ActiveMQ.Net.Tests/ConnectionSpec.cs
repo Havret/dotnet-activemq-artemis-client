@@ -3,11 +3,16 @@ using System.Threading.Tasks;
 using ActiveMQ.Net.Tests.Utils;
 using Amqp.Handler;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace ActiveMQ.Net.Tests
 {
     public class ConnectionSpec : ActiveMQNetSpec
     {
+        public ConnectionSpec(ITestOutputHelper output) : base(output)
+        {
+        }
+
         [Fact]
         public async Task New_connection_should_implicitly_open_new_session()
         {
