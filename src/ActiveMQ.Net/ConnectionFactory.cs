@@ -1,5 +1,8 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using Amqp;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace ActiveMQ.Net
 {
@@ -12,5 +15,7 @@ namespace ActiveMQ.Net
             var session = new Session(connection);
             return new Connection(connection, session);
         }
+
+        public ILoggerFactory LoggerFactory { get; set; } = new NullLoggerFactory();
     }
 }
