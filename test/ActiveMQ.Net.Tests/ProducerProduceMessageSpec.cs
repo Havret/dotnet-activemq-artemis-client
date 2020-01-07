@@ -71,5 +71,30 @@ namespace ActiveMQ.Net.Tests
             Assert.True(deliveryReceived.WaitOne(TimeSpan.FromSeconds(10)));
             Assert.True(deliverySettled);
         }
+
+        [Fact]
+        public async Task Should_be_able_to_cancel_ProduceAsync_when_no_outcome_from_remote_peer_available()
+        {
+            var address = GetUniqueAddress();
+            var testHandler = new TestHandler(@event =>
+            {
+                switch (@event.Id)
+                {
+                    case EventId.ReceiveDelivery:
+                        // postpone sending outcome from a remote peer
+                        Task.Delay(TimeSpan.FromMilliseconds(500)).GetAwaiter().GetResult();
+                        break;
+                }
+            });
+
+            using var host = CreateOpenedContainerHost(address, testHandler);
+
+            await using var connection = await CreateConnection(address);
+            var producer = await connection.CreateProducer("a1");
+            
+            var cts = new CancellationTokenSource();
+            cts.CancelAfter(TimeSpan.FromMilliseconds(50));
+            await Assert.ThrowsAnyAsync<OperationCanceledException>(async () => await producer.ProduceAsync(new Message("foo"), cts.Token));
+        }
     }
 }
