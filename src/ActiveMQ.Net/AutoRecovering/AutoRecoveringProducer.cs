@@ -19,35 +19,35 @@ namespace ActiveMQ.Net.AutoRecovering
             _routingType = routingType;
         }
 
-        public async Task ProduceAsync(Message message, CancellationToken cancellationToken = default)
+        public async Task SendAsync(Message message, CancellationToken cancellationToken = default)
         {
             try
             {
-                await _producer.ProduceAsync(message, cancellationToken).ConfigureAwait(false);
+                await _producer.SendAsync(message, cancellationToken).ConfigureAwait(false);
             }
             catch (ProducerClosedException)
             {
                 // TODO: Replace this naive retry logic with sth more sophisticated, e.g. using Polly 
-                Log.RetryingProduceAsync(_logger);
+                Log.RetryingSendAsync(_logger);
 
                 await Task.Delay(100, cancellationToken).ConfigureAwait(false);
-                await ProduceAsync(message, cancellationToken).ConfigureAwait(false);
+                await SendAsync(message, cancellationToken).ConfigureAwait(false);
             }
         }
 
-        public void Produce(Message message)
+        public void Send(Message message)
         {
             try
             {
-                _producer.Produce(message);
+                _producer.Send(message);
             }
             catch (ProducerClosedException)
             {
                 // TODO: Replace this naive retry logic with sth more sophisticated, e.g. using Polly 
-                Log.RetryingProduceAsync(_logger);
+                Log.RetryingSendAsync(_logger);
 
                 Task.Delay(100).ConfigureAwait(false).GetAwaiter();
-                Produce(message);
+                Send(message);
             }
         }
 
@@ -69,9 +69,9 @@ namespace ActiveMQ.Net.AutoRecovering
             private static readonly Action<ILogger, Exception> _retryingProduceAsync = LoggerMessage.Define(
                 LogLevel.Trace,
                 0,
-                "Retrying ProduceAsync after Producer reestablished.");
+                "Retrying SendAsync after Producer reestablished.");
 
-            public static void RetryingProduceAsync(ILogger logger)
+            public static void RetryingSendAsync(ILogger logger)
             {
                 if (logger.IsEnabled(LogLevel.Trace))
                 {

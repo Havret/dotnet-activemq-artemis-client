@@ -6,7 +6,7 @@ namespace ActiveMQ.Net
 {
     public interface IProducer : IAsyncDisposable
     {
-        Task ProduceAsync(Message message, CancellationToken cancellationToken = default);
-        void Produce(Message message);
+        Task SendAsync(Message message, CancellationToken cancellationToken = default);
+        void Send(Message message);
     }
 }

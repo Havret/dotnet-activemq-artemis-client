@@ -37,7 +37,7 @@ namespace ActiveMQ.Net.Tests
             await using var connection = await CreateConnection(address);
             var producer = await connection.CreateProducer("a1");
 
-            await producer.ProduceAsync(new Message("foo"));
+            await producer.SendAsync(new Message("foo"));
 
             Assert.True(deliveryReceived.WaitOne(TimeSpan.FromSeconds(10)));
             Assert.False(deliverySettled);
@@ -66,14 +66,14 @@ namespace ActiveMQ.Net.Tests
             await using var connection = await CreateConnection(address);
             var producer = await connection.CreateProducer("a1");
 
-            producer.Produce(new Message("foo"));
+            producer.Send(new Message("foo"));
 
             Assert.True(deliveryReceived.WaitOne(TimeSpan.FromSeconds(10)));
             Assert.True(deliverySettled);
         }
 
         [Fact]
-        public async Task Should_be_able_to_cancel_ProduceAsync_when_no_outcome_from_remote_peer_available()
+        public async Task Should_be_able_to_cancel_SendAsync_when_no_outcome_from_remote_peer_available()
         {
             var address = GetUniqueAddress();
             var testHandler = new TestHandler(@event =>
@@ -94,7 +94,7 @@ namespace ActiveMQ.Net.Tests
             
             var cts = new CancellationTokenSource();
             cts.CancelAfter(TimeSpan.FromMilliseconds(50));
-            await Assert.ThrowsAnyAsync<OperationCanceledException>(async () => await producer.ProduceAsync(new Message("foo"), cts.Token));
+            await Assert.ThrowsAnyAsync<OperationCanceledException>(async () => await producer.SendAsync(new Message("foo"), cts.Token));
         }
     }
 }

@@ -19,7 +19,7 @@ namespace ActiveMQ.Net
         private bool IsDetaching => _senderLink.LinkState >= LinkState.DetachPipe;
         private bool IsClosed => _senderLink.IsClosed;
 
-        public Task ProduceAsync(Message message, CancellationToken cancellationToken = default)
+        public Task SendAsync(Message message, CancellationToken cancellationToken = default)
         {
             if (_senderLink.IsDetaching() || _senderLink.IsClosed)
             {
@@ -29,7 +29,7 @@ namespace ActiveMQ.Net
             cancellationToken.ThrowIfCancellationRequested();
             var tcs = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
             cancellationToken.Register(() => tcs.SetCanceled());
-            ProduceInternal(message, null, _onOutcome, tcs);
+            SendInternal(message, null, _onOutcome, tcs);
             return tcs.Task;
         }
 
@@ -59,12 +59,12 @@ namespace ActiveMQ.Net
             }
         }
 
-        public void Produce(Message message)
+        public void Send(Message message)
         {
-            ProduceInternal(message, null, null, null);
+            SendInternal(message, null, null, null);
         }
 
-        private void ProduceInternal(Message message, DeliveryState deliveryState, OutcomeCallback callback, object state)
+        private void SendInternal(Message message, DeliveryState deliveryState, OutcomeCallback callback, object state)
         {
             try
             {
