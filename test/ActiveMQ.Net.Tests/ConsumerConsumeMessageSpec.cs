@@ -13,7 +13,7 @@ namespace ActiveMQ.Net.Tests
         }
 
         [Fact]
-        public async Task Should_consume_message()
+        public async Task Should_receive_message()
         {
             var address = GetUniqueAddress();
             using var host = CreateOpenedContainerHost(address);
@@ -23,14 +23,14 @@ namespace ActiveMQ.Net.Tests
             var consumer = await connection.CreateConsumerAsync("a1");
 
             messageSource.Enqueue(new Message("foo"));
-            var message = await consumer.ConsumeAsync();
+            var message = await consumer.ReceiveAsync();
 
             Assert.NotNull(message);
             Assert.Equal("foo", message.GetBody<string>());
         }
 
         [Fact]
-        public async Task Should_be_able_to_cancel_ConsumeAsync_when_no_message_available()
+        public async Task Should_be_able_to_cancel_ReceiveAsync_when_no_message_available()
         {
             var address = GetUniqueAddress();
             using var host = CreateOpenedContainerHost(address);
@@ -41,7 +41,7 @@ namespace ActiveMQ.Net.Tests
 
             var cts = new CancellationTokenSource();
             cts.CancelAfter(TimeSpan.FromMilliseconds(50));
-            await Assert.ThrowsAsync<OperationCanceledException>(async () => await consumer.ConsumeAsync(cts.Token));
+            await Assert.ThrowsAsync<OperationCanceledException>(async () => await consumer.ReceiveAsync(cts.Token));
         }
     }
 }

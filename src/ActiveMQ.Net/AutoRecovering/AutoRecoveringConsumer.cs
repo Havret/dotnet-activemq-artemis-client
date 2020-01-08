@@ -20,20 +20,20 @@ namespace ActiveMQ.Net.AutoRecovering
             _routingType = routingType;
         }
 
-        public async ValueTask<Message> ConsumeAsync(CancellationToken cancellationToken = default)
+        public async ValueTask<Message> ReceiveAsync(CancellationToken cancellationToken = default)
         {
             try
             {
-                return await _consumer.ConsumeAsync(cancellationToken).ConfigureAwait(false);
+                return await _consumer.ReceiveAsync(cancellationToken).ConfigureAwait(false);
             }
             catch (ChannelClosedException)
             {
                 cancellationToken.ThrowIfCancellationRequested();
                 
-                Log.RetryingConsumeAsync(_logger);
+                Log.RetryingReceiveAsync(_logger);
                 
                 // TODO: Replace this naive retry logic with sth more sophisticated, e.g. using Polly
-                return await ConsumeAsync(cancellationToken).ConfigureAwait(false);
+                return await ReceiveAsync(cancellationToken).ConfigureAwait(false);
             }
         }
 
@@ -77,9 +77,9 @@ namespace ActiveMQ.Net.AutoRecovering
             private static readonly Action<ILogger, Exception> _retryingConsumeAsync = LoggerMessage.Define(
                 LogLevel.Trace,
                 0,
-                "Retrying ConsumeAsync after Consumer reestablished.");
+                "Retrying ReceiveAsync after Consumer reestablished.");
             
-            public static void RetryingConsumeAsync(ILogger logger)
+            public static void RetryingReceiveAsync(ILogger logger)
             {
                 if (logger.IsEnabled(LogLevel.Trace))
                 {

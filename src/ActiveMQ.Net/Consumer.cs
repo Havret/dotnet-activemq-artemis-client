@@ -25,7 +25,7 @@ namespace ActiveMQ.Net
             });
         }
 
-        public ValueTask<Message> ConsumeAsync(CancellationToken cancellationToken = default)
+        public ValueTask<Message> ReceiveAsync(CancellationToken cancellationToken = default)
         {
             return _reader.ReadAsync(cancellationToken);
         }

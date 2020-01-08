@@ -23,7 +23,7 @@ namespace ActiveMQ.Net.Tests
             var consumer = await connection.CreateConsumerAsync("a1");
             
             messageSource.Enqueue(new Message("foo"));
-            var message = await consumer.ConsumeAsync();
+            var message = await consumer.ReceiveAsync();
 
             Assert.NotNull(message);
             var dispositionContext = messageSource.GetNextDisposition(TimeSpan.FromMilliseconds(100));
@@ -41,7 +41,7 @@ namespace ActiveMQ.Net.Tests
             var consumer = await connection.CreateConsumerAsync("a1");
             
             messageSource.Enqueue(new Message("foo"));
-            var message = await consumer.ConsumeAsync();
+            var message = await consumer.ReceiveAsync();
             consumer.Accept(message);
 
             var dispositionContext = messageSource.GetNextDisposition(TimeSpan.FromSeconds(1));
@@ -60,7 +60,7 @@ namespace ActiveMQ.Net.Tests
             var consumer = await connection.CreateConsumerAsync("a1");
             
             messageSource.Enqueue(new Message("foo"));
-            var message = await consumer.ConsumeAsync();
+            var message = await consumer.ReceiveAsync();
             consumer.Reject(message);
 
             var dispositionContext = messageSource.GetNextDisposition(TimeSpan.FromSeconds(1));

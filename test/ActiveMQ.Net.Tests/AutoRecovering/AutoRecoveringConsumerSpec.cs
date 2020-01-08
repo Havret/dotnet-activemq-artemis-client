@@ -16,14 +16,14 @@ namespace ActiveMQ.Net.Tests.AutoRecovering
         }
 
         [Fact]
-        public async Task Should_be_able_to_consume_messages_when_connection_restored()
+        public async Task Should_be_able_to_receive_messages_when_connection_restored()
         {
             var (consumer, messageSource, host, connection) = await CreateReattachedConsumer();
 
             messageSource.Enqueue(new Message("foo"));
 
             var cts = new CancellationTokenSource(TimeSpan.FromSeconds(1));
-            var message = await consumer.ConsumeAsync(cts.Token);
+            var message = await consumer.ReceiveAsync(cts.Token);
             Assert.NotNull(message);
             Assert.Equal("foo", message.GetBody<string>());
 
@@ -38,7 +38,7 @@ namespace ActiveMQ.Net.Tests.AutoRecovering
             messageSource.Enqueue(new Message("foo"));
 
             var cts = new CancellationTokenSource(TimeSpan.FromSeconds(1));
-            var message = await consumer.ConsumeAsync(cts.Token);
+            var message = await consumer.ReceiveAsync(cts.Token);
             consumer.Accept(message);
 
             var dispositionContext = messageSource.GetNextDisposition(TimeSpan.FromSeconds(1));
@@ -49,14 +49,14 @@ namespace ActiveMQ.Net.Tests.AutoRecovering
         }
 
         [Fact]
-        public async Task Should_be_able_to_consume_and_reject_messages_when_connection_restored()
+        public async Task Should_be_able_to_receive_and_reject_messages_when_connection_restored()
         {
             var (consumer, messageSource, host, connection) = await CreateReattachedConsumer();
 
             messageSource.Enqueue(new Message("foo"));
 
             var cts = new CancellationTokenSource(TimeSpan.FromSeconds(1));
-            var message = await consumer.ConsumeAsync(cts.Token);
+            var message = await consumer.ReceiveAsync(cts.Token);
             consumer.Reject(message);
 
             var dispositionContext = messageSource.GetNextDisposition(TimeSpan.FromSeconds(1));
