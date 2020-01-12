@@ -40,9 +40,11 @@ namespace ActiveMQ.Net.Tests.AutoRecovering
             host1.Dispose();
 
             connectionOpened.Reset();
-            using var host2 = CreateOpenedContainerHost(address, testHandler);
+            var host2 = CreateOpenedContainerHost(address, testHandler);
 
             Assert.True(connectionOpened.WaitOne(Timeout));
+
+            await DisposeUtil.DisposeAll(connection, host2);
         }
 
         [Fact]
@@ -63,7 +65,7 @@ namespace ActiveMQ.Net.Tests.AutoRecovering
 
             using var host = CreateOpenedContainerHost(address, testHandler);
 
-            var connection = await CreateConnection(address);
+            await using var connection = await CreateConnection(address);
             Assert.NotNull(connection);
             Assert.True(connectionOpened.WaitOne(Timeout));
 
@@ -99,9 +101,11 @@ namespace ActiveMQ.Net.Tests.AutoRecovering
 
             host1.Dispose();
 
-            using var host2 = CreateOpenedContainerHost(address, testHandler);
+            var host2 = CreateOpenedContainerHost(address, testHandler);
 
             Assert.True(producersAttached.Wait(Timeout));
+
+            await DisposeUtil.DisposeAll(connection, host2);
         }
 
         [Fact]
@@ -161,9 +165,11 @@ namespace ActiveMQ.Net.Tests.AutoRecovering
 
             host1.Dispose();
 
-            using var host2 = CreateOpenedContainerHost(address, testHandler);
+            var host2 = CreateOpenedContainerHost(address, testHandler);
 
             Assert.True(consumersAttached.Wait(Timeout));
+
+            await DisposeUtil.DisposeAll(connection, host2);
         }
         
         [Fact]
@@ -192,9 +198,11 @@ namespace ActiveMQ.Net.Tests.AutoRecovering
             consumerAttached.Reset();
             host1.Dispose();
 
-            using var host2 = CreateOpenedContainerHost(address, testHandler);
+            var host2 = CreateOpenedContainerHost(address, testHandler);
 
             Assert.False(consumerAttached.WaitOne(ShortTimeout));
+
+            await DisposeUtil.DisposeAll(connection, host2);
         }
     }
 }

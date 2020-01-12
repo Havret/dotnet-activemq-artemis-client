@@ -57,7 +57,7 @@ namespace ActiveMQ.Net.Tests.AutoRecovering
             var cts = new CancellationTokenSource(Timeout);
             var produceTask = producer.SendAsync(new Message("foo"), cts.Token);
 
-            using var host2 = CreateOpenedContainerHost(address);
+            var host2 = CreateOpenedContainerHost(address);
             var messageProcessor = host2.CreateMessageProcessor("a1");
 
             await produceTask;
@@ -65,6 +65,8 @@ namespace ActiveMQ.Net.Tests.AutoRecovering
             var message = messageProcessor.Dequeue(Timeout);
             Assert.NotNull(message);
             Assert.Equal("foo", message.GetBody<string>());
+
+            await DisposeUtil.DisposeAll(connection, host2);
         }
 
         [Fact]
@@ -113,7 +115,7 @@ namespace ActiveMQ.Net.Tests.AutoRecovering
             var producer = await connection.CreateProducer("a1");
             Assert.NotNull(producer);
 
-            Assert.True(producerAttached.WaitOne(Timeout));
+            Assert.True(producerAttached.WaitOne(Timeout), "Producer failed to attach within specified timeout.");
             producerAttached.Reset();
 
             host1.Dispose();
@@ -122,7 +124,7 @@ namespace ActiveMQ.Net.Tests.AutoRecovering
             var messageProcessor = host2.CreateMessageProcessor("a1");
 
             // wait until sender link is reattached
-            Assert.True(producerAttached.WaitOne(Timeout));
+            Assert.True(producerAttached.WaitOne(Timeout), "Producer failed to reattach within specified timeout.");
             return (producer, messageProcessor, host2, connection);
         }
     }
