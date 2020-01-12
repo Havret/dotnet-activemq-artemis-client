@@ -8,5 +8,6 @@ namespace ActiveMQ.Net.AutoRecovering
     {
         Task RecoverAsync(IConnection connection);
         event Closed Closed;
+        void Suspend();
     }
 }

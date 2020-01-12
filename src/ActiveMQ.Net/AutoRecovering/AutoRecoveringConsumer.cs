@@ -46,6 +46,11 @@ namespace ActiveMQ.Net.AutoRecovering
         {
             _consumer.Reject(message);
         }
+        
+        public void Suspend()
+        {
+            // TODO: Implement
+        }
 
         public async ValueTask DisposeAsync()
         {
