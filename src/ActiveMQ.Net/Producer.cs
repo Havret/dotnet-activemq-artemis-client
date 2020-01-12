@@ -28,7 +28,7 @@ namespace ActiveMQ.Net
 
             cancellationToken.ThrowIfCancellationRequested();
             var tcs = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
-            cancellationToken.Register(() => tcs.SetCanceled());
+            cancellationToken.Register(() => tcs.TrySetCanceled());
             SendInternal(message, null, _onOutcome, tcs);
             return tcs.Task;
         }
