@@ -3,6 +3,7 @@ using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using Nito.AsyncEx;
 
 namespace ActiveMQ.Net.AutoRecovering
 {
@@ -11,6 +12,7 @@ namespace ActiveMQ.Net.AutoRecovering
         private readonly ILogger<AutoRecoveringConsumer> _logger;
         private readonly string _address;
         private readonly RoutingType _routingType;
+        private readonly AsyncManualResetEvent _manualResetEvent = new AsyncManualResetEvent(true);
         private IConsumer _consumer;
 
         public AutoRecoveringConsumer(ILoggerFactory loggerFactory, string address, RoutingType routingType)
@@ -28,11 +30,9 @@ namespace ActiveMQ.Net.AutoRecovering
             }
             catch (ChannelClosedException)
             {
-                cancellationToken.ThrowIfCancellationRequested();
-                
                 Log.RetryingReceiveAsync(_logger);
                 
-                // TODO: Replace this naive retry logic with sth more sophisticated, e.g. using Polly
+                await _manualResetEvent.WaitAsync(cancellationToken).ConfigureAwait(false);
                 return await ReceiveAsync(cancellationToken).ConfigureAwait(false);
             }
         }
@@ -49,7 +49,7 @@ namespace ActiveMQ.Net.AutoRecovering
         
         public void Suspend()
         {
-            // TODO: Implement
+            _manualResetEvent.Set();
         }
 
         public async ValueTask DisposeAsync()
@@ -73,6 +73,7 @@ namespace ActiveMQ.Net.AutoRecovering
             }
 
             _consumer = await connection.CreateConsumerAsync(_address, _routingType).ConfigureAwait(false);
+            _manualResetEvent.Set();
         }
 
         public event Closed Closed;
