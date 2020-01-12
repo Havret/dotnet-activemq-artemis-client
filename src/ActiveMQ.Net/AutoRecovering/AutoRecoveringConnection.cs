@@ -147,7 +147,7 @@ namespace ActiveMQ.Net.AutoRecovering
             {
                 if (logger.IsEnabled(LogLevel.Error))
                 {
-                    _mainRecoveryLoopException(logger, e);
+                    _failedToCreateConnection(logger, e);
                 }
             }
 
@@ -155,7 +155,7 @@ namespace ActiveMQ.Net.AutoRecovering
             {
                 if (logger.IsEnabled(LogLevel.Error))
                 {
-                    _failedToCreateConnection(logger, e);
+                    _mainRecoveryLoopException(logger, e);
                 }
             }
         }
