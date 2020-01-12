@@ -72,7 +72,7 @@ namespace ActiveMQ.Net.AutoRecovering
             private static readonly Action<ILogger, Exception> _retryingProduceAsync = LoggerMessage.Define(
                 LogLevel.Trace,
                 0,
-                "Retrying SendAsync after Producer reestablished.");
+                "Retrying send after Producer reestablished.");
 
             public static void RetryingSendAsync(ILogger logger)
             {

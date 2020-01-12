@@ -82,7 +82,7 @@ namespace ActiveMQ.Net.AutoRecovering
             private static readonly Action<ILogger, Exception> _retryingConsumeAsync = LoggerMessage.Define(
                 LogLevel.Trace,
                 0,
-                "Retrying ReceiveAsync after Consumer reestablished.");
+                "Retrying receive after Consumer reestablished.");
             
             public static void RetryingReceiveAsync(ILogger logger)
             {
