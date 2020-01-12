@@ -38,8 +38,14 @@ namespace ActiveMQ.Net.AutoRecovering
                     while (true)
                     {
                         var connectCommand = await _reader.ReadAsync(_recoveryCancellationToken.Token).ConfigureAwait(false);
-                        _connection = await CreateConnection().ConfigureAwait(false);
 
+                        foreach (var recoverable in _recoverables.Values)
+                        {
+                            recoverable.Suspend();
+                        }
+                        
+                        _connection = await CreateConnection().ConfigureAwait(false);
+                        
                         foreach (var recoverable in _recoverables.Values)
                         {
                             await recoverable.RecoverAsync(_connection).ConfigureAwait(false);

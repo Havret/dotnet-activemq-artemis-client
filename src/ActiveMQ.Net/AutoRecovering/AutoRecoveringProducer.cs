@@ -2,6 +2,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using Nito.AsyncEx;
 
 namespace ActiveMQ.Net.AutoRecovering
 {
@@ -10,6 +11,7 @@ namespace ActiveMQ.Net.AutoRecovering
         private readonly ILogger _logger;
         private readonly string _address;
         private readonly RoutingType _routingType;
+        private readonly AsyncManualResetEvent _manualResetEvent = new AsyncManualResetEvent(true);
         private IProducer _producer;
 
         public AutoRecoveringProducer(ILoggerFactory loggerFactory, string address, RoutingType routingType)
@@ -27,10 +29,8 @@ namespace ActiveMQ.Net.AutoRecovering
             }
             catch (ProducerClosedException)
             {
-                // TODO: Replace this naive retry logic with sth more sophisticated, e.g. using Polly 
                 Log.RetryingSendAsync(_logger);
-
-                await Task.Delay(100, cancellationToken).ConfigureAwait(false);
+                await _manualResetEvent.WaitAsync(cancellationToken).ConfigureAwait(false);
                 await SendAsync(message, cancellationToken).ConfigureAwait(false);
             }
         }
@@ -43,10 +43,8 @@ namespace ActiveMQ.Net.AutoRecovering
             }
             catch (ProducerClosedException)
             {
-                // TODO: Replace this naive retry logic with sth more sophisticated, e.g. using Polly 
                 Log.RetryingSendAsync(_logger);
-
-                Task.Delay(100).ConfigureAwait(false).GetAwaiter();
+                _manualResetEvent.Wait();
                 Send(message);
             }
         }
@@ -60,9 +58,14 @@ namespace ActiveMQ.Net.AutoRecovering
         public async Task RecoverAsync(IConnection connection)
         {
             _producer = await connection.CreateProducer(_address, _routingType).ConfigureAwait(false);
+            _manualResetEvent.Set();
         }
 
         public event Closed Closed;
+        public void Suspend()
+        {
+            _manualResetEvent.Reset();
+        }
 
         private static class Log
         {
