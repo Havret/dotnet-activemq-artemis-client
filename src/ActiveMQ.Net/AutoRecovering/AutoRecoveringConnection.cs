@@ -70,6 +70,11 @@ namespace ActiveMQ.Net.AutoRecovering
 
         private void OnConnectionClosed(IAmqpObject sender, Error error)
         {
+            if (error == null)
+            {
+                return;
+            }
+            
             Log.ConnectionClosed(_logger, error);
             _writer.TryWrite(ConnectCommand.Empty);
         }
