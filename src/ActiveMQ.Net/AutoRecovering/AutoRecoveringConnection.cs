@@ -53,6 +53,8 @@ namespace ActiveMQ.Net.AutoRecovering
 
                         _connection.ConnectionClosed += OnConnectionClosed;
                         connectCommand.NotifyWaiter();
+                        
+                        Log.ConnectionEstablished(_logger);
                     }
                 }
                 catch (OperationCanceledException)
@@ -68,6 +70,7 @@ namespace ActiveMQ.Net.AutoRecovering
 
         private void OnConnectionClosed(IAmqpObject sender, Error error)
         {
+            Log.ConnectionClosed(_logger, error);
             _writer.TryWrite(ConnectCommand.Empty);
         }
 
@@ -143,6 +146,16 @@ namespace ActiveMQ.Net.AutoRecovering
                 0,
                 "Main recovery loop threw unexpected exception.");
 
+            private static readonly Action<ILogger, string, Exception> _connectionClosed = LoggerMessage.Define<string>(
+                LogLevel.Warning,
+                0,
+                "Connection closed due to {error}. Reconnect scheduled.");
+
+            private static readonly Action<ILogger, Exception> _connectionEstablished = LoggerMessage.Define(
+                LogLevel.Trace,
+                0,
+                "Connection established.");
+
             public static void FailedToCreateConnection(ILogger logger, Exception e)
             {
                 if (logger.IsEnabled(LogLevel.Error))
@@ -156,6 +169,22 @@ namespace ActiveMQ.Net.AutoRecovering
                 if (logger.IsEnabled(LogLevel.Error))
                 {
                     _mainRecoveryLoopException(logger, e);
+                }
+            }
+
+            public static void ConnectionClosed(ILogger logger, Error error)
+            {
+                if (logger.IsEnabled(LogLevel.Warning))
+                {
+                    _connectionClosed(logger, error?.ToString(), null);
+                }
+            }
+
+            public static void ConnectionEstablished(ILogger logger)
+            {
+                if (logger.IsEnabled(LogLevel.Trace))
+                {
+                    _connectionEstablished(logger, null);
                 }
             }
         }
