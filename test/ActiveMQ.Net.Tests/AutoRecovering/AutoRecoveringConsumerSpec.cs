@@ -22,7 +22,7 @@ namespace ActiveMQ.Net.Tests.AutoRecovering
 
             messageSource.Enqueue(new Message("foo"));
 
-            var cts = new CancellationTokenSource(TimeSpan.FromSeconds(1));
+            var cts = new CancellationTokenSource(Timeout);
             var message = await consumer.ReceiveAsync(cts.Token);
             Assert.NotNull(message);
             Assert.Equal("foo", message.GetBody<string>());
@@ -37,11 +37,11 @@ namespace ActiveMQ.Net.Tests.AutoRecovering
 
             messageSource.Enqueue(new Message("foo"));
 
-            var cts = new CancellationTokenSource(TimeSpan.FromSeconds(1));
+            var cts = new CancellationTokenSource(Timeout);
             var message = await consumer.ReceiveAsync(cts.Token);
             consumer.Accept(message);
 
-            var dispositionContext = messageSource.GetNextDisposition(TimeSpan.FromSeconds(1));
+            var dispositionContext = messageSource.GetNextDisposition(Timeout);
             Assert.IsType<Accepted>(dispositionContext.DeliveryState);
             Assert.True(dispositionContext.Settled);
             
@@ -55,11 +55,11 @@ namespace ActiveMQ.Net.Tests.AutoRecovering
 
             messageSource.Enqueue(new Message("foo"));
 
-            var cts = new CancellationTokenSource(TimeSpan.FromSeconds(1));
+            var cts = new CancellationTokenSource(Timeout);
             var message = await consumer.ReceiveAsync(cts.Token);
             consumer.Reject(message);
 
-            var dispositionContext = messageSource.GetNextDisposition(TimeSpan.FromSeconds(1));
+            var dispositionContext = messageSource.GetNextDisposition(Timeout);
             Assert.IsType<Rejected>(dispositionContext.DeliveryState);
             Assert.True(dispositionContext.Settled);
             
@@ -86,7 +86,7 @@ namespace ActiveMQ.Net.Tests.AutoRecovering
             var connection = await CreateConnection(address);
             var consumer = await connection.CreateConsumerAsync("a1");
 
-            Assert.True(consumerAttached.WaitOne(TimeSpan.FromSeconds(1)));
+            Assert.True(consumerAttached.WaitOne(Timeout));
             host1.Dispose();
             consumerAttached.Reset();
 
@@ -94,7 +94,7 @@ namespace ActiveMQ.Net.Tests.AutoRecovering
             var messageSource = host2.CreateMessageSource("a1");
 
             // wait until sender link is reattached
-            Assert.True(consumerAttached.WaitOne(TimeSpan.FromSeconds(1)));
+            Assert.True(consumerAttached.WaitOne(Timeout));
 
             return (consumer, messageSource, host2, connection);
         }

@@ -39,7 +39,7 @@ namespace ActiveMQ.Net.Tests
 
             await producer.SendAsync(new Message("foo"));
 
-            Assert.True(deliveryReceived.WaitOne(TimeSpan.FromSeconds(10)));
+            Assert.True(deliveryReceived.WaitOne(Timeout));
             Assert.False(deliverySettled);
         }
 
@@ -68,7 +68,7 @@ namespace ActiveMQ.Net.Tests
 
             producer.Send(new Message("foo"));
 
-            Assert.True(deliveryReceived.WaitOne(TimeSpan.FromSeconds(10)));
+            Assert.True(deliveryReceived.WaitOne(Timeout));
             Assert.True(deliverySettled);
         }
 

@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using ActiveMQ.Net.Tests.Logging;
 using ActiveMQ.Net.Tests.Utils;
 using Amqp.Handler;
@@ -33,5 +34,19 @@ namespace ActiveMQ.Net.Tests
             host.Open();
             return host;
         }
+
+        protected static TimeSpan Timeout
+        {
+            get
+            {
+#if DEBUG
+                return TimeSpan.FromMinutes(1);
+#else
+                return TimeSpan.FromSeconds(10);
+#endif
+            }
+        }
+
+        protected static TimeSpan ShortTimeout = TimeSpan.FromMilliseconds(100);
     }
 }

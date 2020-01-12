@@ -21,7 +21,7 @@ namespace ActiveMQ.Net.Tests.AutoRecovering
             var (producer, messageProcessor, host, connection) = await CreateReattachedProducer();
             await producer.SendAsync(new Message("foo"));
 
-            var message = messageProcessor.Dequeue(TimeSpan.FromSeconds(1));
+            var message = messageProcessor.Dequeue(Timeout);
             Assert.NotNull(message);
             Assert.Equal("foo", message.GetBody<string>());
 
@@ -35,7 +35,7 @@ namespace ActiveMQ.Net.Tests.AutoRecovering
 
             producer.Send(new Message("foo"));
 
-            var message = messageProcessor.Dequeue(TimeSpan.FromSeconds(1));
+            var message = messageProcessor.Dequeue(Timeout);
             Assert.NotNull(message);
             Assert.Equal("foo", message.GetBody<string>());
             
@@ -54,7 +54,7 @@ namespace ActiveMQ.Net.Tests.AutoRecovering
 
             host1.Dispose();
 
-            var cts = new CancellationTokenSource(TimeSpan.FromSeconds(10));
+            var cts = new CancellationTokenSource(Timeout);
             var produceTask = producer.SendAsync(new Message("foo"), cts.Token);
 
             using var host2 = CreateOpenedContainerHost(address);
@@ -62,7 +62,7 @@ namespace ActiveMQ.Net.Tests.AutoRecovering
 
             await produceTask;
 
-            var message = messageProcessor.Dequeue(TimeSpan.FromSeconds(1));
+            var message = messageProcessor.Dequeue(Timeout);
             Assert.NotNull(message);
             Assert.Equal("foo", message.GetBody<string>());
         }
@@ -87,7 +87,7 @@ namespace ActiveMQ.Net.Tests.AutoRecovering
 
             await produceTask;
 
-            var message = messageProcessor.Dequeue(TimeSpan.FromSeconds(1));
+            var message = messageProcessor.Dequeue(Timeout);
             Assert.NotNull(message);
             Assert.Equal("foo", message.GetBody<string>());
         }
@@ -113,7 +113,7 @@ namespace ActiveMQ.Net.Tests.AutoRecovering
             var producer = await connection.CreateProducer("a1");
             Assert.NotNull(producer);
 
-            Assert.True(producerAttached.WaitOne(TimeSpan.FromSeconds(1)));
+            Assert.True(producerAttached.WaitOne(Timeout));
             producerAttached.Reset();
 
             host1.Dispose();
@@ -122,7 +122,7 @@ namespace ActiveMQ.Net.Tests.AutoRecovering
             var messageProcessor = host2.CreateMessageProcessor("a1");
 
             // wait until sender link is reattached
-            Assert.True(producerAttached.WaitOne(TimeSpan.FromSeconds(1)));
+            Assert.True(producerAttached.WaitOne(Timeout));
             return (producer, messageProcessor, host2, connection);
         }
     }

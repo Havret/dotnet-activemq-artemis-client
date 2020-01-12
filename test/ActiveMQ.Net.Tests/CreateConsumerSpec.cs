@@ -43,8 +43,8 @@ namespace ActiveMQ.Net.Tests
             var consumer = await connection.CreateConsumerAsync("test-consumer");
             await consumer.DisposeAsync();
 
-            Assert.True(consumerAttached.WaitOne(TimeSpan.FromSeconds(10)));
-            Assert.True(consumerClosed.WaitOne(TimeSpan.FromSeconds(10)));
+            Assert.True(consumerAttached.WaitOne(Timeout));
+            Assert.True(consumerClosed.WaitOne(Timeout));
         }
 
         [Fact]
@@ -70,7 +70,7 @@ namespace ActiveMQ.Net.Tests
             await using var connection = await CreateConnection(address);
             await using var consumer = await connection.CreateConsumerAsync("test-consumer");
 
-            Assert.True(consumerAttached.WaitOne(TimeSpan.FromSeconds(10)));
+            Assert.True(consumerAttached.WaitOne(Timeout));
             Assert.IsType<Source>(attachFrame.Source);
             Assert.Equal("test-consumer", ((Source) attachFrame.Source).Address);
         }
@@ -98,7 +98,7 @@ namespace ActiveMQ.Net.Tests
             await using var connection = await CreateConnection(address);
             await using var consumer = await connection.CreateConsumerAsync("test-consumer");
 
-            Assert.True(consumerAttached.WaitOne(TimeSpan.FromSeconds(10)));
+            Assert.True(consumerAttached.WaitOne(Timeout));
             Assert.NotNull(attachFrame);
             Assert.IsType<Source>(attachFrame.Source);
             Assert.Contains(((Source) attachFrame.Source).Capabilities, symbol => RoutingCapabilities.Anycast.Equals(symbol));
@@ -127,7 +127,7 @@ namespace ActiveMQ.Net.Tests
             await using var connection = await CreateConnection(address);
             await using var consumer = await connection.CreateConsumerAsync("test-consumer", routingType);
 
-            Assert.True(consumerAttached.WaitOne(TimeSpan.FromSeconds(10)));
+            Assert.True(consumerAttached.WaitOne(Timeout));
             Assert.NotNull(attachFrame);
             Assert.IsType<Source>(attachFrame.Source);
             Assert.Contains(((Source) attachFrame.Source).Capabilities, routingCapability.Equals);
@@ -175,7 +175,7 @@ namespace ActiveMQ.Net.Tests
             await using var connection = await CreateConnection(address);
             await using var consumer = await connection.CreateConsumerAsync("test-consumer", RoutingType.Anycast, "q1");
 
-            Assert.True(consumerAttached.WaitOne(TimeSpan.FromSeconds(10)));
+            Assert.True(consumerAttached.WaitOne(Timeout));
             Assert.NotNull(attachFrame);
             Assert.IsType<Source>(attachFrame.Source);
             var sourceFrame = (Source) attachFrame.Source;
@@ -197,7 +197,7 @@ namespace ActiveMQ.Net.Tests
                         Task.Run(async () =>
                         {
                             await Task.Delay(TimeSpan.FromMilliseconds(5));
-                            await @event.Link.CloseAsync(Timeout.InfiniteTimeSpan, new Error(ErrorCode.NotFound)
+                            await @event.Link.CloseAsync(System.Threading.Timeout.InfiniteTimeSpan, new Error(ErrorCode.NotFound)
                             {
                                 Description = "Queue: 'q1' does not exist"
                             });

@@ -26,7 +26,7 @@ namespace ActiveMQ.Net.Tests
             var message = await consumer.ReceiveAsync();
 
             Assert.NotNull(message);
-            var dispositionContext = messageSource.GetNextDisposition(TimeSpan.FromMilliseconds(100));
+            var dispositionContext = messageSource.GetNextDisposition(ShortTimeout);
             Assert.Null(dispositionContext);
         }
         
@@ -44,7 +44,7 @@ namespace ActiveMQ.Net.Tests
             var message = await consumer.ReceiveAsync();
             consumer.Accept(message);
 
-            var dispositionContext = messageSource.GetNextDisposition(TimeSpan.FromSeconds(1));
+            var dispositionContext = messageSource.GetNextDisposition(Timeout);
             Assert.IsType<Accepted>(dispositionContext.DeliveryState);
             Assert.True(dispositionContext.Settled);
         }
@@ -63,7 +63,7 @@ namespace ActiveMQ.Net.Tests
             var message = await consumer.ReceiveAsync();
             consumer.Reject(message);
 
-            var dispositionContext = messageSource.GetNextDisposition(TimeSpan.FromSeconds(1));
+            var dispositionContext = messageSource.GetNextDisposition(Timeout);
             Assert.IsType<Rejected>(dispositionContext.DeliveryState);
             Assert.True(dispositionContext.Settled);
         }

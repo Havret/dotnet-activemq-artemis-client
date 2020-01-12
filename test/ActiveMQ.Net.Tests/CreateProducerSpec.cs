@@ -43,8 +43,8 @@ namespace ActiveMQ.Net.Tests
             var producer = await connection.CreateProducer("a1");
             await producer.DisposeAsync();
 
-            Assert.True(producerAttached.WaitOne(TimeSpan.FromSeconds(10)));
-            Assert.True(producerClosed.WaitOne(TimeSpan.FromSeconds(10)));
+            Assert.True(producerAttached.WaitOne(Timeout));
+            Assert.True(producerClosed.WaitOne(Timeout));
         }
 
         [Fact]
@@ -70,7 +70,7 @@ namespace ActiveMQ.Net.Tests
             await using var connection = await CreateConnection(address);
             await using var producer = await connection.CreateProducer("a1");
 
-            Assert.True(producerAttached.WaitOne(TimeSpan.FromSeconds(10)));
+            Assert.True(producerAttached.WaitOne(Timeout));
             Assert.IsType<Target>(attachFrame.Target);
             Assert.Equal("a1", ((Target) attachFrame.Target).Address);
         }
@@ -98,7 +98,7 @@ namespace ActiveMQ.Net.Tests
             await using var connection = await CreateConnection(address);
             await using var producer = await connection.CreateProducer("a1");
 
-            Assert.True(producerAttached.WaitOne(TimeSpan.FromSeconds(10)));
+            Assert.True(producerAttached.WaitOne(Timeout));
             Assert.NotNull(attachFrame);
             Assert.IsType<Target>(attachFrame.Target);
             Assert.Contains(((Target) attachFrame.Target).Capabilities, symbol => RoutingCapabilities.Anycast.Equals(symbol));
@@ -127,7 +127,7 @@ namespace ActiveMQ.Net.Tests
             await using var connection = await CreateConnection(address);
             await using var consumer = await connection.CreateProducer("a1", routingType);
 
-            Assert.True(producerAttached.WaitOne(TimeSpan.FromSeconds(10)));
+            Assert.True(producerAttached.WaitOne(Timeout));
             Assert.NotNull(attachFrame);
             Assert.IsType<Target>(attachFrame.Target);
             Assert.Contains(((Target) attachFrame.Target).Capabilities, routingCapability.Equals);

@@ -35,14 +35,14 @@ namespace ActiveMQ.Net.Tests.AutoRecovering
 
             var connection = await CreateConnection(address);
             Assert.NotNull(connection);
-            Assert.True(connectionOpened.WaitOne(TimeSpan.FromSeconds(1)));
+            Assert.True(connectionOpened.WaitOne(Timeout));
 
             host1.Dispose();
 
             connectionOpened.Reset();
             using var host2 = CreateOpenedContainerHost(address, testHandler);
 
-            Assert.True(connectionOpened.WaitOne(TimeSpan.FromSeconds(1)));
+            Assert.True(connectionOpened.WaitOne(Timeout));
         }
 
         [Fact]
@@ -65,12 +65,12 @@ namespace ActiveMQ.Net.Tests.AutoRecovering
 
             var connection = await CreateConnection(address);
             Assert.NotNull(connection);
-            Assert.True(connectionOpened.WaitOne(TimeSpan.FromSeconds(1)));
+            Assert.True(connectionOpened.WaitOne(Timeout));
 
             connectionOpened.Reset();
             await connection.DisposeAsync();
 
-            Assert.False(connectionOpened.WaitOne(TimeSpan.FromMilliseconds(50)));
+            Assert.False(connectionOpened.WaitOne(ShortTimeout));
         }
         
         [Fact]
@@ -94,14 +94,14 @@ namespace ActiveMQ.Net.Tests.AutoRecovering
             await connection.CreateProducer("a1");
             await connection.CreateProducer("a2");
 
-            Assert.True(producersAttached.Wait(TimeSpan.FromSeconds(1)));
+            Assert.True(producersAttached.Wait(Timeout));
             producersAttached.Reset();
 
             host1.Dispose();
 
             using var host2 = CreateOpenedContainerHost(address, testHandler);
 
-            Assert.True(producersAttached.Wait(TimeSpan.FromSeconds(1)));
+            Assert.True(producersAttached.Wait(Timeout));
         }
 
         [Fact]
@@ -124,7 +124,7 @@ namespace ActiveMQ.Net.Tests.AutoRecovering
             var connection = await CreateConnection(address);
             var producer = await connection.CreateProducer("a1");
 
-            Assert.True(producerAttached.WaitOne(TimeSpan.FromSeconds(1)));
+            Assert.True(producerAttached.WaitOne(Timeout));
             await producer.DisposeAsync();
             
             producerAttached.Reset();
@@ -132,7 +132,7 @@ namespace ActiveMQ.Net.Tests.AutoRecovering
 
             using var host2 = CreateOpenedContainerHost(address, testHandler);
 
-            Assert.False(producerAttached.WaitOne(TimeSpan.FromMilliseconds(50)));
+            Assert.False(producerAttached.WaitOne(ShortTimeout));
         }
 
         [Fact]
@@ -156,14 +156,14 @@ namespace ActiveMQ.Net.Tests.AutoRecovering
             await connection.CreateConsumerAsync("a1");
             await connection.CreateConsumerAsync("a1");
 
-            Assert.True(consumersAttached.Wait(TimeSpan.FromSeconds(1)));
+            Assert.True(consumersAttached.Wait(Timeout));
             consumersAttached.Reset();
 
             host1.Dispose();
 
             using var host2 = CreateOpenedContainerHost(address, testHandler);
 
-            Assert.True(consumersAttached.Wait(TimeSpan.FromSeconds(1)));
+            Assert.True(consumersAttached.Wait(Timeout));
         }
         
         [Fact]
@@ -186,7 +186,7 @@ namespace ActiveMQ.Net.Tests.AutoRecovering
             var connection = await CreateConnection(address);
             var consumer = await connection.CreateConsumerAsync("a1");
 
-            Assert.True(consumerAttached.WaitOne(TimeSpan.FromSeconds(1)));
+            Assert.True(consumerAttached.WaitOne(Timeout));
             await consumer.DisposeAsync();
             
             consumerAttached.Reset();
@@ -194,7 +194,7 @@ namespace ActiveMQ.Net.Tests.AutoRecovering
 
             using var host2 = CreateOpenedContainerHost(address, testHandler);
 
-            Assert.False(consumerAttached.WaitOne(TimeSpan.FromMilliseconds(50)));
+            Assert.False(consumerAttached.WaitOne(ShortTimeout));
         }
     }
 }
