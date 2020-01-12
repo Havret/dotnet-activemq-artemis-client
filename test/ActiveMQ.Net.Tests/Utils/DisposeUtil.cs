@@ -24,11 +24,11 @@ namespace ActiveMQ.Net.Tests.Utils
         {
             switch (obj)
             {
-                case IDisposable disposable:
-                    disposable.Dispose();
-                    break;
                 case IAsyncDisposable asyncDisposable:
                     await asyncDisposable.DisposeAsync();
+                    break;
+                case IDisposable disposable:
+                    disposable.Dispose();
                     break;
             }
         }
