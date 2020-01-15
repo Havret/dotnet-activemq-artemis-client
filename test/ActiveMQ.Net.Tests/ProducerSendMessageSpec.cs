@@ -8,9 +8,9 @@ using Xunit.Abstractions;
 
 namespace ActiveMQ.Net.Tests
 {
-    public class ProducerProduceMessageSpec : ActiveMQNetSpec
+    public class ProducerSendMessageSpec : ActiveMQNetSpec
     {
-        public ProducerProduceMessageSpec(ITestOutputHelper output) : base(output)
+        public ProducerSendMessageSpec(ITestOutputHelper output) : base(output)
         {
         }
 
