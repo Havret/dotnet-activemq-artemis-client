@@ -6,9 +6,9 @@ using Xunit.Abstractions;
 
 namespace ActiveMQ.Net.Tests
 {
-    public class ConsumerConsumeMessageSpec : ActiveMQNetSpec
+    public class ConsumerReceiveMessageSpec : ActiveMQNetSpec
     {
-        public ConsumerConsumeMessageSpec(ITestOutputHelper output) : base(output)
+        public ConsumerReceiveMessageSpec(ITestOutputHelper output) : base(output)
         {
         }
 
