@@ -125,7 +125,7 @@ namespace ActiveMQ.Net.Tests
             using var host = CreateOpenedContainerHost(address, testHandler);
 
             await using var connection = await CreateConnection(address);
-            await using var consumer = await connection.CreateProducer("a1", routingType);
+            await using var consumer = await connection.CreateProducerAsync("a1", routingType);
 
             Assert.True(producerAttached.WaitOne(Timeout));
             Assert.NotNull(attachFrame);
@@ -149,7 +149,7 @@ namespace ActiveMQ.Net.Tests
             using var host = CreateOpenedContainerHost(address);
 
             await using var connection = await CreateConnection(address);
-            await Assert.ThrowsAsync<ArgumentOutOfRangeException>(() => connection.CreateProducer("a1", (RoutingType) 99));
+            await Assert.ThrowsAsync<ArgumentOutOfRangeException>(() => connection.CreateProducerAsync("a1", (RoutingType) 99));
         }
     }
 }

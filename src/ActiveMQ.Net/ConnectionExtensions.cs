@@ -22,7 +22,7 @@ namespace ActiveMQ.Net
         
         public static Task<IProducer> CreateProducer(this IConnection connection, string address)
         {
-            return connection.CreateProducer(address, RoutingType.Anycast);
+            return connection.CreateProducerAsync(address, RoutingType.Anycast);
         }
     }
 }

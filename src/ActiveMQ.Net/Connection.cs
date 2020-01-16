@@ -20,7 +20,7 @@ namespace ActiveMQ.Net
             return consumerBuilder.CreateAsync(address, routingType);
         }
 
-        public Task<IProducer> CreateProducer(string address, RoutingType routingType)
+        public Task<IProducer> CreateProducerAsync(string address, RoutingType routingType)
         {
             var producerBuilder = new ProducerBuilder(_session);
             return producerBuilder.CreateAsync(address, routingType);

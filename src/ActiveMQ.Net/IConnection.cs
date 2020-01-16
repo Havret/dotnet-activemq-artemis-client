@@ -6,6 +6,6 @@ namespace ActiveMQ.Net
     public interface IConnection : IAsyncDisposable
     {
         Task<IConsumer> CreateConsumerAsync(string address, RoutingType routingType);
-        Task<IProducer> CreateProducer(string address, RoutingType routingType);
+        Task<IProducer> CreateProducerAsync(string address, RoutingType routingType);
     }
 }
