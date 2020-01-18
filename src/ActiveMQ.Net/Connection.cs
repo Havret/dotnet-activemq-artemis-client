@@ -1,15 +1,18 @@
 ﻿using System.Threading.Tasks;
 using Amqp;
+using Microsoft.Extensions.Logging;
 
 namespace ActiveMQ.Net
 {
     internal class Connection : IConnection
     {
+        private readonly ILoggerFactory _loggerFactory;
         private readonly Amqp.IConnection _connection;
         private readonly Session _session;
 
-        public Connection(Amqp.IConnection connection, Session session)
+        public Connection(ILoggerFactory loggerFactory, Amqp.IConnection connection, Session session)
         {
+            _loggerFactory = loggerFactory;
             _connection = connection;
             _session = session;
         }
@@ -24,7 +27,7 @@ namespace ActiveMQ.Net
 
         public Task<IProducer> CreateProducerAsync(string address, RoutingType routingType)
         {
-            var producerBuilder = new ProducerBuilder(_session);
+            var producerBuilder = new ProducerBuilder(_loggerFactory, _session);
             return producerBuilder.CreateAsync(address, routingType);
         }
 
