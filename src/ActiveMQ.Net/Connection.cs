@@ -1,20 +1,25 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using Amqp;
+using Amqp.Framing;
 using Microsoft.Extensions.Logging;
 
 namespace ActiveMQ.Net
 {
     internal class Connection : IConnection
     {
-        private readonly ILoggerFactory _loggerFactory;
         private readonly Amqp.IConnection _connection;
+        private readonly ILoggerFactory _loggerFactory;
         private readonly Session _session;
+        private bool _closed;
+        private Error _error;
 
         public Connection(ILoggerFactory loggerFactory, Amqp.IConnection connection, Session session)
         {
             _loggerFactory = loggerFactory;
             _connection = connection;
             _session = session;
+            _connection.AddClosedCallback(OnConnectionClosed);
         }
 
         public bool IsClosed => _connection.IsClosed;
@@ -34,12 +39,36 @@ namespace ActiveMQ.Net
         public async ValueTask DisposeAsync()
         {
             await _connection.CloseAsync().ConfigureAwait(false);
+            _connection.Closed -= OnConnectionClosed;
         }
 
-        public event ClosedCallback ConnectionClosed
+        public event EventHandler<ConnectionClosedEventArgs> ConnectionClosed
         {
-            add => _connection.AddClosedCallback(value);
-            remove => _connection.Closed -= value;
+            add
+            {
+                if (!_closed)
+                {
+                    _connectionClosed += value;
+                    return;
+                }
+
+                value(this, GetConnectionClosedEventArgs());
+            }
+            remove => _connectionClosed -= value;
+        }
+
+        private event EventHandler<ConnectionClosedEventArgs> _connectionClosed;
+
+        private void OnConnectionClosed(IAmqpObject sender, Error error)
+        {
+            _error = error;
+            _closed = true;
+            _connectionClosed?.Invoke(this, GetConnectionClosedEventArgs());
+        }
+
+        private ConnectionClosedEventArgs GetConnectionClosedEventArgs()
+        {
+            return new ConnectionClosedEventArgs(_error != null, _error?.ToString());
         }
     }
 }
