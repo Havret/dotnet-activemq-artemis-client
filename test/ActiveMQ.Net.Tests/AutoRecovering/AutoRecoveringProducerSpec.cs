@@ -84,14 +84,17 @@ namespace ActiveMQ.Net.Tests.AutoRecovering
             // run on another thread as we don't want to block here 
             var produceTask = Task.Run(() => producer.Send(new Message("foo")));
 
-            using var host2 = CreateOpenedContainerHost(address);
+            var host2 = CreateContainerHost(address);
             var messageProcessor = host2.CreateMessageProcessor("a1");
+            host2.Open();
 
             await produceTask;
 
             var message = messageProcessor.Dequeue(Timeout);
             Assert.NotNull(message);
             Assert.Equal("foo", message.GetBody<string>());
+
+            await DisposeUtil.DisposeAll(connection, host2);
         }
 
         private async Task<(IProducer producer, MessageProcessor messageProcessor, TestContainerHost host, IConnection connection)> CreateReattachedProducer()
