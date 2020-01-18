@@ -106,7 +106,7 @@ namespace ActiveMQ.Net.AutoRecovering
                 var connectionFactory = new Amqp.ConnectionFactory();
                 var connection = await connectionFactory.CreateAsync(new Address(_address)).ConfigureAwait(false);
                 var session = new Session(connection);
-                return new Connection(connection, session);
+                return new Connection(_loggerFactory, connection, session);
             }
             catch (Exception e)
             {

@@ -3,16 +3,20 @@ using System.Threading;
 using System.Threading.Tasks;
 using Amqp;
 using Amqp.Framing;
+using Microsoft.Extensions.Logging;
 
 namespace ActiveMQ.Net
 {
     internal class Producer : IProducer
     {
         private static readonly OutcomeCallback _onOutcome = OnOutcome;
+        
+        private readonly ILogger<Producer> _logger;
         private readonly SenderLink _senderLink;
 
-        public Producer(SenderLink senderLink)
+        public Producer(ILoggerFactory loggerFactory, SenderLink senderLink)
         {
+            _logger = loggerFactory.CreateLogger<Producer>();
             _senderLink = senderLink;
         }
 
@@ -69,6 +73,7 @@ namespace ActiveMQ.Net
             try
             {
                 _senderLink.Send(message.InnerMessage, deliveryState, callback, state);
+                Log.MessageSent(_logger);
             }
             catch (AmqpException e) when (IsClosed || IsDetaching)
             {
@@ -87,6 +92,22 @@ namespace ActiveMQ.Net
         public async ValueTask DisposeAsync()
         {
             await _senderLink.CloseAsync().ConfigureAwait(false);
+        }
+        
+        private static class Log
+        {
+            private static readonly Action<ILogger, Exception> _messageSent = LoggerMessage.Define(
+                LogLevel.Trace,
+                0,
+                "Message sent.");
+
+            public static void MessageSent(ILogger logger)
+            {
+                if (logger.IsEnabled(LogLevel.Trace))
+                {
+                    _messageSent(logger, null);
+                }
+            }
         }
     }
 }

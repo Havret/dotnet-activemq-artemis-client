@@ -2,16 +2,19 @@
 using System.Threading.Tasks;
 using Amqp;
 using Amqp.Framing;
+using Microsoft.Extensions.Logging;
 
 namespace ActiveMQ.Net
 {
     public class ProducerBuilder
     {
+        private readonly ILoggerFactory _loggerFactory;
         private readonly Session _session;
         private readonly TaskCompletionSource<IProducer> _tcs;
 
-        public ProducerBuilder(Session session)
+        public ProducerBuilder(ILoggerFactory loggerFactory, Session session)
         {
+            _loggerFactory = loggerFactory;
             _session = session;
             _tcs = new TaskCompletionSource<IProducer>(TaskCreationOptions.RunContinuationsAsynchronously);
         }
@@ -35,7 +38,7 @@ namespace ActiveMQ.Net
         {
             if (attach.Source != null)
             {
-                _tcs.TrySetResult(new Producer(link as SenderLink));
+                _tcs.TrySetResult(new Producer(_loggerFactory, link as SenderLink));
             }
         }
         
