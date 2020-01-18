@@ -80,15 +80,16 @@ namespace ActiveMQ.Net.AutoRecovering
             }, _recoveryCancellationToken.Token);
         }
 
-        private void OnConnectionClosed(IAmqpObject sender, Error error)
+        private void OnConnectionClosed(object sender, ConnectionClosedEventArgs args)
         {
-            if (error == null)
+            if (args.ClosedByPeer)
             {
-                return;
+                Log.ConnectionClosed(_logger, args.Error);
+                _writer.TryWrite(ConnectCommand.Empty);
             }
             
-            Log.ConnectionClosed(_logger, error);
-            _writer.TryWrite(ConnectCommand.Empty);
+            ConnectionClosed?.Invoke(sender, args);
+
         }
 
         public Task InitAsync()
@@ -133,6 +134,8 @@ namespace ActiveMQ.Net.AutoRecovering
             return autoRecoveringProducer;
         }
 
+        public event EventHandler<ConnectionClosedEventArgs> ConnectionClosed;
+
         private async Task PrepareRecoverable(IRecoverable recoverable)
         {
             await recoverable.RecoverAsync(_connection).ConfigureAwait(false);
@@ -155,10 +158,10 @@ namespace ActiveMQ.Net.AutoRecovering
 
         public async ValueTask DisposeAsync()
         {
-            _connection.ConnectionClosed -= OnConnectionClosed;
             _recoveryCancellationToken.Cancel();
             await _recoveryLoopTask.ConfigureAwait(false);
             await _connection.DisposeAsync().ConfigureAwait(false);
+            _connection.ConnectionClosed -= OnConnectionClosed;
         }
 
         private static class Log
@@ -199,11 +202,11 @@ namespace ActiveMQ.Net.AutoRecovering
                 }
             }
 
-            public static void ConnectionClosed(ILogger logger, Error error)
+            public static void ConnectionClosed(ILogger logger, string error)
             {
                 if (logger.IsEnabled(LogLevel.Warning))
                 {
-                    _connectionClosed(logger, error?.ToString(), null);
+                    _connectionClosed(logger, error, null);
                 }
             }
 

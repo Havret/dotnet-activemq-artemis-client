@@ -76,10 +76,16 @@ namespace ActiveMQ.Net.Tests.AutoRecovering
 
             var host1 = CreateOpenedContainerHost(address);
 
+            var connectionClosed = new ManualResetEvent(false);
             var connection = await CreateConnection(address);
+            connection.ConnectionClosed += (_, args) => connectionClosed.Set();
+            
             var producer = await connection.CreateProducer("a1");
 
             host1.Dispose();
+            
+            // make sure that the connection was closed, as we don't want to send a message to host1 
+            Assert.True(connectionClosed.WaitOne(Timeout));
 
             // run on another thread as we don't want to block here 
             var produceTask = Task.Run(() => producer.Send(new Message("foo")));
