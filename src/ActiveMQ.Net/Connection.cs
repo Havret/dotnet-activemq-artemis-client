@@ -14,6 +14,8 @@ namespace ActiveMQ.Net
             _session = session;
         }
 
+        public bool IsClosed => _connection.IsClosed;
+
         public Task<IConsumer> CreateConsumerAsync(string address, RoutingType routingType)
         {
             var consumerBuilder = new ConsumerBuilder(_session);

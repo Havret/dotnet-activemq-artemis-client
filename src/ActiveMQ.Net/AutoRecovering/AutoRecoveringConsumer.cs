@@ -28,12 +28,15 @@ namespace ActiveMQ.Net.AutoRecovering
             {
                 return await _consumer.ReceiveAsync(cancellationToken).ConfigureAwait(false);
             }
+            // TODO: Use ConsumerClosedException instead
             catch (ChannelClosedException)
             {
                 Log.RetryingReceiveAsync(_logger);
                 
+                Suspend();
+                RecoveryRequested?.Invoke();
                 await _manualResetEvent.WaitAsync(cancellationToken).ConfigureAwait(false);
-                return await ReceiveAsync(cancellationToken).ConfigureAwait(false);
+                return await _consumer.ReceiveAsync(cancellationToken).ConfigureAwait(false);
             }
         }
 
@@ -50,6 +53,11 @@ namespace ActiveMQ.Net.AutoRecovering
         public void Suspend()
         {
             _manualResetEvent.Reset();
+        }
+
+        public void Resume()
+        {
+            _manualResetEvent.Set();
         }
 
         public async ValueTask DisposeAsync()
@@ -77,6 +85,7 @@ namespace ActiveMQ.Net.AutoRecovering
         }
 
         public event Closed Closed;
+        public event RecoveryRequested RecoveryRequested;
 
         private static class Log
         {

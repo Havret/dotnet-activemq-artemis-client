@@ -30,8 +30,11 @@ namespace ActiveMQ.Net.AutoRecovering
             catch (ProducerClosedException)
             {
                 Log.RetryingSendAsync(_logger);
+                
+                Suspend();
+                RecoveryRequested?.Invoke();
                 await _manualResetEvent.WaitAsync(cancellationToken).ConfigureAwait(false);
-                await SendAsync(message, cancellationToken).ConfigureAwait(false);
+                await _producer.SendAsync(message, cancellationToken).ConfigureAwait(false);
             }
         }
 
@@ -44,8 +47,11 @@ namespace ActiveMQ.Net.AutoRecovering
             catch (ProducerClosedException)
             {
                 Log.RetryingSendAsync(_logger);
+                
+                Suspend();
+                RecoveryRequested?.Invoke();
                 _manualResetEvent.Wait();
-                Send(message);
+                _producer.Send(message);
             }
         }
 
@@ -58,14 +64,23 @@ namespace ActiveMQ.Net.AutoRecovering
         public async Task RecoverAsync(IConnection connection)
         {
             _producer = await connection.CreateProducerAsync(_address, _routingType).ConfigureAwait(false);
-            _manualResetEvent.Set();
+            Log.ProducerRecovered(_logger);
         }
 
-        public event Closed Closed;
+        public void Resume()
+        {
+            _manualResetEvent.Set();
+            Log.ProducerResumed(_logger);
+        }
+
         public void Suspend()
         {
             _manualResetEvent.Reset();
+            Log.ProducerSuspended(_logger);
         }
+
+        public event Closed Closed;
+        public event RecoveryRequested RecoveryRequested;
 
         private static class Log
         {
@@ -73,12 +88,51 @@ namespace ActiveMQ.Net.AutoRecovering
                 LogLevel.Trace,
                 0,
                 "Retrying send after Producer reestablished.");
+            
+            private static readonly Action<ILogger, Exception> _producerRecovered = LoggerMessage.Define(
+                LogLevel.Trace,
+                0,
+                "Producer recovered.");
+            
+            private static readonly Action<ILogger, Exception> _producerSuspended = LoggerMessage.Define(
+                LogLevel.Trace,
+                0,
+                "Producer suspended.");
+            
+            private static readonly Action<ILogger, Exception> _producerResumed = LoggerMessage.Define(
+                LogLevel.Trace,
+                0,
+                "Producer resumed.");
 
             public static void RetryingSendAsync(ILogger logger)
             {
                 if (logger.IsEnabled(LogLevel.Trace))
                 {
                     _retryingProduceAsync(logger, null);
+                }
+            }
+            
+            public static void ProducerRecovered(ILogger logger)
+            {
+                if (logger.IsEnabled(LogLevel.Trace))
+                {
+                    _producerRecovered(logger, null);
+                }
+            }
+            
+            public static void ProducerSuspended(ILogger logger)
+            {
+                if (logger.IsEnabled(LogLevel.Trace))
+                {
+                    _producerSuspended(logger, null);
+                }
+            }
+            
+            public static void ProducerResumed(ILogger logger)
+            {
+                if (logger.IsEnabled(LogLevel.Trace))
+                {
+                    _producerResumed(logger, null);
                 }
             }
         }

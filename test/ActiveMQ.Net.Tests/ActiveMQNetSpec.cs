@@ -34,6 +34,11 @@ namespace ActiveMQ.Net.Tests
             host.Open();
             return host;
         }
+        
+        protected static TestContainerHost CreateContainerHost(string address, IHandler handler = null)
+        {
+            return new TestContainerHost(address, handler);
+        }
 
         protected static TimeSpan Timeout
         {
