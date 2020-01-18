@@ -49,7 +49,7 @@ namespace ActiveMQ.Net.AutoRecovering
         
         public void Suspend()
         {
-            _manualResetEvent.Set();
+            _manualResetEvent.Reset();
         }
 
         public async ValueTask DisposeAsync()
