@@ -114,8 +114,9 @@ namespace ActiveMQ.Net.Tests.AutoRecovering
             host1.Dispose();
             consumerAttached.Reset();
 
-            var host2 = CreateOpenedContainerHost(address, testHandler);
+            var host2 = CreateContainerHost(address, testHandler);
             var messageSource = host2.CreateMessageSource("a1");
+            host2.Open();
 
             // wait until sender link is reattached
             Assert.True(consumerAttached.WaitOne(Timeout));
