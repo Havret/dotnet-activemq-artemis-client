@@ -54,7 +54,7 @@ namespace ActiveMQ.Net.Tests.AutoRecovering
 
             messageSource.Enqueue(new Message("foo"));
 
-            var cts = new CancellationTokenSource(ShortTimeout);
+            var cts = new CancellationTokenSource(Timeout);
             var message = await consumer.ReceiveAsync(cts.Token);
             consumer.Reject(message);
 
