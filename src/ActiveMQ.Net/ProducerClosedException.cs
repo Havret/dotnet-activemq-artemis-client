@@ -13,6 +13,10 @@ namespace ActiveMQ.Net
             Condition = condition;
         }
 
+        private ProducerClosedException(string message, Exception innerException) : base(message, innerException)
+        {
+        }
+
         internal static ProducerClosedException BecauseProducerDetached()
         {
             return new ProducerClosedException(ErrorCode.IllegalState, "Producer detached.");
@@ -21,6 +25,11 @@ namespace ActiveMQ.Net
         internal static ProducerClosedException FromError(Error error)
         {
             return new ProducerClosedException(error.Condition, error.Description);
+        }
+        
+        internal static ProducerClosedException FromException(Exception innerException)
+        {
+            return new ProducerClosedException(innerException.Message, innerException);
         }
     }
 }
