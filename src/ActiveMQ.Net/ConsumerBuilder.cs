@@ -2,16 +2,19 @@
 using System.Threading.Tasks;
 using Amqp;
 using Amqp.Framing;
+using Microsoft.Extensions.Logging;
 
 namespace ActiveMQ.Net
 {
     internal class ConsumerBuilder
     {
+        private readonly ILoggerFactory _loggerFactory;
         private readonly Session _session;
         private readonly TaskCompletionSource<IConsumer> _tcs;
 
-        public ConsumerBuilder(Session session)
+        public ConsumerBuilder(ILoggerFactory loggerFactory, Session session)
         {
+            _loggerFactory = loggerFactory;
             _session = session;
             _tcs = new TaskCompletionSource<IConsumer>(TaskCreationOptions.RunContinuationsAsynchronously);
         }
@@ -36,7 +39,7 @@ namespace ActiveMQ.Net
         {
             if (attach.Source != null)
             {
-                _tcs.TrySetResult(new Consumer(link as ReceiverLink));
+                _tcs.TrySetResult(new Consumer(_loggerFactory, link as ReceiverLink));
             }
         }
         
