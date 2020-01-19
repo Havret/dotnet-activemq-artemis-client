@@ -53,17 +53,13 @@ namespace ActiveMQ.Net.AutoRecovering
         public void Suspend()
         {
             _manualResetEvent.Reset();
+            Log.ConsumerSuspended(_logger);
         }
 
         public void Resume()
         {
             _manualResetEvent.Set();
-        }
-
-        public async ValueTask DisposeAsync()
-        {
-            await _consumer.DisposeAsync().ConfigureAwait(false);
-            Closed?.Invoke(this);
+            Log.ConsumerResumed(_logger);
         }
 
         public async Task RecoverAsync(IConnection connection)
@@ -81,7 +77,13 @@ namespace ActiveMQ.Net.AutoRecovering
             }
 
             _consumer = await connection.CreateConsumerAsync(_address, _routingType).ConfigureAwait(false);
-            _manualResetEvent.Set();
+            Log.ProducerRecovered(_logger);
+        }
+
+        public async ValueTask DisposeAsync()
+        {
+            await _consumer.DisposeAsync().ConfigureAwait(false);
+            Closed?.Invoke(this);
         }
 
         public event Closed Closed;
@@ -94,11 +96,50 @@ namespace ActiveMQ.Net.AutoRecovering
                 0,
                 "Retrying receive after Consumer reestablished.");
             
+            private static readonly Action<ILogger, Exception> _consumerRecovered = LoggerMessage.Define(
+                LogLevel.Trace,
+                0,
+                "Consumer recovered.");
+            
+            private static readonly Action<ILogger, Exception> _consumerSuspended = LoggerMessage.Define(
+                LogLevel.Trace,
+                0,
+                "Consumer suspended.");
+            
+            private static readonly Action<ILogger, Exception> _consumerResumed = LoggerMessage.Define(
+                LogLevel.Trace,
+                0,
+                "Consumer resumed.");
+            
             public static void RetryingReceiveAsync(ILogger logger)
             {
                 if (logger.IsEnabled(LogLevel.Trace))
                 {
                     _retryingConsumeAsync(logger, null);    
+                }
+            }
+            
+            public static void ProducerRecovered(ILogger logger)
+            {
+                if (logger.IsEnabled(LogLevel.Trace))
+                {
+                    _consumerRecovered(logger, null);
+                }
+            }
+            
+            public static void ConsumerSuspended(ILogger logger)
+            {
+                if (logger.IsEnabled(LogLevel.Trace))
+                {
+                    _consumerSuspended(logger, null);
+                }
+            }
+            
+            public static void ConsumerResumed(ILogger logger)
+            {
+                if (logger.IsEnabled(LogLevel.Trace))
+                {
+                    _consumerResumed(logger, null);
                 }
             }
         }

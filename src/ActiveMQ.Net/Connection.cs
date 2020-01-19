@@ -26,7 +26,7 @@ namespace ActiveMQ.Net
 
         public Task<IConsumer> CreateConsumerAsync(string address, RoutingType routingType)
         {
-            var consumerBuilder = new ConsumerBuilder(_session);
+            var consumerBuilder = new ConsumerBuilder(_loggerFactory, _session);
             return consumerBuilder.CreateAsync(address, routingType);
         }
 
