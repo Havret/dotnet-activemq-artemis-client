@@ -39,7 +39,7 @@ namespace ActiveMQ.Net.AutoRecovering
                     {
                         var connectCommand = await _reader.ReadAsync(_recoveryCancellationToken.Token).ConfigureAwait(false);
 
-                        if (IsClosed)
+                        if (!IsOpened)
                         {
                             foreach (var recoverable in _recoverables.Values)
                             {
@@ -61,7 +61,7 @@ namespace ActiveMQ.Net.AutoRecovering
                         }
                         else
                         {
-                            // If connection is already recovered it means that there are some suspended recoverables that need to be resumed
+                            // If the connection is already opened it means that there may be some suspended recoverables that need to be resumed
                             foreach (var recoverable in _recoverables.Values)
                             {
                                 recoverable.Resume();
@@ -117,8 +117,8 @@ namespace ActiveMQ.Net.AutoRecovering
             }
         }
 
-        // TODO: Probably should return true only when connection was explicitly closed.
-        public bool IsClosed => _connection == null || _connection.IsClosed;
+        // TODO: Probably should return false only when connection was explicitly closed.
+        public bool IsOpened => _connection != null && _connection.IsOpened;
 
         public async Task<IConsumer> CreateConsumerAsync(string address, RoutingType routingType)
         {
