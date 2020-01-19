@@ -83,6 +83,10 @@ namespace ActiveMQ.Net
             {
                 throw MessageSendException.FromError(e.Error);
             }
+            catch (ObjectDisposedException e)
+            {
+                throw ProducerClosedException.FromException(e);
+            }
             catch (Exception e)
             {
                 throw MessageSendException.FromMessage(e.ToString());
