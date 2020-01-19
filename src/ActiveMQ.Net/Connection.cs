@@ -8,13 +8,13 @@ namespace ActiveMQ.Net
 {
     internal class Connection : IConnection
     {
-        private readonly Amqp.IConnection _connection;
+        private readonly Amqp.Connection _connection;
         private readonly ILoggerFactory _loggerFactory;
         private readonly Session _session;
         private bool _closed;
         private Error _error;
 
-        public Connection(ILoggerFactory loggerFactory, Amqp.IConnection connection, Session session)
+        public Connection(ILoggerFactory loggerFactory, Amqp.Connection connection, Session session)
         {
             _loggerFactory = loggerFactory;
             _connection = connection;
@@ -22,7 +22,7 @@ namespace ActiveMQ.Net
             _connection.AddClosedCallback(OnConnectionClosed);
         }
 
-        public bool IsClosed => _connection.IsClosed;
+        public bool IsOpened => _connection.ConnectionState == ConnectionState.Opened;
 
         public Task<IConsumer> CreateConsumerAsync(string address, RoutingType routingType)
         {
