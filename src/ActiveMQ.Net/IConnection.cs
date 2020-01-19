@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Threading.Tasks;
-using Amqp;
 
 namespace ActiveMQ.Net
 {

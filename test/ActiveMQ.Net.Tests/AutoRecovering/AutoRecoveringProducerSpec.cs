@@ -1,5 +1,4 @@
-﻿using System;
-using System.Threading;
+﻿using System.Threading;
 using System.Threading.Tasks;
 using ActiveMQ.Net.Tests.Utils;
 using Amqp.Framing;

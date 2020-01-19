@@ -4,7 +4,6 @@ using System.Threading.Channels;
 using System.Threading.Tasks;
 using ActiveMQ.Net.InternalUtilities;
 using Amqp;
-using Amqp.Framing;
 using Microsoft.Extensions.Logging;
 
 namespace ActiveMQ.Net.AutoRecovering

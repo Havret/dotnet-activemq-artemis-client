@@ -1,9 +1,7 @@
-﻿using System;
-using System.Threading;
+﻿using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
 using Amqp;
-using Microsoft.Extensions.Logging;
 
 namespace ActiveMQ.Net
 {
