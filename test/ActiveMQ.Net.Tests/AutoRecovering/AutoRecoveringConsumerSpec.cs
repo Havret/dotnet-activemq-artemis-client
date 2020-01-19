@@ -30,6 +30,31 @@ namespace ActiveMQ.Net.Tests.AutoRecovering
         }
 
         [Fact]
+        public async Task Should_be_able_to_receive_message_when_connection_restored_after_receive_called()
+        {
+            var address = GetUniqueAddress();
+            var host1 = CreateOpenedContainerHost(address);
+
+            var connection = await CreateConnection(address);
+            var consumer = await connection.CreateConsumerAsync("a1");
+            
+            var cts = new CancellationTokenSource(Timeout);
+            var receiveTask = consumer.ReceiveAsync(cts.Token);
+
+            host1.Dispose();
+
+            var host2 = CreateOpenedContainerHost(address);
+            var messageSource = host2.CreateMessageSource("a1");
+            messageSource.Enqueue(new Message("foo"));
+
+            var message = await receiveTask;
+            Assert.NotNull(message);
+            Assert.Equal("foo", message.GetBody<string>());
+
+            await DisposeUtil.DisposeAll(consumer, connection, host2);
+        }
+
+        [Fact]
         public async Task Should_be_able_to_accept_messages_when_connection_restored()
         {
             var (consumer, messageSource, host, connection) = await CreateReattachedConsumer();
