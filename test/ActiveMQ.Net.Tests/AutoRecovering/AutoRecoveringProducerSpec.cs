@@ -128,8 +128,9 @@ namespace ActiveMQ.Net.Tests.AutoRecovering
 
             host1.Dispose();
 
-            var host2 = CreateOpenedContainerHost(address, testHandler);
+            var host2 = CreateContainerHost(address, testHandler);
             var messageProcessor = host2.CreateMessageProcessor("a1");
+            host2.Open();
 
             // wait until sender link is reattached
             Assert.True(producerAttached.WaitOne(Timeout), "Producer failed to reattach within specified timeout.");
