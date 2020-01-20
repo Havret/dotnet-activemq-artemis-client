@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
+using ActiveMQ.Net.Builders;
 using Amqp;
 using Amqp.Framing;
 using Microsoft.Extensions.Logging;
