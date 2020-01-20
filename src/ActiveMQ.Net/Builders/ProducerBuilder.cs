@@ -4,7 +4,7 @@ using Amqp;
 using Amqp.Framing;
 using Microsoft.Extensions.Logging;
 
-namespace ActiveMQ.Net
+namespace ActiveMQ.Net.Builders
 {
     public class ProducerBuilder
     {
