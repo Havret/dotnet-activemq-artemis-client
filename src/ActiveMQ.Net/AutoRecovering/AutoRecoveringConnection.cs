@@ -49,7 +49,7 @@ namespace ActiveMQ.Net.AutoRecovering
 
                             foreach (var recoverable in _recoverables.Values)
                             {
-                                await recoverable.RecoverAsync(_connection).ConfigureAwait(false);
+                                await recoverable.RecoverAsync(_connection, _recoveryCancellationToken.Token).ConfigureAwait(false);
                                 recoverable.Resume();
                             }
 
@@ -86,9 +86,8 @@ namespace ActiveMQ.Net.AutoRecovering
                 Log.ConnectionClosed(_logger, args.Error);
                 _writer.TryWrite(ConnectCommand.Empty);
             }
-            
-            ConnectionClosed?.Invoke(sender, args);
 
+            ConnectionClosed?.Invoke(sender, args);
         }
 
         public Task InitAsync()
@@ -117,25 +116,25 @@ namespace ActiveMQ.Net.AutoRecovering
         // TODO: Probably should return false only when connection was explicitly closed.
         public bool IsOpened => _connection != null && _connection.IsOpened;
 
-        public async Task<IConsumer> CreateConsumerAsync(string address, RoutingType routingType)
+        public async Task<IConsumer> CreateConsumerAsync(string address, RoutingType routingType, CancellationToken cancellationToken)
         {
             var autoRecoveringConsumer = new AutoRecoveringConsumer(_loggerFactory, address, routingType);
-            await PrepareRecoverable(autoRecoveringConsumer).ConfigureAwait(false);
+            await PrepareRecoverable(autoRecoveringConsumer, cancellationToken).ConfigureAwait(false);
             return autoRecoveringConsumer;
         }
 
         public async Task<IProducer> CreateProducerAsync(string address, RoutingType routingType)
         {
             var autoRecoveringProducer = new AutoRecoveringProducer(_loggerFactory, address, routingType);
-            await PrepareRecoverable(autoRecoveringProducer).ConfigureAwait(false);
+            await PrepareRecoverable(autoRecoveringProducer, CancellationToken.None).ConfigureAwait(false);
             return autoRecoveringProducer;
         }
 
         public event EventHandler<ConnectionClosedEventArgs> ConnectionClosed;
 
-        private async Task PrepareRecoverable(IRecoverable recoverable)
+        private async Task PrepareRecoverable(IRecoverable recoverable, CancellationToken cancellationToken)
         {
-            await recoverable.RecoverAsync(_connection).ConfigureAwait(false);
+            await recoverable.RecoverAsync(_connection, cancellationToken).ConfigureAwait(false);
             _recoverables.Add(recoverable);
             recoverable.Closed += OnRecoverableClosed;
             recoverable.RecoveryRequested += OnRecoveryRequested;

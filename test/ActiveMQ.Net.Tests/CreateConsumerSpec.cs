@@ -214,5 +214,52 @@ namespace ActiveMQ.Net.Tests
             Assert.Contains("Queue: 'q1' does not exist", exception.Message);
             Assert.Equal(ErrorCode.NotFound, exception.Condition);
         }
+        
+        [Fact]
+        public async Task Should_cancel_CreateConsumerAsync_when_address_routing_type_and_queue_specified_but_attach_frame_not_received_on_time()
+        {
+            var address = GetUniqueAddress();
+
+            using var host = CreateContainerHostThatWillNeverSendAttachFrameBack(address);
+
+            await using var connection = await CreateConnection(address);
+            var cancellationTokenSource = new CancellationTokenSource(ShortTimeout);
+            await Assert.ThrowsAnyAsync<OperationCanceledException>(async () => await connection.CreateConsumerAsync("a1", RoutingType.Anycast, "q1", cancellationTokenSource.Token));
+        }
+
+        [Fact]
+        public async Task Should_cancel_CreateConsumerAsync_when_address_and_routing_type_specified_but_attach_frame_not_received_on_time()
+        {
+            var address = GetUniqueAddress();
+
+            using var host = CreateContainerHostThatWillNeverSendAttachFrameBack(address);
+
+            await using var connection = await CreateConnection(address);
+            var cancellationTokenSource = new CancellationTokenSource(ShortTimeout);
+            await Assert.ThrowsAnyAsync<OperationCanceledException>(async() => await connection.CreateConsumerAsync("test-consumer", RoutingType.Anycast, cancellationTokenSource.Token));
+        }
+        
+        [Fact]
+        public async Task Should_cancel_CreateConsumerAsync_when_address_specified_but_attach_frame_not_received_on_time()
+        {
+            var address = GetUniqueAddress();
+
+            using var host = CreateContainerHostThatWillNeverSendAttachFrameBack(address);
+
+            await using var connection = await CreateConnection(address);
+            var cancellationTokenSource = new CancellationTokenSource(ShortTimeout);
+            await Assert.ThrowsAnyAsync<OperationCanceledException>(async() => await connection.CreateConsumerAsync("test-consumer", cancellationTokenSource.Token));
+        }
+
+        private TestContainerHost CreateContainerHostThatWillNeverSendAttachFrameBack(string address)
+        {
+            var host = CreateOpenedContainerHost(address);
+            var linkProcessor = host.CreateTestLinkProcessor();
+            
+            // do not complete link attachment, as a result no Attach frame will be sent back to the client
+            linkProcessor.SetHandler(context => true);
+
+            return host;
+        }
     }
 }

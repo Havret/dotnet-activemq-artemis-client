@@ -8,13 +8,15 @@ namespace ActiveMQ.Net.Tests.Utils
     public class TestContainerHost : IDisposable
     {
         private readonly ContainerHost _host;
+        private TestLinkProcessor _linkProcessor;
 
         public TestContainerHost(string address, IHandler handler = null)
         {
             var uri = new Uri(address);
             _host = new ContainerHost(new List<Uri> { uri }, null, uri.UserInfo);
             _host.Listeners[0].HandlerFactory = listener => handler;
-            _host.RegisterLinkProcessor(new TestLinkProcessor());
+            _linkProcessor = new TestLinkProcessor();
+            _host.RegisterLinkProcessor(_linkProcessor);
         }
 
         public void Dispose() => _host.Close();
@@ -32,6 +34,11 @@ namespace ActiveMQ.Net.Tests.Utils
             var messageProcessor = new MessageProcessor();
             _host.RegisterMessageProcessor(address, messageProcessor);
             return messageProcessor;
+        }
+
+        public TestLinkProcessor CreateTestLinkProcessor()
+        {
+            return _linkProcessor;
         }
     }
 }
