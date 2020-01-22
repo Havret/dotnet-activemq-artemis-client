@@ -2,15 +2,15 @@
 using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
+using ActiveMQ.Net.Builders;
 using ActiveMQ.Net.InternalUtilities;
-using Amqp;
 using Microsoft.Extensions.Logging;
 
 namespace ActiveMQ.Net.AutoRecovering
 {
     internal class AutoRecoveringConnection : IConnection
     {
-        private Connection _connection;
+        private IConnection _connection;
         private readonly ILoggerFactory _loggerFactory;
         private readonly ILogger<AutoRecoveringConnection> _logger;
         private readonly string _address;
@@ -99,14 +99,12 @@ namespace ActiveMQ.Net.AutoRecovering
         }
 
         // TODO: Change this naive implementation with sth more sophisticated
-        private async Task<Connection> CreateConnection()
+        private async Task<IConnection> CreateConnection()
         {
             try
             {
-                var connectionFactory = new Amqp.ConnectionFactory();
-                var connection = await connectionFactory.CreateAsync(new Address(_address)).ConfigureAwait(false);
-                var session = new Session(connection);
-                return new Connection(_loggerFactory, connection, session);
+                var connectionBuilder = new ConnectionBuilder(_loggerFactory);
+                return await connectionBuilder.CreateAsync(_address).ConfigureAwait(false);
             }
             catch (Exception e)
             {
