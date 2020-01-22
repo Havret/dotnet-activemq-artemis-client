@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Threading;
+using System.Threading.Tasks;
 
 namespace ActiveMQ.Net.AutoRecovering
 {
@@ -8,7 +9,7 @@ namespace ActiveMQ.Net.AutoRecovering
 
     internal interface IRecoverable
     {
-        Task RecoverAsync(IConnection connection);
+        Task RecoverAsync(IConnection connection, CancellationToken cancellationToken);
         void Suspend();
         void Resume();
         event Closed Closed;

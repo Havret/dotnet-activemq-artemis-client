@@ -62,7 +62,7 @@ namespace ActiveMQ.Net.AutoRecovering
             Log.ConsumerResumed(_logger);
         }
 
-        public async Task RecoverAsync(IConnection connection)
+        public async Task RecoverAsync(IConnection connection, CancellationToken cancellationToken)
         {
             if (_consumer != null)
             {
@@ -76,7 +76,7 @@ namespace ActiveMQ.Net.AutoRecovering
                 }
             }
 
-            _consumer = await connection.CreateConsumerAsync(_address, _routingType).ConfigureAwait(false);
+            _consumer = await connection.CreateConsumerAsync(_address, _routingType, cancellationToken).ConfigureAwait(false);
             Log.ProducerRecovered(_logger);
         }
 

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
 using Amqp;
 using Amqp.Framing;
@@ -19,14 +20,18 @@ namespace ActiveMQ.Net.Builders
             _tcs = new TaskCompletionSource<IConsumer>(TaskCreationOptions.RunContinuationsAsynchronously);
         }
 
-        public async Task<IConsumer> CreateAsync(string address, RoutingType routingType)
+        public async Task<IConsumer> CreateAsync(string address, RoutingType routingType, CancellationToken cancellationToken)
         {
+            cancellationToken.ThrowIfCancellationRequested();
+            cancellationToken.Register(() => _tcs.TrySetCanceled());
+            
             var routingCapability = routingType.GetRoutingCapability();
             var source = new Source
             {
                 Address = address,
-                Capabilities = new[] { routingCapability }
+                Capabilities = new[] { routingCapability },
             };
+
             var receiverLink = new ReceiverLink(_session, Guid.NewGuid().ToString(), source, OnAttached);
             receiverLink.AddClosedCallback(OnClosed);
             var consumer = await _tcs.Task.ConfigureAwait(false);

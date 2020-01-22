@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
 using ActiveMQ.Net.Builders;
 using Amqp;
@@ -25,10 +26,10 @@ namespace ActiveMQ.Net
 
         public bool IsOpened => _connection.ConnectionState == ConnectionState.Opened;
 
-        public Task<IConsumer> CreateConsumerAsync(string address, RoutingType routingType)
+        public Task<IConsumer> CreateConsumerAsync(string address, RoutingType routingType, CancellationToken cancellationToken)
         {
             var consumerBuilder = new ConsumerBuilder(_loggerFactory, _session);
-            return consumerBuilder.CreateAsync(address, routingType);
+            return consumerBuilder.CreateAsync(address, routingType, cancellationToken);
         }
 
         public Task<IProducer> CreateProducerAsync(string address, RoutingType routingType)
