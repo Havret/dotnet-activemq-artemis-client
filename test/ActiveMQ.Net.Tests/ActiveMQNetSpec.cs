@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using ActiveMQ.Net.Tests.Logging;
 using ActiveMQ.Net.Tests.Utils;
 using Amqp.Handler;
+using Microsoft.Extensions.Logging;
 using Xunit.Abstractions;
 
 namespace ActiveMQ.Net.Tests
@@ -23,9 +24,13 @@ namespace ActiveMQ.Net.Tests
 
         protected Task<IConnection> CreateConnection(string address)
         {
-
-            var connectionFactory = new ConnectionFactory { LoggerFactory = new TestLoggerFactory(_output) };
+            var connectionFactory = new ConnectionFactory { LoggerFactory = CreateTestLoggerFactory() };
             return connectionFactory.CreateAsync(address);
+        }
+
+        protected ILoggerFactory CreateTestLoggerFactory()
+        {
+            return new TestLoggerFactory(_output);
         }
 
         protected static TestContainerHost CreateOpenedContainerHost(string address, IHandler handler = null)
