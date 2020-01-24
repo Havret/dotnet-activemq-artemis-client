@@ -45,6 +45,17 @@ namespace ActiveMQ.Net.Tests
             return new TestContainerHost(address, handler);
         }
 
+        protected static TestContainerHost CreateContainerHostThatWillNeverSendAttachFrameBack(string address)
+        {
+            var host = CreateOpenedContainerHost(address);
+            var linkProcessor = host.CreateTestLinkProcessor();
+            
+            // do not complete link attachment, as a result no Attach frame will be sent back to the client
+            linkProcessor.SetHandler(context => true);
+
+            return host;
+        }
+
         protected static TimeSpan Timeout
         {
             get

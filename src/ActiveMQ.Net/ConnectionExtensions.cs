@@ -38,7 +38,17 @@ namespace ActiveMQ.Net
 
         public static Task<IProducer> CreateProducerAsync(this IConnection connection, string address)
         {
-            return connection.CreateProducerAsync(address, RoutingType.Anycast);
+            return connection.CreateProducerAsync(address, RoutingType.Anycast, CancellationToken.None);
+        }
+        
+        public static Task<IProducer> CreateProducerAsync(this IConnection connection, string address, CancellationToken cancellationToken)
+        {
+            return connection.CreateProducerAsync(address, RoutingType.Anycast, cancellationToken);
+        }
+
+        public static Task<IProducer> CreateProducerAsync(this IConnection connection, string address, RoutingType routingType)
+        {
+            return connection.CreateProducerAsync(address, routingType, CancellationToken.None);
         }
     }
 }
