@@ -8,7 +8,7 @@ namespace ActiveMQ.Net
     {
         bool IsOpened { get; }
         Task<IConsumer> CreateConsumerAsync(string address, RoutingType routingType, CancellationToken cancellationToken);
-        Task<IProducer> CreateProducerAsync(string address, RoutingType routingType);
+        Task<IProducer> CreateProducerAsync(string address, RoutingType routingType, CancellationToken cancellationToken);
         event EventHandler<ConnectionClosedEventArgs> ConnectionClosed;
     }
 }

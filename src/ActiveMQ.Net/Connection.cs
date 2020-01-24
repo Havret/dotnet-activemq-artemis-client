@@ -32,10 +32,10 @@ namespace ActiveMQ.Net
             return consumerBuilder.CreateAsync(address, routingType, cancellationToken);
         }
 
-        public Task<IProducer> CreateProducerAsync(string address, RoutingType routingType)
+        public Task<IProducer> CreateProducerAsync(string address, RoutingType routingType, CancellationToken cancellationToken)
         {
             var producerBuilder = new ProducerBuilder(_loggerFactory, _session);
-            return producerBuilder.CreateAsync(address, routingType);
+            return producerBuilder.CreateAsync(address, routingType, cancellationToken);
         }
 
         public async ValueTask DisposeAsync()

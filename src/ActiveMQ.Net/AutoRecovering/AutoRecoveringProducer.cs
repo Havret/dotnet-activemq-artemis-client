@@ -63,7 +63,7 @@ namespace ActiveMQ.Net.AutoRecovering
 
         public async Task RecoverAsync(IConnection connection, CancellationToken cancellationToken)
         {
-            _producer = await connection.CreateProducerAsync(_address, _routingType).ConfigureAwait(false);
+            _producer = await connection.CreateProducerAsync(_address, _routingType, cancellationToken).ConfigureAwait(false);
             Log.ProducerRecovered(_logger);
         }
 

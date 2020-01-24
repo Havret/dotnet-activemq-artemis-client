@@ -151,5 +151,27 @@ namespace ActiveMQ.Net.Tests
             await using var connection = await CreateConnection(address);
             await Assert.ThrowsAsync<ArgumentOutOfRangeException>(() => connection.CreateProducerAsync("a1", (RoutingType) 99));
         }
+
+        [Fact]
+        public async Task Should_cancel_CreateProducerAsync_when_address_and_routing_type_specified_but_attach_frame_not_received_on_time()
+        {
+            var address = AddressUtil.GetUniqueAddress();
+            using var host = CreateContainerHostThatWillNeverSendAttachFrameBack(address);
+            await using var connection = await CreateConnection(address);
+
+            var cancellationTokenSource = new CancellationTokenSource(ShortTimeout);
+            await Assert.ThrowsAnyAsync<OperationCanceledException>(() => connection.CreateProducerAsync("a1", RoutingType.Multicast, cancellationTokenSource.Token));
+        }
+        
+        [Fact]
+        public async Task Should_cancel_CreateProducerAsync_when_address_specified_but_attach_frame_not_received_on_time()
+        {
+            var address = AddressUtil.GetUniqueAddress();
+            using var host = CreateContainerHostThatWillNeverSendAttachFrameBack(address);
+            await using var connection = await CreateConnection(address);
+
+            var cancellationTokenSource = new CancellationTokenSource(ShortTimeout);
+            await Assert.ThrowsAnyAsync<OperationCanceledException>(() => connection.CreateProducerAsync("a1", cancellationTokenSource.Token));
+        }
     }
 }
