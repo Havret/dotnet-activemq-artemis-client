@@ -35,7 +35,7 @@ namespace ActiveMQ.Net.Tests
             using var host = CreateOpenedContainerHost(address, testHandler);
 
             await using var connection = await CreateConnection(address);
-            var producer = await connection.CreateProducer("a1");
+            var producer = await connection.CreateProducerAsync("a1");
 
             await producer.SendAsync(new Message("foo"));
 
@@ -64,7 +64,7 @@ namespace ActiveMQ.Net.Tests
             using var host = CreateOpenedContainerHost(address, testHandler);
 
             await using var connection = await CreateConnection(address);
-            var producer = await connection.CreateProducer("a1");
+            var producer = await connection.CreateProducerAsync("a1");
 
             producer.Send(new Message("foo"));
 
@@ -90,7 +90,7 @@ namespace ActiveMQ.Net.Tests
             using var host = CreateOpenedContainerHost(address, testHandler);
 
             await using var connection = await CreateConnection(address);
-            var producer = await connection.CreateProducer("a1");
+            var producer = await connection.CreateProducerAsync("a1");
             
             var cts = new CancellationTokenSource();
             cts.CancelAfter(TimeSpan.FromMilliseconds(50));

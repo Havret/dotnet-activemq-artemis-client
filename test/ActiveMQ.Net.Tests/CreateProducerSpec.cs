@@ -40,7 +40,7 @@ namespace ActiveMQ.Net.Tests
             using var host = CreateOpenedContainerHost(address, testHandler);
 
             await using var connection = await CreateConnection(address);
-            var producer = await connection.CreateProducer("a1");
+            var producer = await connection.CreateProducerAsync("a1");
             await producer.DisposeAsync();
 
             Assert.True(producerAttached.WaitOne(Timeout));
@@ -68,7 +68,7 @@ namespace ActiveMQ.Net.Tests
             using var host = CreateOpenedContainerHost(address, testHandler);
 
             await using var connection = await CreateConnection(address);
-            await using var producer = await connection.CreateProducer("a1");
+            await using var producer = await connection.CreateProducerAsync("a1");
 
             Assert.True(producerAttached.WaitOne(Timeout));
             Assert.IsType<Target>(attachFrame.Target);
@@ -96,7 +96,7 @@ namespace ActiveMQ.Net.Tests
             using var host = CreateOpenedContainerHost(address, testHandler);
 
             await using var connection = await CreateConnection(address);
-            await using var producer = await connection.CreateProducer("a1");
+            await using var producer = await connection.CreateProducerAsync("a1");
 
             Assert.True(producerAttached.WaitOne(Timeout));
             Assert.NotNull(attachFrame);

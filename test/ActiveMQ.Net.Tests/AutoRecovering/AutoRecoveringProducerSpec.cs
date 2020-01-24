@@ -49,7 +49,7 @@ namespace ActiveMQ.Net.Tests.AutoRecovering
             var host1 = CreateOpenedContainerHost(address);
 
             var connection = await CreateConnection(address);
-            var producer = await connection.CreateProducer("a1");
+            var producer = await connection.CreateProducerAsync("a1");
 
             host1.Dispose();
 
@@ -79,7 +79,7 @@ namespace ActiveMQ.Net.Tests.AutoRecovering
             var connection = await CreateConnection(address);
             connection.ConnectionClosed += (_, args) => connectionClosed.Set();
             
-            var producer = await connection.CreateProducer("a1");
+            var producer = await connection.CreateProducerAsync("a1");
 
             host1.Dispose();
             
@@ -120,7 +120,7 @@ namespace ActiveMQ.Net.Tests.AutoRecovering
             var host1 = CreateOpenedContainerHost(address, testHandler);
 
             var connection = await CreateConnection(address);
-            var producer = await connection.CreateProducer("a1");
+            var producer = await connection.CreateProducerAsync("a1");
             Assert.NotNull(producer);
 
             Assert.True(producerAttached.WaitOne(Timeout), "Producer failed to attach within specified timeout.");

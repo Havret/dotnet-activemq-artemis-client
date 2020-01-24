@@ -92,8 +92,8 @@ namespace ActiveMQ.Net.Tests.AutoRecovering
             var host1 = CreateOpenedContainerHost(address, testHandler);
 
             var connection = await CreateConnection(address);
-            await connection.CreateProducer("a1");
-            await connection.CreateProducer("a2");
+            await connection.CreateProducerAsync("a1");
+            await connection.CreateProducerAsync("a2");
 
             Assert.True(producersAttached.Wait(Timeout));
             producersAttached.Reset();
@@ -125,7 +125,7 @@ namespace ActiveMQ.Net.Tests.AutoRecovering
             var host1 = CreateOpenedContainerHost(address, testHandler);
 
             var connection = await CreateConnection(address);
-            var producer = await connection.CreateProducer("a1");
+            var producer = await connection.CreateProducerAsync("a1");
 
             Assert.True(producerAttached.WaitOne(Timeout));
             await producer.DisposeAsync();

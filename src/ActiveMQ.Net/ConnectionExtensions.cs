@@ -36,7 +36,7 @@ namespace ActiveMQ.Net
             return $"{address}::{queue}";
         }
 
-        public static Task<IProducer> CreateProducer(this IConnection connection, string address)
+        public static Task<IProducer> CreateProducerAsync(this IConnection connection, string address)
         {
             return connection.CreateProducerAsync(address, RoutingType.Anycast);
         }
