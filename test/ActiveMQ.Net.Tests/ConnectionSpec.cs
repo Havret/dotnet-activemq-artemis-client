@@ -16,7 +16,7 @@ namespace ActiveMQ.Net.Tests
         [Fact]
         public async Task New_connection_should_implicitly_open_new_session()
         {
-            var address = GetUniqueAddress();
+            var endpoint = GetUniqueEndpoint();
             var sessionOpened = new ManualResetEvent(false);
 
             var testHandler = new TestHandler(@event =>
@@ -29,9 +29,9 @@ namespace ActiveMQ.Net.Tests
                 }
             });
 
-            using var host = CreateOpenedContainerHost(address, testHandler);
+            using var host = CreateOpenedContainerHost(endpoint, testHandler);
 
-            await using var connection = await CreateConnection(address);
+            await using var connection = await CreateConnection(endpoint);
 
             Assert.True(sessionOpened.WaitOne());
         }
@@ -39,7 +39,7 @@ namespace ActiveMQ.Net.Tests
         [Fact]
         public async Task Should_create_and_close_connection()
         {
-            var address = GetUniqueAddress();
+            var endpoint = GetUniqueEndpoint();
             var connectionOpened = new ManualResetEvent(false);
             var connectionClosed = new ManualResetEvent(false);
 
@@ -56,9 +56,9 @@ namespace ActiveMQ.Net.Tests
                 }
             });
 
-            using var host = CreateOpenedContainerHost(address, testHandler);
+            using var host = CreateOpenedContainerHost(endpoint, testHandler);
 
-            var connection = await CreateConnection(address);
+            var connection = await CreateConnection(endpoint);
             await connection.DisposeAsync();
 
             Assert.True(connectionOpened.WaitOne());

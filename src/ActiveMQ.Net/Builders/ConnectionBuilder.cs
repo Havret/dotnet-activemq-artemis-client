@@ -13,10 +13,10 @@ namespace ActiveMQ.Net.Builders
             _loggerFactory = loggerFactory;
         }
         
-        public async Task<IConnection> CreateAsync(string address)
+        public async Task<IConnection> CreateAsync(Endpoint endpoint)
         {
             var connectionFactory = new Amqp.ConnectionFactory();
-            var connection = await connectionFactory.CreateAsync(new Address(address)).ConfigureAwait(false);
+            var connection = await connectionFactory.CreateAsync(endpoint.Address).ConfigureAwait(false);
             var session = new Session(connection);
             return new Connection(_loggerFactory, connection, session);
         }

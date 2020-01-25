@@ -14,24 +14,24 @@ namespace ActiveMQ.Net.Tests
         [Fact]
         public async Task Should_create_connection()
         {
-            var address = GetUniqueAddress();
+            var endpoint = GetUniqueEndpoint();
 
-            using var host = CreateOpenedContainerHost(address);
+            using var host = CreateOpenedContainerHost(endpoint);
 
             var connectionFactory = new ConnectionFactory { LoggerFactory = CreateTestLoggerFactory(), AutomaticRecoveryEnabled = false };
-            await using var connection = await connectionFactory.CreateAsync(address);
+            await using var connection = await connectionFactory.CreateAsync(endpoint);
             Assert.IsType<Connection>(connection);
         }
 
         [Fact]
         public async Task Should_create_auto_recovering_connection()
         {
-            var address = GetUniqueAddress();
+            var endpoint = GetUniqueEndpoint();
 
-            using var host = CreateOpenedContainerHost(address);
+            using var host = CreateOpenedContainerHost(endpoint);
 
             var connectionFactory = new ConnectionFactory { LoggerFactory = CreateTestLoggerFactory(), AutomaticRecoveryEnabled = true };
-            await using var connection = await connectionFactory.CreateAsync(address);
+            await using var connection = await connectionFactory.CreateAsync(endpoint);
             Assert.IsType<AutoRecoveringConnection>(connection);
         }
     }

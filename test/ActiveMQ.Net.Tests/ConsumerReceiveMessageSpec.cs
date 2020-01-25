@@ -15,11 +15,11 @@ namespace ActiveMQ.Net.Tests
         [Fact]
         public async Task Should_receive_message()
         {
-            var address = GetUniqueAddress();
-            using var host = CreateOpenedContainerHost(address);
+            var endpoint = GetUniqueEndpoint();
+            using var host = CreateOpenedContainerHost(endpoint);
 
             var messageSource = host.CreateMessageSource("a1");
-            await using var connection = await CreateConnection(address);
+            await using var connection = await CreateConnection(endpoint);
             var consumer = await connection.CreateConsumerAsync("a1");
 
             messageSource.Enqueue(new Message("foo"));
@@ -32,11 +32,11 @@ namespace ActiveMQ.Net.Tests
         [Fact]
         public async Task Should_be_able_to_cancel_ReceiveAsync_when_no_message_available()
         {
-            var address = GetUniqueAddress();
-            using var host = CreateOpenedContainerHost(address);
+            var endpoint = GetUniqueEndpoint();
+            using var host = CreateOpenedContainerHost(endpoint);
 
             host.CreateMessageSource("a1");
-            await using var connection = await CreateConnection(address);
+            await using var connection = await CreateConnection(endpoint);
             var consumer = await connection.CreateConsumerAsync("a1");
 
             var cts = new CancellationTokenSource();

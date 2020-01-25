@@ -13,18 +13,18 @@ namespace ActiveMQ.Net.AutoRecovering
         private IConnection _connection;
         private readonly ILoggerFactory _loggerFactory;
         private readonly ILogger<AutoRecoveringConnection> _logger;
-        private readonly string _address;
+        private readonly Endpoint _endpoint;
         private readonly ChannelReader<ConnectCommand> _reader;
         private readonly ChannelWriter<ConnectCommand> _writer;
         private readonly ConcurrentHashSet<IRecoverable> _recoverables = new ConcurrentHashSet<IRecoverable>();
         private readonly CancellationTokenSource _recoveryCancellationToken = new CancellationTokenSource();
         private readonly Task _recoveryLoopTask;
 
-        public AutoRecoveringConnection(ILoggerFactory loggerFactory, string address)
+        public AutoRecoveringConnection(ILoggerFactory loggerFactory, Endpoint endpoint)
         {
             _logger = loggerFactory.CreateLogger<AutoRecoveringConnection>();
             _loggerFactory = loggerFactory;
-            _address = address;
+            _endpoint = endpoint;
 
             var channel = Channel.CreateUnbounded<ConnectCommand>();
             _reader = channel.Reader;
@@ -103,7 +103,7 @@ namespace ActiveMQ.Net.AutoRecovering
             try
             {
                 var connectionBuilder = new ConnectionBuilder(_loggerFactory);
-                return await connectionBuilder.CreateAsync(_address).ConfigureAwait(false);
+                return await connectionBuilder.CreateAsync(_endpoint).ConfigureAwait(false);
             }
             catch (Exception e)
             {

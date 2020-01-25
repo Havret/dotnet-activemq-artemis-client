@@ -8,18 +8,18 @@ namespace ActiveMQ.Net
 {
     public class ConnectionFactory
     {
-        public async Task<IConnection> CreateAsync(string address)
+        public async Task<IConnection> CreateAsync(Endpoint endpoint)
         {
             if (AutomaticRecoveryEnabled)
             {
-                var autoRecoveringConnection = new AutoRecoveringConnection(LoggerFactory, address);
+                var autoRecoveringConnection = new AutoRecoveringConnection(LoggerFactory, endpoint);
                 await autoRecoveringConnection.InitAsync().ConfigureAwait(false);
                 return autoRecoveringConnection;
             }
             else
             {
                 var connectionBuilder = new ConnectionBuilder(LoggerFactory);
-                return await connectionBuilder.CreateAsync(address).ConfigureAwait(false);
+                return await connectionBuilder.CreateAsync(endpoint).ConfigureAwait(false);
             }
         }
 

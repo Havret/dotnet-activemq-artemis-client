@@ -14,11 +14,11 @@ namespace ActiveMQ.Net.Tests
         [Fact]
         public async Task Should_not_send_any_disposition_frames_until_message_is_accepted()
         {
-            var address = GetUniqueAddress();
-            using var host = CreateOpenedContainerHost(address);
+            var endpoint = GetUniqueEndpoint();
+            using var host = CreateOpenedContainerHost(endpoint);
 
             var messageSource = host.CreateMessageSource("a1");
-            await using var connection = await CreateConnection(address);
+            await using var connection = await CreateConnection(endpoint);
             var consumer = await connection.CreateConsumerAsync("a1");
             
             messageSource.Enqueue(new Message("foo"));
@@ -32,11 +32,11 @@ namespace ActiveMQ.Net.Tests
         [Fact]
         public async Task Should_send_accepted_and_settled_disposition_frame_when_message_accepted()
         {
-            var address = GetUniqueAddress();
-            using var host = CreateOpenedContainerHost(address);
+            var endpoint = GetUniqueEndpoint();
+            using var host = CreateOpenedContainerHost(endpoint);
 
             var messageSource = host.CreateMessageSource("a1");
-            await using var connection = await CreateConnection(address);
+            await using var connection = await CreateConnection(endpoint);
             var consumer = await connection.CreateConsumerAsync("a1");
             
             messageSource.Enqueue(new Message("foo"));
@@ -51,11 +51,11 @@ namespace ActiveMQ.Net.Tests
         [Fact]
         public async Task Should_send_rejected_disposition_frame_when_message_rejected()
         {
-            var address = GetUniqueAddress();
-            using var host = CreateOpenedContainerHost(address);
+            var endpoint = GetUniqueEndpoint();
+            using var host = CreateOpenedContainerHost(endpoint);
 
             var messageSource = host.CreateMessageSource("a1");
-            await using var connection = await CreateConnection(address);
+            await using var connection = await CreateConnection(endpoint);
             var consumer = await connection.CreateConsumerAsync("a1");
             
             messageSource.Enqueue(new Message("foo"));

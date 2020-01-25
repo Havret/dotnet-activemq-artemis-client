@@ -17,7 +17,7 @@ namespace ActiveMQ.Net.Tests.AutoRecovering
         [Fact]
         public async Task Should_reconnect_when_broker_is_available_after_outage_is_over()
         {
-            var address = GetUniqueAddress();
+            var endpoint = GetUniqueEndpoint();
             var connectionOpened = new ManualResetEvent(false);
 
             var testHandler = new TestHandler(@event =>
@@ -30,16 +30,16 @@ namespace ActiveMQ.Net.Tests.AutoRecovering
                 }
             });
 
-            var host1 = CreateOpenedContainerHost(address, testHandler);
+            var host1 = CreateOpenedContainerHost(endpoint, testHandler);
 
-            var connection = await CreateConnection(address);
+            var connection = await CreateConnection(endpoint);
             Assert.NotNull(connection);
             Assert.True(connectionOpened.WaitOne(Timeout));
 
             host1.Dispose();
 
             connectionOpened.Reset();
-            var host2 = CreateOpenedContainerHost(address, testHandler);
+            var host2 = CreateOpenedContainerHost(endpoint, testHandler);
 
             Assert.True(connectionOpened.WaitOne(Timeout));
 
@@ -49,7 +49,7 @@ namespace ActiveMQ.Net.Tests.AutoRecovering
         [Fact]
         public async Task Should_not_try_to_reconnect_when_connection_explicitly_closed()
         {
-            var address = GetUniqueAddress();
+            var endpoint = GetUniqueEndpoint();
             var connectionOpened = new ManualResetEvent(false);
 
             var testHandler = new TestHandler(@event =>
@@ -62,9 +62,9 @@ namespace ActiveMQ.Net.Tests.AutoRecovering
                 }
             });
 
-            using var host = CreateOpenedContainerHost(address, testHandler);
+            using var host = CreateOpenedContainerHost(endpoint, testHandler);
 
-            await using var connection = await CreateConnection(address);
+            await using var connection = await CreateConnection(endpoint);
             Assert.NotNull(connection);
             Assert.True(connectionOpened.WaitOne(Timeout));
 
@@ -77,7 +77,7 @@ namespace ActiveMQ.Net.Tests.AutoRecovering
         [Fact]
         public async Task Should_recreate_producers_on_connection_recovery()
         {
-            var address = GetUniqueAddress();
+            var endpoint = GetUniqueEndpoint();
             var producersAttached = new CountdownEvent(2);
             var testHandler = new TestHandler(@event =>
             {
@@ -89,9 +89,9 @@ namespace ActiveMQ.Net.Tests.AutoRecovering
                 }
             });
 
-            var host1 = CreateOpenedContainerHost(address, testHandler);
+            var host1 = CreateOpenedContainerHost(endpoint, testHandler);
 
-            var connection = await CreateConnection(address);
+            var connection = await CreateConnection(endpoint);
             await connection.CreateProducerAsync("a1");
             await connection.CreateProducerAsync("a2");
 
@@ -100,7 +100,7 @@ namespace ActiveMQ.Net.Tests.AutoRecovering
 
             host1.Dispose();
 
-            var host2 = CreateOpenedContainerHost(address, testHandler);
+            var host2 = CreateOpenedContainerHost(endpoint, testHandler);
 
             Assert.True(producersAttached.Wait(Timeout));
 
@@ -110,7 +110,7 @@ namespace ActiveMQ.Net.Tests.AutoRecovering
         [Fact]
         public async Task Should_not_recreate_disposed_producers()
         {
-            var address = GetUniqueAddress();
+            var endpoint = GetUniqueEndpoint();
             var producerAttached = new ManualResetEvent(false);
             var testHandler = new TestHandler(@event =>
             {
@@ -122,9 +122,9 @@ namespace ActiveMQ.Net.Tests.AutoRecovering
                 }
             });
 
-            var host1 = CreateOpenedContainerHost(address, testHandler);
+            var host1 = CreateOpenedContainerHost(endpoint, testHandler);
 
-            var connection = await CreateConnection(address);
+            var connection = await CreateConnection(endpoint);
             var producer = await connection.CreateProducerAsync("a1");
 
             Assert.True(producerAttached.WaitOne(Timeout));
@@ -133,7 +133,7 @@ namespace ActiveMQ.Net.Tests.AutoRecovering
             producerAttached.Reset();
             host1.Dispose();
 
-            using var host2 = CreateOpenedContainerHost(address, testHandler);
+            using var host2 = CreateOpenedContainerHost(endpoint, testHandler);
 
             Assert.False(producerAttached.WaitOne(ShortTimeout));
         }
@@ -141,7 +141,7 @@ namespace ActiveMQ.Net.Tests.AutoRecovering
         [Fact]
         public async Task Should_recreate_consumers_on_connection_recovery()
         {
-            var address = GetUniqueAddress();
+            var endpoint = GetUniqueEndpoint();
             var consumersAttached = new CountdownEvent(2);
             var testHandler = new TestHandler(@event =>
             {
@@ -153,9 +153,9 @@ namespace ActiveMQ.Net.Tests.AutoRecovering
                 }
             });
 
-            var host1 = CreateOpenedContainerHost(address, testHandler);
+            var host1 = CreateOpenedContainerHost(endpoint, testHandler);
 
-            var connection = await CreateConnection(address);
+            var connection = await CreateConnection(endpoint);
             await connection.CreateConsumerAsync("a1");
             await connection.CreateConsumerAsync("a1");
 
@@ -164,7 +164,7 @@ namespace ActiveMQ.Net.Tests.AutoRecovering
 
             host1.Dispose();
 
-            var host2 = CreateOpenedContainerHost(address, testHandler);
+            var host2 = CreateOpenedContainerHost(endpoint, testHandler);
 
             Assert.True(consumersAttached.Wait(Timeout));
 
@@ -174,7 +174,7 @@ namespace ActiveMQ.Net.Tests.AutoRecovering
         [Fact]
         public async Task Should_not_recreate_disposed_consumers()
         {
-            var address = GetUniqueAddress();
+            var endpoint = GetUniqueEndpoint();
             var consumerAttached = new ManualResetEvent(false);
             var testHandler = new TestHandler(@event =>
             {
@@ -186,9 +186,9 @@ namespace ActiveMQ.Net.Tests.AutoRecovering
                 }
             });
 
-            var host1 = CreateOpenedContainerHost(address, testHandler);
+            var host1 = CreateOpenedContainerHost(endpoint, testHandler);
 
-            var connection = await CreateConnection(address);
+            var connection = await CreateConnection(endpoint);
             var consumer = await connection.CreateConsumerAsync("a1");
 
             Assert.True(consumerAttached.WaitOne(Timeout));
@@ -197,7 +197,7 @@ namespace ActiveMQ.Net.Tests.AutoRecovering
             consumerAttached.Reset();
             host1.Dispose();
 
-            var host2 = CreateOpenedContainerHost(address, testHandler);
+            var host2 = CreateOpenedContainerHost(endpoint, testHandler);
 
             Assert.False(consumerAttached.WaitOne(ShortTimeout));
 

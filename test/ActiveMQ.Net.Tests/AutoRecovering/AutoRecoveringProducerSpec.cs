@@ -44,11 +44,11 @@ namespace ActiveMQ.Net.Tests.AutoRecovering
         [Fact]
         public async Task Should_be_able_to_SendAsync_message_when_SendAsync_invoked_before_connection_restored()
         {
-            var address = GetUniqueAddress();
+            var endpoint = GetUniqueEndpoint();
 
-            var host1 = CreateOpenedContainerHost(address);
+            var host1 = CreateOpenedContainerHost(endpoint);
 
-            var connection = await CreateConnection(address);
+            var connection = await CreateConnection(endpoint);
             var producer = await connection.CreateProducerAsync("a1");
 
             host1.Dispose();
@@ -56,7 +56,7 @@ namespace ActiveMQ.Net.Tests.AutoRecovering
             var cts = new CancellationTokenSource(Timeout);
             var produceTask = producer.SendAsync(new Message("foo"), cts.Token);
 
-            var host2 = CreateOpenedContainerHost(address);
+            var host2 = CreateOpenedContainerHost(endpoint);
             var messageProcessor = host2.CreateMessageProcessor("a1");
 
             await produceTask;
@@ -71,12 +71,12 @@ namespace ActiveMQ.Net.Tests.AutoRecovering
         [Fact]
         public async Task Should_be_able_to_Send_message_when_Send_invoked_before_connection_restored()
         {
-            var address = GetUniqueAddress();
+            var endpoint = GetUniqueEndpoint();
 
-            var host1 = CreateOpenedContainerHost(address);
+            var host1 = CreateOpenedContainerHost(endpoint);
 
             var connectionClosed = new ManualResetEvent(false);
-            var connection = await CreateConnection(address);
+            var connection = await CreateConnection(endpoint);
             connection.ConnectionClosed += (_, args) => connectionClosed.Set();
             
             var producer = await connection.CreateProducerAsync("a1");
@@ -89,7 +89,7 @@ namespace ActiveMQ.Net.Tests.AutoRecovering
             // run on another thread as we don't want to block here 
             var produceTask = Task.Run(() => producer.Send(new Message("foo")));
 
-            var host2 = CreateContainerHost(address);
+            var host2 = CreateContainerHost(endpoint);
             var messageProcessor = host2.CreateMessageProcessor("a1");
             host2.Open();
 
@@ -104,7 +104,7 @@ namespace ActiveMQ.Net.Tests.AutoRecovering
 
         private async Task<(IProducer producer, MessageProcessor messageProcessor, TestContainerHost host, IConnection connection)> CreateReattachedProducer()
         {
-            var address = GetUniqueAddress();
+            var endpoint = GetUniqueEndpoint();
             var producerAttached = new ManualResetEvent(false);
 
             var testHandler = new TestHandler(@event =>
@@ -117,9 +117,9 @@ namespace ActiveMQ.Net.Tests.AutoRecovering
                 }
             });
 
-            var host1 = CreateOpenedContainerHost(address, testHandler);
+            var host1 = CreateOpenedContainerHost(endpoint, testHandler);
 
-            var connection = await CreateConnection(address);
+            var connection = await CreateConnection(endpoint);
             var producer = await connection.CreateProducerAsync("a1");
             Assert.NotNull(producer);
 
@@ -128,7 +128,7 @@ namespace ActiveMQ.Net.Tests.AutoRecovering
 
             host1.Dispose();
 
-            var host2 = CreateContainerHost(address, testHandler);
+            var host2 = CreateContainerHost(endpoint, testHandler);
             var messageProcessor = host2.CreateMessageProcessor("a1");
             host2.Open();
 
