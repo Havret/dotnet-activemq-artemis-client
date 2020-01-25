@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text;
 using Amqp.Handler;
 using Amqp.Listener;
 
@@ -8,15 +9,20 @@ namespace ActiveMQ.Net.Tests.Utils
     public class TestContainerHost : IDisposable
     {
         private readonly ContainerHost _host;
-        private TestLinkProcessor _linkProcessor;
+        private readonly TestLinkProcessor _linkProcessor;
 
-        public TestContainerHost(string address, IHandler handler = null)
+        public TestContainerHost(Endpoint endpoint, IHandler handler = null)
         {
-            var uri = new Uri(address);
+            var uri = CreateUri(endpoint);
             _host = new ContainerHost(new List<Uri> { uri }, null, uri.UserInfo);
             _host.Listeners[0].HandlerFactory = listener => handler;
             _linkProcessor = new TestLinkProcessor();
             _host.RegisterLinkProcessor(_linkProcessor);
+        }
+
+        private Uri CreateUri(Endpoint endpoint)
+        {
+            return new Uri($"{endpoint.Scheme}://{endpoint.User}:{endpoint.Password}@{endpoint.Host}:{endpoint.Port.ToString()}");
         }
 
         public void Dispose() => _host.Close();

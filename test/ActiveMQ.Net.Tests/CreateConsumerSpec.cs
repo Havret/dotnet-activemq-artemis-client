@@ -21,7 +21,7 @@ namespace ActiveMQ.Net.Tests
         [Fact]
         public async Task Should_be_created_and_closed()
         {
-            var address = GetUniqueAddress();
+            var endpoint = GetUniqueEndpoint();
             var consumerAttached = new ManualResetEvent(false);
             var consumerClosed = new ManualResetEvent(false);
 
@@ -38,8 +38,8 @@ namespace ActiveMQ.Net.Tests
                 }
             });
 
-            using var host = CreateOpenedContainerHost(address, testHandler);
-            await using var connection = await CreateConnection(address);
+            using var host = CreateOpenedContainerHost(endpoint, testHandler);
+            await using var connection = await CreateConnection(endpoint);
             var consumer = await connection.CreateConsumerAsync("test-consumer");
             await consumer.DisposeAsync();
 
@@ -50,7 +50,7 @@ namespace ActiveMQ.Net.Tests
         [Fact]
         public async Task Should_attach_to_specified_address()
         {
-            var address = GetUniqueAddress();
+            var endpoint = GetUniqueEndpoint();
             var consumerAttached = new ManualResetEvent(false);
             Attach attachFrame = null;
 
@@ -65,9 +65,9 @@ namespace ActiveMQ.Net.Tests
                 }
             });
 
-            using var host = CreateOpenedContainerHost(address, testHandler);
+            using var host = CreateOpenedContainerHost(endpoint, testHandler);
 
-            await using var connection = await CreateConnection(address);
+            await using var connection = await CreateConnection(endpoint);
             await using var consumer = await connection.CreateConsumerAsync("test-consumer");
 
             Assert.True(consumerAttached.WaitOne(Timeout));
@@ -78,7 +78,7 @@ namespace ActiveMQ.Net.Tests
         [Fact]
         public async Task Should_attach_to_anycast_address_when_no_RoutingType_specified()
         {
-            var address = GetUniqueAddress();
+            var endpoint = GetUniqueEndpoint();
             var consumerAttached = new ManualResetEvent(false);
             Attach attachFrame = null;
 
@@ -93,9 +93,9 @@ namespace ActiveMQ.Net.Tests
                 }
             });
 
-            using var host = CreateOpenedContainerHost(address, testHandler);
+            using var host = CreateOpenedContainerHost(endpoint, testHandler);
 
-            await using var connection = await CreateConnection(address);
+            await using var connection = await CreateConnection(endpoint);
             await using var consumer = await connection.CreateConsumerAsync("test-consumer");
 
             Assert.True(consumerAttached.WaitOne(Timeout));
@@ -107,7 +107,7 @@ namespace ActiveMQ.Net.Tests
         [Theory, MemberData(nameof(RoutingTypesData))]
         public async Task Should_attach_to_address_with_specified_RoutingType(RoutingType routingType, Symbol routingCapability)
         {
-            var address = GetUniqueAddress();
+            var endpoint = GetUniqueEndpoint();
             var consumerAttached = new ManualResetEvent(false);
             Attach attachFrame = null;
 
@@ -122,9 +122,9 @@ namespace ActiveMQ.Net.Tests
                 }
             });
 
-            using var host = CreateOpenedContainerHost(address, testHandler);
+            using var host = CreateOpenedContainerHost(endpoint, testHandler);
 
-            await using var connection = await CreateConnection(address);
+            await using var connection = await CreateConnection(endpoint);
             await using var consumer = await connection.CreateConsumerAsync("test-consumer", routingType);
 
             Assert.True(consumerAttached.WaitOne(Timeout));
@@ -145,17 +145,17 @@ namespace ActiveMQ.Net.Tests
         [Fact]
         public async Task Throws_when_created_with_invalid_RoutingType()
         {
-            var address = GetUniqueAddress();
-            using var host = CreateOpenedContainerHost(address);
+            var endpoint = GetUniqueEndpoint();
+            using var host = CreateOpenedContainerHost(endpoint);
 
-            await using var connection = await CreateConnection(address);
+            await using var connection = await CreateConnection(endpoint);
             await Assert.ThrowsAsync<ArgumentOutOfRangeException>(() => connection.CreateConsumerAsync("test-consumer", (RoutingType) 99));
         }
 
         [Fact]
         public async Task Should_connect_to_a_custom_queue_on_specified_address_with_an_anycast_routing_type()
         {
-            var address = GetUniqueAddress();
+            var endpoint = GetUniqueEndpoint();
             var consumerAttached = new ManualResetEvent(false);
             Attach attachFrame = null;
 
@@ -170,9 +170,9 @@ namespace ActiveMQ.Net.Tests
                 }
             });
 
-            using var host = CreateOpenedContainerHost(address, testHandler);
+            using var host = CreateOpenedContainerHost(endpoint, testHandler);
 
-            await using var connection = await CreateConnection(address);
+            await using var connection = await CreateConnection(endpoint);
             await using var consumer = await connection.CreateConsumerAsync("test-consumer", RoutingType.Anycast, "q1");
 
             Assert.True(consumerAttached.WaitOne(Timeout));
@@ -186,7 +186,7 @@ namespace ActiveMQ.Net.Tests
         [Fact]
         public async Task Should_throw_exception_when_selected_queue_doesnt_exist()
         {
-            var address = GetUniqueAddress();
+            var endpoint = GetUniqueEndpoint();
             
             var testHandler = new TestHandler(@event =>
             {
@@ -206,10 +206,10 @@ namespace ActiveMQ.Net.Tests
                 }
             });
 
-            using var host = CreateOpenedContainerHost(address, testHandler);
+            using var host = CreateOpenedContainerHost(endpoint, testHandler);
             host.Open();
 
-            await using var connection = await CreateConnection(address);
+            await using var connection = await CreateConnection(endpoint);
             var exception = await Assert.ThrowsAsync<CreateConsumerException>(() => connection.CreateConsumerAsync("a1", RoutingType.Anycast, "q1"));
             Assert.Contains("Queue: 'q1' does not exist", exception.Message);
             Assert.Equal(ErrorCode.NotFound, exception.Condition);
@@ -218,11 +218,11 @@ namespace ActiveMQ.Net.Tests
         [Fact]
         public async Task Should_cancel_CreateConsumerAsync_when_address_routing_type_and_queue_specified_but_attach_frame_not_received_on_time()
         {
-            var address = GetUniqueAddress();
+            var endpoint = GetUniqueEndpoint();
 
-            using var host = CreateContainerHostThatWillNeverSendAttachFrameBack(address);
+            using var host = CreateContainerHostThatWillNeverSendAttachFrameBack(endpoint);
 
-            await using var connection = await CreateConnection(address);
+            await using var connection = await CreateConnection(endpoint);
             var cancellationTokenSource = new CancellationTokenSource(ShortTimeout);
             await Assert.ThrowsAnyAsync<OperationCanceledException>(async () => await connection.CreateConsumerAsync("a1", RoutingType.Anycast, "q1", cancellationTokenSource.Token));
         }
@@ -230,11 +230,11 @@ namespace ActiveMQ.Net.Tests
         [Fact]
         public async Task Should_cancel_CreateConsumerAsync_when_address_and_routing_type_specified_but_attach_frame_not_received_on_time()
         {
-            var address = GetUniqueAddress();
+            var endpoint = GetUniqueEndpoint();
 
-            using var host = CreateContainerHostThatWillNeverSendAttachFrameBack(address);
+            using var host = CreateContainerHostThatWillNeverSendAttachFrameBack(endpoint);
 
-            await using var connection = await CreateConnection(address);
+            await using var connection = await CreateConnection(endpoint);
             var cancellationTokenSource = new CancellationTokenSource(ShortTimeout);
             await Assert.ThrowsAnyAsync<OperationCanceledException>(async() => await connection.CreateConsumerAsync("test-consumer", RoutingType.Anycast, cancellationTokenSource.Token));
         }
@@ -242,11 +242,11 @@ namespace ActiveMQ.Net.Tests
         [Fact]
         public async Task Should_cancel_CreateConsumerAsync_when_address_specified_but_attach_frame_not_received_on_time()
         {
-            var address = GetUniqueAddress();
+            var endpoint = GetUniqueEndpoint();
 
-            using var host = CreateContainerHostThatWillNeverSendAttachFrameBack(address);
+            using var host = CreateContainerHostThatWillNeverSendAttachFrameBack(endpoint);
 
-            await using var connection = await CreateConnection(address);
+            await using var connection = await CreateConnection(endpoint);
             var cancellationTokenSource = new CancellationTokenSource(ShortTimeout);
             await Assert.ThrowsAnyAsync<OperationCanceledException>(async() => await connection.CreateConsumerAsync("test-consumer", cancellationTokenSource.Token));
         }

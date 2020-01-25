@@ -17,15 +17,15 @@ namespace ActiveMQ.Net.Tests
             _output = output;
         }
 
-        protected static string GetUniqueAddress()
+        protected static Endpoint GetUniqueEndpoint()
         {
-            return AddressUtil.GetUniqueAddress();
+            return EndpointUtil.GetUniqueEndpoint();
         }
 
-        protected Task<IConnection> CreateConnection(string address)
+        protected Task<IConnection> CreateConnection(Endpoint endpoint)
         {
             var connectionFactory = new ConnectionFactory { LoggerFactory = CreateTestLoggerFactory() };
-            return connectionFactory.CreateAsync(address);
+            return connectionFactory.CreateAsync(endpoint);
         }
 
         protected ILoggerFactory CreateTestLoggerFactory()
@@ -33,21 +33,21 @@ namespace ActiveMQ.Net.Tests
             return new TestLoggerFactory(_output);
         }
 
-        protected static TestContainerHost CreateOpenedContainerHost(string address, IHandler handler = null)
+        protected static TestContainerHost CreateOpenedContainerHost(Endpoint endpoint, IHandler handler = null)
         {
-            var host = new TestContainerHost(address, handler);
+            var host = new TestContainerHost(endpoint, handler);
             host.Open();
             return host;
         }
         
-        protected static TestContainerHost CreateContainerHost(string address, IHandler handler = null)
+        protected static TestContainerHost CreateContainerHost(Endpoint endpoint, IHandler handler = null)
         {
-            return new TestContainerHost(address, handler);
+            return new TestContainerHost(endpoint, handler);
         }
 
-        protected static TestContainerHost CreateContainerHostThatWillNeverSendAttachFrameBack(string address)
+        protected static TestContainerHost CreateContainerHostThatWillNeverSendAttachFrameBack(Endpoint endpoint)
         {
-            var host = CreateOpenedContainerHost(address);
+            var host = CreateOpenedContainerHost(endpoint);
             var linkProcessor = host.CreateTestLinkProcessor();
             
             // do not complete link attachment, as a result no Attach frame will be sent back to the client

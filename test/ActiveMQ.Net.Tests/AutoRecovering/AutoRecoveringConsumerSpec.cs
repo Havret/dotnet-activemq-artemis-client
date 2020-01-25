@@ -32,10 +32,10 @@ namespace ActiveMQ.Net.Tests.AutoRecovering
         [Fact]
         public async Task Should_be_able_to_receive_message_when_connection_restored_after_receive_called()
         {
-            var address = GetUniqueAddress();
-            var host1 = CreateOpenedContainerHost(address);
+            var endpoint = GetUniqueEndpoint();
+            var host1 = CreateOpenedContainerHost(endpoint);
 
-            var connection = await CreateConnection(address);
+            var connection = await CreateConnection(endpoint);
             var consumer = await connection.CreateConsumerAsync("a1");
             
             var cts = new CancellationTokenSource(Timeout);
@@ -43,7 +43,7 @@ namespace ActiveMQ.Net.Tests.AutoRecovering
 
             host1.Dispose();
 
-            var host2 = CreateOpenedContainerHost(address);
+            var host2 = CreateOpenedContainerHost(endpoint);
             var messageSource = host2.CreateMessageSource("a1");
             messageSource.Enqueue(new Message("foo"));
 
@@ -92,7 +92,7 @@ namespace ActiveMQ.Net.Tests.AutoRecovering
 
         private async Task<(IConsumer consumer, MessageSource messageSource, TestContainerHost host, IConnection connection)> CreateReattachedConsumer()
         {
-            var address = GetUniqueAddress();
+            var endpoint = GetUniqueEndpoint();
             var consumerAttached = new ManualResetEvent(false);
 
             var testHandler = new TestHandler(@event =>
@@ -105,16 +105,16 @@ namespace ActiveMQ.Net.Tests.AutoRecovering
                 }
             });
 
-            var host1 = CreateOpenedContainerHost(address, testHandler);
+            var host1 = CreateOpenedContainerHost(endpoint, testHandler);
 
-            var connection = await CreateConnection(address);
+            var connection = await CreateConnection(endpoint);
             var consumer = await connection.CreateConsumerAsync("a1");
 
             Assert.True(consumerAttached.WaitOne(Timeout));
             host1.Dispose();
             consumerAttached.Reset();
 
-            var host2 = CreateContainerHost(address, testHandler);
+            var host2 = CreateContainerHost(endpoint, testHandler);
             var messageSource = host2.CreateMessageSource("a1");
             host2.Open();
 
