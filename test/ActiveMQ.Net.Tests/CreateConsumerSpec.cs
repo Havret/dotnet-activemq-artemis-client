@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using ActiveMQ.Net.Exceptions;
 using ActiveMQ.Net.Tests.Utils;
 using Amqp;
 using Amqp.Framing;

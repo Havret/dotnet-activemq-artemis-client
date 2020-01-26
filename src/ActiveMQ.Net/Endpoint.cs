@@ -1,4 +1,5 @@
 ﻿using System;
+using ActiveMQ.Net.Exceptions;
 using Amqp;
 
 namespace ActiveMQ.Net
