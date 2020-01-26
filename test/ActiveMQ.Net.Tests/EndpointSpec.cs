@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using ActiveMQ.Net.Exceptions;
 using Amqp;
 using Xunit;
 

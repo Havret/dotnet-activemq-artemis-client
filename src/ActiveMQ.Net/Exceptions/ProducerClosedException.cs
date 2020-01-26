@@ -2,7 +2,7 @@
 using Amqp;
 using Amqp.Framing;
 
-namespace ActiveMQ.Net
+namespace ActiveMQ.Net.Exceptions
 {
     public class ProducerClosedException : Exception
     {

@@ -1,7 +1,7 @@
 ﻿using System;
 using Amqp.Framing;
 
-namespace ActiveMQ.Net
+namespace ActiveMQ.Net.Exceptions
 {
     public class CreateEndpointException : Exception
     {
