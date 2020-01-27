@@ -1,5 +1,7 @@
-﻿using System.Threading.Tasks;
+﻿using System.Linq;
+using System.Threading.Tasks;
 using ActiveMQ.Net.AutoRecovering;
+using ActiveMQ.Net.Exceptions;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -33,6 +35,17 @@ namespace ActiveMQ.Net.Tests
             var connectionFactory = new ConnectionFactory { LoggerFactory = CreateTestLoggerFactory(), AutomaticRecoveryEnabled = true };
             await using var connection = await connectionFactory.CreateAsync(endpoint);
             Assert.IsType<AutoRecoveringConnection>(connection);
+        }
+
+        [Fact]
+        public async Task Throws_when_no_endpoints_provided()
+        {
+            var endpoint = GetUniqueEndpoint();
+
+            using var host = CreateOpenedContainerHost(endpoint);
+
+            var exception = await Assert.ThrowsAsync<CreateConnectionException>(() => CreateConnection(Enumerable.Empty<Endpoint>()));
+            Assert.Contains(exception.Message, "No endpoints provided.");
         }
     }
 }

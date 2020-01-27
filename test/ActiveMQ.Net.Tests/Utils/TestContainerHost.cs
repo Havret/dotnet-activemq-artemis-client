@@ -13,12 +13,15 @@ namespace ActiveMQ.Net.Tests.Utils
 
         public TestContainerHost(Endpoint endpoint, IHandler handler = null)
         {
-            var uri = CreateUri(endpoint);
+            Endpoint = endpoint;
+            var uri = CreateUri(Endpoint);
             _host = new ContainerHost(new List<Uri> { uri }, null, uri.UserInfo);
             _host.Listeners[0].HandlerFactory = listener => handler;
             _linkProcessor = new TestLinkProcessor();
             _host.RegisterLinkProcessor(_linkProcessor);
         }
+        
+        public Endpoint Endpoint { get; }
 
         private Uri CreateUri(Endpoint endpoint)
         {
