@@ -1,7 +1,11 @@
-﻿namespace ActiveMQ.Net.Exceptions
+﻿using System;
+
+namespace ActiveMQ.Net.Exceptions
 {
-    public class CreateConnectionException
+    public class CreateConnectionException : Exception
     {
-        
+        internal CreateConnectionException(string message) : base(message)
+        {
+        }
     }
 }

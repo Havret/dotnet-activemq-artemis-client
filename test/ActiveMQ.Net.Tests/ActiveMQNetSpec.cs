@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using ActiveMQ.Net.Tests.Logging;
 using ActiveMQ.Net.Tests.Utils;
@@ -24,8 +25,19 @@ namespace ActiveMQ.Net.Tests
 
         protected Task<IConnection> CreateConnection(Endpoint endpoint)
         {
-            var connectionFactory = new ConnectionFactory { LoggerFactory = CreateTestLoggerFactory() };
+            var connectionFactory = CreateConnectionFactory();
             return connectionFactory.CreateAsync(endpoint);
+        }
+
+        protected Task<IConnection> CreateConnection(IEnumerable<Endpoint> endpoint)
+        {
+            var connectionFactory = CreateConnectionFactory();
+            return connectionFactory.CreateAsync(endpoint);
+        }
+
+        protected ConnectionFactory CreateConnectionFactory()
+        {
+            return new ConnectionFactory { LoggerFactory = CreateTestLoggerFactory() };
         }
 
         protected ILoggerFactory CreateTestLoggerFactory()

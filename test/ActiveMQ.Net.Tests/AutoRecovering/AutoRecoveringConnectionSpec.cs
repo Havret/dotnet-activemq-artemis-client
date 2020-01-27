@@ -203,5 +203,40 @@ namespace ActiveMQ.Net.Tests.AutoRecovering
 
             await DisposeUtil.DisposeAll(connection, host2);
         }
+
+        [Fact]
+        public async Task Should_connect_to_first_endpoint_when_auto_recovering_disabled()
+        {
+            var (host1, connectedToHost1) = CreateHost();
+            var (host2, connectedToHost2) = CreateHost();
+
+            var connectionFactory = CreateConnectionFactory();
+            connectionFactory.AutomaticRecoveryEnabled = false;
+
+            var connection = await connectionFactory.CreateAsync(new[] { host1.Endpoint, host2.Endpoint });
+
+            Assert.True(connection.IsOpened);
+            Assert.True(connectedToHost1.WaitOne(Timeout));
+            Assert.False(connectedToHost2.WaitOne(ShortTimeout));
+
+            await DisposeUtil.DisposeAll(connection, host1, host2);
+        }
+
+        private static (TestContainerHost host, AutoResetEvent connected) CreateHost()
+        {
+            var endpoint = GetUniqueEndpoint();
+            var connected = new AutoResetEvent(false);
+            var handler = new TestHandler(@event =>
+            {
+                switch (@event.Id)
+                {
+                    case EventId.ConnectionRemoteOpen:
+                        connected.Set();
+                        break;
+                }
+            });
+            var host = CreateOpenedContainerHost(endpoint, handler);
+            return (host, connected);
+        }
     }
 }
