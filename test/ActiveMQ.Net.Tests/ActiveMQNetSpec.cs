@@ -52,8 +52,9 @@ namespace ActiveMQ.Net.Tests
             return host;
         }
         
-        protected static TestContainerHost CreateContainerHost(Endpoint endpoint, IHandler handler = null)
+        protected static TestContainerHost CreateContainerHost(Endpoint endpoint = null, IHandler handler = null)
         {
+            endpoint ??= GetUniqueEndpoint();
             return new TestContainerHost(endpoint, handler);
         }
 

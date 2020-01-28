@@ -1,10 +1,14 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
 using ActiveMQ.Net.Builders;
 using ActiveMQ.Net.InternalUtilities;
 using Microsoft.Extensions.Logging;
+using Polly;
+using Polly.Retry;
 
 namespace ActiveMQ.Net.AutoRecovering
 {
@@ -13,24 +17,49 @@ namespace ActiveMQ.Net.AutoRecovering
         private IConnection _connection;
         private readonly ILoggerFactory _loggerFactory;
         private readonly ILogger<AutoRecoveringConnection> _logger;
-        private readonly Endpoint _endpoint;
+        private readonly Endpoint[] _endpoints;
         private readonly ChannelReader<ConnectCommand> _reader;
         private readonly ChannelWriter<ConnectCommand> _writer;
         private readonly ConcurrentHashSet<IRecoverable> _recoverables = new ConcurrentHashSet<IRecoverable>();
         private readonly CancellationTokenSource _recoveryCancellationToken = new CancellationTokenSource();
+        private readonly AsyncRetryPolicy<IConnection> _connectionRetryPolicy;
         private readonly Task _recoveryLoopTask;
 
-        public AutoRecoveringConnection(ILoggerFactory loggerFactory, Endpoint endpoint)
+        public AutoRecoveringConnection(ILoggerFactory loggerFactory, IEnumerable<Endpoint> endpoints)
         {
             _logger = loggerFactory.CreateLogger<AutoRecoveringConnection>();
             _loggerFactory = loggerFactory;
-            _endpoint = endpoint;
+            _endpoints = endpoints.ToArray();
 
             var channel = Channel.CreateUnbounded<ConnectCommand>();
             _reader = channel.Reader;
             _writer = channel.Writer;
 
-            _recoveryLoopTask = Task.Run(async () =>
+            _connectionRetryPolicy = CreateConnectionRetryPolicy();
+
+            _recoveryLoopTask = StartRecoveryLoop();
+        }
+
+        private AsyncRetryPolicy<IConnection> CreateConnectionRetryPolicy()
+        {
+            return Policy<IConnection>
+                   .Handle<Exception>()
+                   .WaitAndRetryForeverAsync((retryAttempt, context) =>
+                   {
+                       context.SetRetryCount(retryAttempt);
+                       return TimeSpan.FromMilliseconds(100);
+                   }, (result, _, __) =>
+                   {
+                       if (result.Exception != null)
+                       {
+                           Log.FailedToCreateConnection(_logger, result.Exception);
+                       }
+                   });
+        }
+
+        private Task StartRecoveryLoop()
+        {
+            return Task.Run(async () =>
             {
                 try
                 {
@@ -45,7 +74,7 @@ namespace ActiveMQ.Net.AutoRecovering
                                 recoverable.Suspend();
                             }
 
-                            _connection = await CreateConnection().ConfigureAwait(false);
+                            _connection = await CreateConnection(_recoveryCancellationToken.Token).ConfigureAwait(false);
 
                             foreach (var recoverable in _recoverables.Values)
                             {
@@ -56,7 +85,7 @@ namespace ActiveMQ.Net.AutoRecovering
                             _connection.ConnectionClosed += OnConnectionClosed;
                             connectCommand.NotifyWaiter();
 
-                            Log.ConnectionEstablished(_logger);
+                            Log.ConnectionRecovered(_logger);
                         }
                         else
                         {
@@ -90,27 +119,23 @@ namespace ActiveMQ.Net.AutoRecovering
             ConnectionClosed?.Invoke(sender, args);
         }
 
-        public Task InitAsync()
+        public async Task InitAsync()
         {
-            var tsc = new TaskCompletionSource<bool>();
-            _writer.TryWrite(ConnectCommand.InitialConnect(tsc));
-            return tsc.Task;
+            _connection = await CreateConnection(CancellationToken.None).ConfigureAwait(false);
+            _connection.ConnectionClosed += OnConnectionClosed;
         }
 
-        // TODO: Change this naive implementation with sth more sophisticated
-        private async Task<IConnection> CreateConnection()
+        private Task<IConnection> CreateConnection(CancellationToken cancellationToken)
         {
-            try
+            var ctx = new Context();
+            ctx.SetRetryCount(0);
+            return _connectionRetryPolicy.ExecuteAsync((context, ct) =>
             {
+                var retryCount = context.GetRetryCount();
+                var endpoint = _endpoints[retryCount % _endpoints.Length];
                 var connectionBuilder = new ConnectionBuilder(_loggerFactory);
-                return await connectionBuilder.CreateAsync(_endpoint).ConfigureAwait(false);
-            }
-            catch (Exception e)
-            {
-                await Task.Delay(100);
-                Log.FailedToCreateConnection(_logger, e);
-                return await CreateConnection().ConfigureAwait(false);
-            }
+                return connectionBuilder.CreateAsync(endpoint);
+            }, ctx, cancellationToken);
         }
 
         // TODO: Probably should return false only when connection was explicitly closed.
@@ -177,10 +202,10 @@ namespace ActiveMQ.Net.AutoRecovering
                 0,
                 "Connection closed due to {error}. Reconnect scheduled.");
 
-            private static readonly Action<ILogger, Exception> _connectionEstablished = LoggerMessage.Define(
-                LogLevel.Trace,
+            private static readonly Action<ILogger, Exception> _connectionRecovered = LoggerMessage.Define(
+                LogLevel.Information,
                 0,
-                "Connection established.");
+                "Connection recovered.");
 
             public static void FailedToCreateConnection(ILogger logger, Exception e)
             {
@@ -206,11 +231,11 @@ namespace ActiveMQ.Net.AutoRecovering
                 }
             }
 
-            public static void ConnectionEstablished(ILogger logger)
+            public static void ConnectionRecovered(ILogger logger)
             {
-                if (logger.IsEnabled(LogLevel.Trace))
+                if (logger.IsEnabled(LogLevel.Information))
                 {
-                    _connectionEstablished(logger, null);
+                    _connectionRecovered(logger, null);
                 }
             }
         }
