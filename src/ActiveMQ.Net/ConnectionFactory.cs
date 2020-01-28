@@ -25,7 +25,7 @@ namespace ActiveMQ.Net
             
             if (AutomaticRecoveryEnabled)
             {
-                var autoRecoveringConnection = new AutoRecoveringConnection(LoggerFactory, endpoints.First());
+                var autoRecoveringConnection = new AutoRecoveringConnection(LoggerFactory, endpoints);
                 await autoRecoveringConnection.InitAsync().ConfigureAwait(false);
                 return autoRecoveringConnection;
             }

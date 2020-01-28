@@ -221,6 +221,39 @@ namespace ActiveMQ.Net.Tests.AutoRecovering
 
             await DisposeUtil.DisposeAll(connection, host1, host2);
         }
+        
+        [Fact]
+        public async Task Should_connect_to_the_second_endpoint_when_first_endpoint_disconnected()
+        {
+            var host1 = CreateContainerHost();
+            var (host2, connectedToHost2) = CreateHost();
+
+            var connection = await CreateConnection(new[] { host1.Endpoint, host2.Endpoint });
+
+            Assert.True(connectedToHost2.WaitOne(Timeout));
+            Assert.True(connection.IsOpened);
+        }
+
+        [Fact]
+        public async Task Should_reconnect_to_the_second_endpoint_after_first_endpoint_disconnected()
+        {
+            var (host1, connectedToHost1) = CreateHost();
+            var (host2, connectedToHost2) = CreateHost();
+
+            var connection = await CreateConnection(new[] { host1.Endpoint, host2.Endpoint });
+
+            Assert.True(connection.IsOpened);
+            Assert.True(connectedToHost1.WaitOne(Timeout));
+            Assert.False(connectedToHost2.WaitOne(ShortTimeout));
+
+            host1.Dispose();
+            
+            Assert.True(connectedToHost2.WaitOne(Timeout));
+            Assert.False(connectedToHost1.WaitOne(ShortTimeout));
+            Assert.True(connection.IsOpened);
+
+            await DisposeUtil.DisposeAll(connection, host2);
+        }
 
         private static (TestContainerHost host, AutoResetEvent connected) CreateHost()
         {
