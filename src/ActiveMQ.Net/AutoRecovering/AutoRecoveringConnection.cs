@@ -50,10 +50,14 @@ namespace ActiveMQ.Net.AutoRecovering
                        return TimeSpan.FromMilliseconds(100);
                    }, (result, _, context) =>
                    {
+                       var endpoint = GetCurrentEndpoint(context);
                        if (result.Exception != null)
                        {
-                           var endpoint = GetCurrentEndpoint(context);
-                           Log.FailedToCreateConnection(_logger, endpoint, result.Exception);
+                           Log.FailedToEstablishConnection(_logger, endpoint, result.Exception);
+                       }
+                       else
+                       {
+                           Log.ConnectionEstablished(_logger, endpoint);
                        }
                    });
         }
@@ -193,7 +197,12 @@ namespace ActiveMQ.Net.AutoRecovering
 
         private static class Log
         {
-            private static readonly Action<ILogger, string, Exception> _failedToCreateConnection = LoggerMessage.Define<string>(
+            private static readonly Action<ILogger, string, Exception> _connectionEstablished = LoggerMessage.Define<string>(
+                LogLevel.Information,
+                0,
+                "Connection to {endpoint} established.");
+
+            private static readonly Action<ILogger, string, Exception> _failedToEstablishConnection = LoggerMessage.Define<string>(
                 LogLevel.Error,
                 0,
                 "Failed to establish connection to {endpoint}.");
@@ -213,11 +222,19 @@ namespace ActiveMQ.Net.AutoRecovering
                 0,
                 "Connection recovered.");
 
-            public static void FailedToCreateConnection(ILogger logger, Endpoint endpoint, Exception e)
+            public static void ConnectionEstablished(ILogger logger, Endpoint endpoint)
+            {
+                if (logger.IsEnabled(LogLevel.Information))
+                {
+                    _connectionEstablished(logger, endpoint.ToString(), null);
+                }
+            }
+
+            public static void FailedToEstablishConnection(ILogger logger, Endpoint endpoint, Exception e)
             {
                 if (logger.IsEnabled(LogLevel.Error))
                 {
-                    _failedToCreateConnection(logger, endpoint.ToString(), e);
+                    _failedToEstablishConnection(logger, endpoint.ToString(), e);
                 }
             }
 
