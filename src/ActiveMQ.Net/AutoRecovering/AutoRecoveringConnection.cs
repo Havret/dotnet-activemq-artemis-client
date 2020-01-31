@@ -48,11 +48,12 @@ namespace ActiveMQ.Net.AutoRecovering
                    {
                        context.SetRetryCount(retryAttempt);
                        return TimeSpan.FromMilliseconds(100);
-                   }, (result, _, __) =>
+                   }, (result, _, context) =>
                    {
                        if (result.Exception != null)
                        {
-                           Log.FailedToCreateConnection(_logger, result.Exception);
+                           var endpoint = GetCurrentEndpoint(context);
+                           Log.FailedToCreateConnection(_logger, endpoint, result.Exception);
                        }
                    });
         }
@@ -131,8 +132,7 @@ namespace ActiveMQ.Net.AutoRecovering
             ctx.SetRetryCount(0);
             return _connectionRetryPolicy.ExecuteAsync((context, ct) =>
             {
-                var retryCount = context.GetRetryCount();
-                var endpoint = _endpoints[retryCount % _endpoints.Length];
+                var endpoint = GetCurrentEndpoint(context);
                 var connectionBuilder = new ConnectionBuilder(_loggerFactory);
                 return connectionBuilder.CreateAsync(endpoint);
             }, ctx, cancellationToken);
@@ -185,12 +185,18 @@ namespace ActiveMQ.Net.AutoRecovering
             _connection.ConnectionClosed -= OnConnectionClosed;
         }
 
+        private Endpoint GetCurrentEndpoint(Context context)
+        {
+            var retryCount = context.GetRetryCount();
+            return _endpoints[retryCount % _endpoints.Length];
+        }
+
         private static class Log
         {
-            private static readonly Action<ILogger, Exception> _failedToCreateConnection = LoggerMessage.Define(
+            private static readonly Action<ILogger, string, Exception> _failedToCreateConnection = LoggerMessage.Define<string>(
                 LogLevel.Error,
                 0,
-                "Failed to create connection.");
+                "Failed to establish connection to {endpoint}.");
 
             private static readonly Action<ILogger, Exception> _mainRecoveryLoopException = LoggerMessage.Define(
                 LogLevel.Error,
@@ -207,11 +213,11 @@ namespace ActiveMQ.Net.AutoRecovering
                 0,
                 "Connection recovered.");
 
-            public static void FailedToCreateConnection(ILogger logger, Exception e)
+            public static void FailedToCreateConnection(ILogger logger, Endpoint endpoint, Exception e)
             {
                 if (logger.IsEnabled(LogLevel.Error))
                 {
-                    _failedToCreateConnection(logger, e);
+                    _failedToCreateConnection(logger, endpoint.ToString(), e);
                 }
             }
 

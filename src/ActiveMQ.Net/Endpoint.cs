@@ -43,16 +43,11 @@ namespace ActiveMQ.Net
 
         public static Endpoint Create(string host, int port, string user = null, string password = null, Scheme scheme = Scheme.Amqp)
         {
-            return Create(host, port, user, password, "/", scheme);
-        }
-
-        public static Endpoint Create(string host, int port, string user, string password, string path, Scheme scheme)
-        {
             var protocolScheme = GetScheme(scheme);
 
             try
             {
-                return new Endpoint(new Address(host, port, user, password, path, protocolScheme))
+                return new Endpoint(new Address(host, port, user, password, "/", protocolScheme))
                 {
                     Scheme = scheme
                 };
@@ -75,6 +70,11 @@ namespace ActiveMQ.Net
                 Scheme.Amqps => Amqps,
                 _ => throw new CreateEndpointException(ErrorCode.InvalidField, $"Protocol scheme {scheme.ToString()} is invalid.")
             };
+        }
+
+        public override string ToString()
+        {
+            return $@"{Scheme.ToString().ToLower()}://{Host}:{Port.ToString()}";
         }
     }
 }
