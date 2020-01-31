@@ -32,7 +32,7 @@ namespace ActiveMQ.Net.Builders
                 Address = address,
                 Capabilities = new[] { routingCapability }
             };
-            var senderLink = new SenderLink(_session, Guid.NewGuid().ToString(), target , OnAttached);
+            var senderLink = new SenderLink(_session, Guid.NewGuid().ToString(), target, OnAttached);
             senderLink.AddClosedCallback(OnClosed);
             var producer = await _tcs.Task.ConfigureAwait(false);
             senderLink.Closed -= OnClosed;

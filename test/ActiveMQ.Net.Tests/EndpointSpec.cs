@@ -56,5 +56,22 @@ namespace ActiveMQ.Net.Tests
             var exception = Assert.Throws<CreateEndpointException>(() => Endpoint.Create("localhost", 5672, "guest", "guest", (Scheme) 999));
             Assert.Equal(ErrorCode.InvalidField, exception.Condition);
         }
+
+        [Theory, MemberData(nameof(EndpointData))]
+        public void Should_return_string_representation(Endpoint endpoint, string expectedString)
+        {
+            Assert.Equal(expectedString, endpoint.ToString());
+        }
+
+        public static IEnumerable<object[]> EndpointData()
+        {
+            return new[]
+            {
+                new object[] { Endpoint.Create("localhost", 5762), "amqp://localhost:5762" },
+                new object[] { Endpoint.Create("localhost", 5762, scheme: Scheme.Amqps), "amqps://localhost:5762" },
+                new object[] { Endpoint.Create("localhost", 5762, "admin", password: "secret"), "amqp://localhost:5762" },
+                new object[] { Endpoint.Create("localhost", 5762, "admin", password: "secret", Scheme.Amqps), "amqps://localhost:5762" }
+            };
+        }
     }
 }
