@@ -110,7 +110,7 @@ namespace ActiveMQ.Net.AutoRecovering
                 {
                     Log.MainRecoveryLoopException(_logger, e);
                 }
-            }, _recoveryCancellationToken.Token);
+            });
         }
 
         private void OnConnectionClosed(object sender, ConnectionClosedEventArgs args)
