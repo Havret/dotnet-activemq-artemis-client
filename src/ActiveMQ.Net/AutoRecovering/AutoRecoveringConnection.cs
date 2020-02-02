@@ -124,9 +124,9 @@ namespace ActiveMQ.Net.AutoRecovering
             ConnectionClosed?.Invoke(sender, args);
         }
 
-        public async Task InitAsync()
+        public async Task InitAsync(CancellationToken cancellationToken)
         {
-            _connection = await CreateConnection(CancellationToken.None).ConfigureAwait(false);
+            _connection = await CreateConnection(cancellationToken).ConfigureAwait(false);
             _connection.ConnectionClosed += OnConnectionClosed;
         }
 
@@ -138,7 +138,7 @@ namespace ActiveMQ.Net.AutoRecovering
             {
                 var endpoint = GetCurrentEndpoint(context);
                 var connectionBuilder = new ConnectionBuilder(_loggerFactory);
-                return connectionBuilder.CreateAsync(endpoint);
+                return connectionBuilder.CreateAsync(endpoint, ct);
             }, ctx, cancellationToken);
         }
 
