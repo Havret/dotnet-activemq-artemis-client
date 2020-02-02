@@ -76,18 +76,13 @@ namespace ActiveMQ.Net.Tests
         public async Task Should_be_able_to_cancel_SendAsync_when_no_outcome_from_remote_peer_available()
         {
             var endpoint = GetUniqueEndpoint();
-            var testHandler = new TestHandler(@event =>
-            {
-                switch (@event.Id)
-                {
-                    case EventId.ReceiveDelivery:
-                        // postpone sending outcome from a remote peer
-                        Task.Delay(TimeSpan.FromMilliseconds(500)).GetAwaiter().GetResult();
-                        break;
-                }
-            });
 
-            using var host = CreateOpenedContainerHost(endpoint, testHandler);
+            using var host = CreateOpenedContainerHost(endpoint);
+            var messageProcessor = host.CreateMessageProcessor("a1");
+            
+            // do not send outcome from a remote peer
+            // as a result send should timeout
+            messageProcessor.SetHandler(context => true);
 
             await using var connection = await CreateConnection(endpoint);
             var producer = await connection.CreateProducerAsync("a1");
