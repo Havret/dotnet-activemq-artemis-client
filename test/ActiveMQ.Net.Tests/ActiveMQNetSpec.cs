@@ -45,9 +45,9 @@ namespace ActiveMQ.Net.Tests
             return new TestLoggerFactory(_output);
         }
 
-        protected static TestContainerHost CreateOpenedContainerHost(Endpoint endpoint, IHandler handler = null)
+        protected static TestContainerHost CreateOpenedContainerHost(Endpoint endpoint = null, IHandler handler = null)
         {
-            var host = new TestContainerHost(endpoint, handler);
+            var host = CreateContainerHost(endpoint, handler);
             host.Open();
             return host;
         }
