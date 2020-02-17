@@ -2,6 +2,7 @@
 {
     public class Message
     {
+        private Properties _properties;
         internal Amqp.Message InnerMessage { get; }
 
         internal Message(Amqp.Message message)
@@ -13,6 +14,8 @@
         {
             InnerMessage = new Amqp.Message(body);
         }
+
+        public Properties Properties => _properties ??= new Properties(InnerMessage);
 
         public T GetBody<T>()
         {
