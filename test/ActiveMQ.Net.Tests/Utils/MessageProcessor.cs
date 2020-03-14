@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Concurrent;
-using System.Diagnostics;
 using Amqp.Listener;
 
 namespace ActiveMQ.Net.Tests.Utils
