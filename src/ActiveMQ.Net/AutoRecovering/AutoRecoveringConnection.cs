@@ -70,7 +70,7 @@ namespace ActiveMQ.Net.AutoRecovering
                 {
                     while (true)
                     {
-                        var connectCommand = await _reader.ReadAsync(_recoveryCancellationToken.Token).ConfigureAwait(false);
+                        await _reader.ReadAsync(_recoveryCancellationToken.Token).ConfigureAwait(false);
 
                         if (!IsOpened)
                         {
@@ -88,7 +88,6 @@ namespace ActiveMQ.Net.AutoRecovering
                             }
 
                             _connection.ConnectionClosed += OnConnectionClosed;
-                            connectCommand.NotifyWaiter();
 
                             Log.ConnectionRecovered(_logger);
                         }
@@ -118,7 +117,7 @@ namespace ActiveMQ.Net.AutoRecovering
             if (args.ClosedByPeer)
             {
                 Log.ConnectionClosed(_logger, args.Error);
-                _writer.TryWrite(ConnectCommand.Empty);
+                _writer.TryWrite(ConnectCommand.Instance);
             }
 
             ConnectionClosed?.Invoke(sender, args);
@@ -178,7 +177,7 @@ namespace ActiveMQ.Net.AutoRecovering
 
         private void OnRecoveryRequested()
         {
-            _writer.TryWrite(ConnectCommand.Empty);
+            _writer.TryWrite(ConnectCommand.Instance);
         }
 
         public async ValueTask DisposeAsync()

@@ -14,21 +14,23 @@ namespace ActiveMQ.Net
     {
         public async Task<IConnection> CreateAsync(IEnumerable<Endpoint> endpoints, CancellationToken cancellationToken)
         {
-            if (!endpoints.Any())
+            var endpointsList = endpoints.ToList();
+
+            if (!endpointsList.Any())
             {
                 throw new CreateConnectionException("No endpoints provided.");
             }
 
             if (AutomaticRecoveryEnabled)
             {
-                var autoRecoveringConnection = new AutoRecoveringConnection(LoggerFactory, endpoints);
+                var autoRecoveringConnection = new AutoRecoveringConnection(LoggerFactory, endpointsList);
                 await autoRecoveringConnection.InitAsync(cancellationToken).ConfigureAwait(false);
                 return autoRecoveringConnection;
             }
             else
             {
                 var connectionBuilder = new ConnectionBuilder(LoggerFactory);
-                return await connectionBuilder.CreateAsync(endpoints.First(), cancellationToken).ConfigureAwait(false);
+                return await connectionBuilder.CreateAsync(endpointsList.First(), cancellationToken).ConfigureAwait(false);
             }
         }
 

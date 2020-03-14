@@ -6,8 +6,8 @@ namespace ActiveMQ.Net.Tests.Logging
 {
     public sealed class TestLogger : ILogger
     {
-        private static readonly string LoglevelPadding = ": ";
-        private static readonly string MessagePadding;
+        private static readonly string _loglevelPadding = ": ";
+        private static readonly string _messagePadding;
 
         private readonly string _name;
         private readonly ITestOutputHelper _output;
@@ -15,7 +15,7 @@ namespace ActiveMQ.Net.Tests.Logging
         static TestLogger()
         {
             var logLevelString = GetLogLevelString(LogLevel.Information);
-            MessagePadding = new string(' ', logLevelString.Length + LoglevelPadding.Length);
+            _messagePadding = new string(' ', logLevelString.Length + _loglevelPadding.Length);
         }
 
         public TestLogger(ITestOutputHelper output, string name)
@@ -57,7 +57,7 @@ namespace ActiveMQ.Net.Tests.Logging
 
             if (!string.IsNullOrEmpty(message))
             {
-                _output.WriteLine($"{MessagePadding}{message}");
+                _output.WriteLine($"{_messagePadding}{message}");
             }
 
             if (exception != null)

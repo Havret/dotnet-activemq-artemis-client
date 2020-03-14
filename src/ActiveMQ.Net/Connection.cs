@@ -59,6 +59,7 @@ namespace ActiveMQ.Net
             remove => _connectionClosed -= value;
         }
 
+        // ReSharper disable once InconsistentNaming
         private event EventHandler<ConnectionClosedEventArgs> _connectionClosed;
 
         private void OnConnectionClosed(IAmqpObject sender, Error error)
