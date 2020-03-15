@@ -16,14 +16,16 @@ namespace ActiveMQ.Net
         private bool _closed;
         private Error _error;
 
-        public Connection(ILoggerFactory loggerFactory, Amqp.Connection connection, Session session)
+        public Connection(ILoggerFactory loggerFactory, Endpoint endpoint, Amqp.Connection connection, Session session)
         {
             _loggerFactory = loggerFactory;
+            Endpoint = endpoint;
             _connection = connection;
             _session = session;
             _connection.AddClosedCallback(OnConnectionClosed);
         }
 
+        public Endpoint Endpoint { get; }
         public bool IsOpened => _connection.ConnectionState == ConnectionState.Opened;
 
         public Task<IConsumer> CreateConsumerAsync(string address, RoutingType routingType, CancellationToken cancellationToken)
@@ -73,5 +75,9 @@ namespace ActiveMQ.Net
         {
             return new ConnectionClosedEventArgs(_error != null, _error?.ToString());
         }
+
+#pragma warning disable CS0067
+        public event EventHandler<ConnectionRecoveredEventArgs> ConnectionRecovered;
+#pragma warning restore CS0067
     }
 }

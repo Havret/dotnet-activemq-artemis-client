@@ -255,6 +255,32 @@ namespace ActiveMQ.Net.Tests.AutoRecovering
             await DisposeUtil.DisposeAll(connection, host2);
         }
 
+        [Fact]
+        public async Task Should_trigger_ConnectionRecovered_when_connection_recovered()
+        {
+            var host1 = CreateOpenedContainerHost();
+            var host2 = CreateOpenedContainerHost();
+
+            var connection = await CreateConnection(new[] { host1.Endpoint, host2.Endpoint });
+
+            var connectionRecovered = new AutoResetEvent(false);
+            Endpoint fallbackEndpoint = null;
+            connection.ConnectionRecovered += (sender, args) =>
+            {
+                fallbackEndpoint = args.Endpoint;
+                connectionRecovered.Set();
+            };
+
+            Assert.True(connection.IsOpened);
+
+            host1.Dispose();
+            
+            Assert.True(connectionRecovered.WaitOne(Timeout));
+            Assert.Equal(host2.Endpoint, fallbackEndpoint);
+
+            await DisposeUtil.DisposeAll(connection, host2);
+        }
+
         private static (TestContainerHost host, AutoResetEvent connected) CreateHost()
         {
             var endpoint = GetUniqueEndpoint();
