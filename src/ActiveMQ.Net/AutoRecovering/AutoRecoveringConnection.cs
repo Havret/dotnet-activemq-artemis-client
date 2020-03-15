@@ -40,6 +40,11 @@ namespace ActiveMQ.Net.AutoRecovering
             _recoveryLoopTask = StartRecoveryLoop();
         }
 
+        public Endpoint Endpoint => _connection.Endpoint;
+
+        // TODO: Probably should return false only when connection was explicitly closed.
+        public bool IsOpened => _connection != null && _connection.IsOpened;
+
         private AsyncRetryPolicy<IConnection> CreateConnectionRetryPolicy()
         {
             return Policy<IConnection>
@@ -90,6 +95,8 @@ namespace ActiveMQ.Net.AutoRecovering
                             _connection.ConnectionClosed += OnConnectionClosed;
 
                             Log.ConnectionRecovered(_logger);
+                            
+                            ConnectionRecovered?.Invoke(this, new ConnectionRecoveredEventArgs(_connection.Endpoint));
                         }
                         else
                         {
@@ -141,9 +148,6 @@ namespace ActiveMQ.Net.AutoRecovering
             }, ctx, cancellationToken);
         }
 
-        // TODO: Probably should return false only when connection was explicitly closed.
-        public bool IsOpened => _connection != null && _connection.IsOpened;
-
         public async Task<IConsumer> CreateConsumerAsync(string address, RoutingType routingType, CancellationToken cancellationToken)
         {
             var autoRecoveringConsumer = new AutoRecoveringConsumer(_loggerFactory, address, routingType);
@@ -159,6 +163,8 @@ namespace ActiveMQ.Net.AutoRecovering
         }
 
         public event EventHandler<ConnectionClosedEventArgs> ConnectionClosed;
+        
+        public event EventHandler<ConnectionRecoveredEventArgs> ConnectionRecovered;
 
         private async Task PrepareRecoverable(IRecoverable recoverable, CancellationToken cancellationToken)
         {
