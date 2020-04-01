@@ -79,5 +79,6 @@ namespace ActiveMQ.Net
 #pragma warning disable CS0067
         public event EventHandler<ConnectionRecoveredEventArgs> ConnectionRecovered;
 #pragma warning restore CS0067
+        public event EventHandler<ConnectionRecoveryErrorEventArgs> ConnectionRecoveryError;
     }
 }

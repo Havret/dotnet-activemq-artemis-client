@@ -1,5 +1,7 @@
-﻿using System.Threading;
+﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
+using ActiveMQ.Net.AutoRecovering.RecoveryPolicy;
 using ActiveMQ.Net.Tests.Utils;
 using Amqp.Framing;
 using Amqp.Handler;
@@ -279,6 +281,34 @@ namespace ActiveMQ.Net.Tests.AutoRecovering
             Assert.Equal(host2.Endpoint, fallbackEndpoint);
 
             await DisposeUtil.DisposeAll(connection, host2);
+        }
+
+        [Fact]
+        public async Task Should_trigger_ConnectionRecoveryError_when_connection_recovery_failed()
+        {
+            var host = CreateOpenedContainerHost();
+
+            var connectionFactory = CreateConnectionFactory();
+            connectionFactory.RecoveryPolicy = RecoveryPolicyFactory.ConstantBackoff(TimeSpan.FromMilliseconds(10), retryCount: 1);
+
+            await using var connection = await connectionFactory.CreateAsync(host.Endpoint);
+
+            var connectionRecoveryFailed = new AutoResetEvent(false);
+            Exception connectionRecoveryError = null;
+            connection.ConnectionRecoveryError += (sender, args) =>
+            {
+                connectionRecoveryError = args.Exception;
+                connectionRecoveryFailed.Set();
+            };
+
+            Assert.True(connection.IsOpened);
+
+            host.Dispose();
+            
+            Assert.True(connectionRecoveryFailed.WaitOne(Timeout));
+            Assert.NotNull(connectionRecoveryError);
+            
+            await DisposeUtil.DisposeAll(connection);
         }
 
         private static (TestContainerHost host, AutoResetEvent connected) CreateHost()
