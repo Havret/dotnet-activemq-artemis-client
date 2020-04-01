@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
+using ActiveMQ.Net.AutoRecovering.RecoveryPolicy;
 using ActiveMQ.Net.Builders;
 using ActiveMQ.Net.InternalUtilities;
 using Microsoft.Extensions.Logging;
@@ -25,7 +26,7 @@ namespace ActiveMQ.Net.AutoRecovering
         private readonly AsyncRetryPolicy<IConnection> _connectionRetryPolicy;
         private readonly Task _recoveryLoopTask;
 
-        public AutoRecoveringConnection(ILoggerFactory loggerFactory, IEnumerable<Endpoint> endpoints)
+        public AutoRecoveringConnection(ILoggerFactory loggerFactory, IEnumerable<Endpoint> endpoints, IRecoveryPolicy recoveryPolicy)
         {
             _logger = loggerFactory.CreateLogger<AutoRecoveringConnection>();
             _loggerFactory = loggerFactory;
@@ -35,7 +36,7 @@ namespace ActiveMQ.Net.AutoRecovering
             _reader = channel.Reader;
             _writer = channel.Writer;
 
-            _connectionRetryPolicy = CreateConnectionRetryPolicy();
+            _connectionRetryPolicy = CreateConnectionRetryPolicy(recoveryPolicy);
 
             _recoveryLoopTask = StartRecoveryLoop();
         }
@@ -45,24 +46,25 @@ namespace ActiveMQ.Net.AutoRecovering
         // TODO: Probably should return false only when connection was explicitly closed.
         public bool IsOpened => _connection != null && _connection.IsOpened;
 
-        private AsyncRetryPolicy<IConnection> CreateConnectionRetryPolicy()
+        private AsyncRetryPolicy<IConnection> CreateConnectionRetryPolicy(IRecoveryPolicy recoveryPolicy)
         {
             return Policy<IConnection>
                    .Handle<Exception>()
-                   .WaitAndRetryForeverAsync((retryAttempt, context) =>
+                   .WaitAndRetryAsync(recoveryPolicy.RetryCount, (retryAttempt, context) =>
                    {
                        context.SetRetryCount(retryAttempt);
-                       return TimeSpan.FromMilliseconds(100);
+                       return recoveryPolicy.GetDelay(retryAttempt);
                    }, (result, _, context) =>
                    {
+                       var retryCount = context.GetRetryCount();
                        var endpoint = GetCurrentEndpoint(context);
                        if (result.Exception != null)
                        {
-                           Log.FailedToEstablishConnection(_logger, endpoint, result.Exception);
+                           Log.FailedToEstablishConnection(_logger, endpoint, retryCount, result.Exception);
                        }
                        else
                        {
-                           Log.ConnectionEstablished(_logger, endpoint);
+                           Log.ConnectionEstablished(_logger, endpoint, retryCount);
                        }
                    });
         }
@@ -196,21 +198,21 @@ namespace ActiveMQ.Net.AutoRecovering
 
         private Endpoint GetCurrentEndpoint(Context context)
         {
-            var retryCount = context.GetRetryCount();
+            int retryCount = context.GetRetryCount();
             return _endpoints[retryCount % _endpoints.Length];
         }
 
         private static class Log
         {
-            private static readonly Action<ILogger, string, Exception> _connectionEstablished = LoggerMessage.Define<string>(
+            private static readonly Action<ILogger, string, int, Exception> _connectionEstablished = LoggerMessage.Define<string, int>(
                 LogLevel.Information,
                 0,
-                "Connection to {endpoint} established.");
+                "Connection to {endpoint} established. Attempt: {attempt}.");
 
-            private static readonly Action<ILogger, string, Exception> _failedToEstablishConnection = LoggerMessage.Define<string>(
-                LogLevel.Error,
+            private static readonly Action<ILogger, string, int, Exception> _failedToEstablishConnection = LoggerMessage.Define<string, int>(
+                LogLevel.Warning,
                 0,
-                "Failed to establish connection to {endpoint}.");
+                "Failed to establish connection to {endpoint}. Attempt: {attempt}.");
 
             private static readonly Action<ILogger, Exception> _mainRecoveryLoopException = LoggerMessage.Define(
                 LogLevel.Error,
@@ -227,19 +229,19 @@ namespace ActiveMQ.Net.AutoRecovering
                 0,
                 "Connection recovered.");
 
-            public static void ConnectionEstablished(ILogger logger, Endpoint endpoint)
+            public static void ConnectionEstablished(ILogger logger, Endpoint endpoint, int attempt)
             {
                 if (logger.IsEnabled(LogLevel.Information))
                 {
-                    _connectionEstablished(logger, endpoint.ToString(), null);
+                    _connectionEstablished(logger, endpoint.ToString(), attempt, null);
                 }
             }
 
-            public static void FailedToEstablishConnection(ILogger logger, Endpoint endpoint, Exception e)
+            public static void FailedToEstablishConnection(ILogger logger, Endpoint endpoint, int attempt, Exception e)
             {
-                if (logger.IsEnabled(LogLevel.Error))
+                if (logger.IsEnabled(LogLevel.Warning))
                 {
-                    _failedToEstablishConnection(logger, endpoint.ToString(), e);
+                    _failedToEstablishConnection(logger, endpoint.ToString(), attempt, e);
                 }
             }
 

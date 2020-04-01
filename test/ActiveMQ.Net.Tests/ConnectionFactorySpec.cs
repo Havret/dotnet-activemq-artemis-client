@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using ActiveMQ.Net.AutoRecovering;
+using ActiveMQ.Net.AutoRecovering.RecoveryPolicy;
 using ActiveMQ.Net.Exceptions;
 using ActiveMQ.Net.Tests.Utils;
 using Amqp.Handler;
@@ -77,6 +78,20 @@ namespace ActiveMQ.Net.Tests
             var cts = new CancellationTokenSource(ShortTimeout);
             await Assert.ThrowsAnyAsync<OperationCanceledException>(() => connectionFactory.CreateAsync(endpoint, cts.Token));
             timeout.Set();
+        }
+
+        [Fact]
+        public void Should_throw_exception_when_null_assigned_as_recovery_policy()
+        {
+            var connectionFactory = CreateConnectionFactory();
+            Assert.Throws<ArgumentNullException>(() => { connectionFactory.RecoveryPolicy = null; });
+        }
+
+        [Fact]
+        public void Should_be_possible_to_assign_custom_recovery_policy()
+        {
+            var connectionFactory = CreateConnectionFactory();
+            connectionFactory.RecoveryPolicy = RecoveryPolicyFactory.ConstantBackoff(TimeSpan.FromSeconds(1));
         }
     }
 }
