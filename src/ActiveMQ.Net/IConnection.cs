@@ -15,5 +15,6 @@ namespace ActiveMQ.Net
         Task<IProducer> CreateProducerAsync(string address, RoutingType routingType, CancellationToken cancellationToken);
         event EventHandler<ConnectionClosedEventArgs> ConnectionClosed;
         event EventHandler<ConnectionRecoveredEventArgs> ConnectionRecovered;
+        event EventHandler<ConnectionRecoveryErrorEventArgs> ConnectionRecoveryError;
     }
 }

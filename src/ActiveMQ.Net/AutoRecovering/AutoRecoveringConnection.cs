@@ -117,6 +117,7 @@ namespace ActiveMQ.Net.AutoRecovering
                 catch (Exception e)
                 {
                     Log.MainRecoveryLoopException(_logger, e);
+                    ConnectionRecoveryError?.Invoke(this, new ConnectionRecoveryErrorEventArgs(e));
                 }
             });
         }
@@ -167,6 +168,7 @@ namespace ActiveMQ.Net.AutoRecovering
         public event EventHandler<ConnectionClosedEventArgs> ConnectionClosed;
         
         public event EventHandler<ConnectionRecoveredEventArgs> ConnectionRecovered;
+        public event EventHandler<ConnectionRecoveryErrorEventArgs> ConnectionRecoveryError;
 
         private async Task PrepareRecoverable(IRecoverable recoverable, CancellationToken cancellationToken)
         {
