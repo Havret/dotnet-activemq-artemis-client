@@ -42,7 +42,11 @@ namespace ActiveMQ.Net
 
         public async ValueTask DisposeAsync()
         {
-            await _connection.CloseAsync().ConfigureAwait(false);
+            if (!_closed)
+            {
+                await _connection.CloseAsync().ConfigureAwait(false);
+            }
+
             _connection.Closed -= OnConnectionClosed;
         }
 

@@ -81,6 +81,8 @@ namespace ActiveMQ.Net.AutoRecovering
 
                         if (!IsOpened)
                         {
+                            await DisposeInnerConnection().ConfigureAwait(false);
+                            
                             foreach (var recoverable in _recoverables.Values)
                             {
                                 recoverable.Suspend();
@@ -194,6 +196,11 @@ namespace ActiveMQ.Net.AutoRecovering
         {
             _recoveryCancellationToken.Cancel();
             await _recoveryLoopTask.ConfigureAwait(false);
+            await DisposeInnerConnection();
+        }
+
+        private async Task DisposeInnerConnection()
+        {
             await _connection.DisposeAsync().ConfigureAwait(false);
             _connection.ConnectionClosed -= OnConnectionClosed;
         }
