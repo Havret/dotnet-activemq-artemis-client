@@ -307,8 +307,6 @@ namespace ActiveMQ.Net.Tests.AutoRecovering
             
             Assert.True(connectionRecoveryFailed.WaitOne(Timeout));
             Assert.NotNull(connectionRecoveryError);
-            
-            await DisposeUtil.DisposeAll(connection);
         }
 
         private static (TestContainerHost host, AutoResetEvent connected) CreateHost()
