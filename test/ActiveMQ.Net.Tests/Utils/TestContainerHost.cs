@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using Amqp.Handler;
 using Amqp.Listener;
 
@@ -12,20 +11,14 @@ namespace ActiveMQ.Net.Tests.Utils
 
         public TestContainerHost(Endpoint endpoint, IHandler handler = null)
         {
-            Endpoint = endpoint;
-            var uri = CreateUri(Endpoint);
-            _host = new ContainerHost(new List<Uri> { uri }, null, uri.UserInfo);
+            Endpoint = endpoint;            
+            _host = new ContainerHost(endpoint.Address);
             _host.Listeners[0].HandlerFactory = listener => handler;
             _linkProcessor = new TestLinkProcessor();
             _host.RegisterLinkProcessor(_linkProcessor);
         }
         
         public Endpoint Endpoint { get; }
-
-        private Uri CreateUri(Endpoint endpoint)
-        {
-            return new Uri($"{endpoint.Scheme}://{endpoint.User}:{endpoint.Password}@{endpoint.Host}:{endpoint.Port.ToString()}");
-        }
 
         public void Dispose() => _host.Close();
         public void Open() => _host.Open();
