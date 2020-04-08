@@ -5,11 +5,11 @@ namespace ActiveMQ.Net.InternalUtilities
 {
     internal class ConcurrentHashSet<T>
     {
-        private readonly ConcurrentDictionary<T, T> _dictionary = new ConcurrentDictionary<T, T>();
+        private readonly ConcurrentDictionary<T, byte> _dictionary = new ConcurrentDictionary<T, byte>();
 
         public void Add(T item)
         {
-            _dictionary.TryAdd(item, item);
+            _dictionary.TryAdd(item, byte.MinValue);
         }
 
         public void Remove(T item)
@@ -17,6 +17,6 @@ namespace ActiveMQ.Net.InternalUtilities
             _dictionary.TryRemove(item, out _);
         }
 
-        public IEnumerable<T> Values => _dictionary.Values;
+        public IEnumerable<T> Values => _dictionary.Keys;
     }
 }
