@@ -10,16 +10,14 @@ namespace ActiveMQ.Net.AutoRecovering
     internal class AutoRecoveringProducer : IProducer, IRecoverable
     {
         private readonly ILogger _logger;
-        private readonly string _address;
-        private readonly RoutingType _routingType;
+        private readonly ProducerConfiguration _configuration;
         private readonly AsyncManualResetEvent _manualResetEvent = new AsyncManualResetEvent(true);
         private IProducer _producer;
 
-        public AutoRecoveringProducer(ILoggerFactory loggerFactory, string address, RoutingType routingType)
+        public AutoRecoveringProducer(ILoggerFactory loggerFactory, ProducerConfiguration configuration)
         {
             _logger = loggerFactory.CreateLogger<AutoRecoveringProducer>();
-            _address = address;
-            _routingType = routingType;
+            _configuration = configuration;
         }
 
         public async Task SendAsync(Message message, CancellationToken cancellationToken = default)
@@ -64,7 +62,7 @@ namespace ActiveMQ.Net.AutoRecovering
 
         public async Task RecoverAsync(IConnection connection, CancellationToken cancellationToken)
         {
-            _producer = await connection.CreateProducerAsync(_address, _routingType, cancellationToken).ConfigureAwait(false);
+            _producer = await connection.CreateProducerAsync(_configuration, cancellationToken).ConfigureAwait(false);
             Log.ProducerRecovered(_logger);
         }
 

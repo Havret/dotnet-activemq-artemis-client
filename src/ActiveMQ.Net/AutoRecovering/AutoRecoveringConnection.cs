@@ -153,16 +153,16 @@ namespace ActiveMQ.Net.AutoRecovering
             }, ctx, cancellationToken);
         }
 
-        public async Task<IConsumer> CreateConsumerAsync(string address, RoutingType routingType, CancellationToken cancellationToken)
+        public async Task<IConsumer> CreateConsumerAsync(ConsumerConfiguration configuration, CancellationToken cancellationToken)
         {
-            var autoRecoveringConsumer = new AutoRecoveringConsumer(_loggerFactory, address, routingType);
+            var autoRecoveringConsumer = new AutoRecoveringConsumer(_loggerFactory, configuration);
             await PrepareRecoverable(autoRecoveringConsumer, cancellationToken).ConfigureAwait(false);
             return autoRecoveringConsumer;
         }
 
-        public async Task<IProducer> CreateProducerAsync(string address, RoutingType routingType, CancellationToken cancellationToken)
+        public async Task<IProducer> CreateProducerAsync(ProducerConfiguration configuration, CancellationToken cancellationToken)
         {
-            var autoRecoveringProducer = new AutoRecoveringProducer(_loggerFactory, address, routingType);
+            var autoRecoveringProducer = new AutoRecoveringProducer(_loggerFactory, configuration);
             await PrepareRecoverable(autoRecoveringProducer, cancellationToken).ConfigureAwait(false);
             return autoRecoveringProducer;
         }

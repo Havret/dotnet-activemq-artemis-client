@@ -21,15 +21,15 @@ namespace ActiveMQ.Net.Builders
             _tcs = new TaskCompletionSource<IConsumer>(TaskCreationOptions.RunContinuationsAsynchronously);
         }
 
-        public async Task<IConsumer> CreateAsync(string address, RoutingType routingType, CancellationToken cancellationToken)
+        public async Task<IConsumer> CreateAsync(ConsumerConfiguration configuration, CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
             cancellationToken.Register(() => _tcs.TrySetCanceled());
-            
-            var routingCapability = routingType.GetRoutingCapability();
+
+            var routingCapability = configuration.RoutingType.GetRoutingCapability();
             var source = new Source
             {
-                Address = address,
+                Address = GetAddress(configuration.Address, configuration.Queue),
                 Capabilities = new[] { routingCapability },
             };
 
@@ -39,6 +39,18 @@ namespace ActiveMQ.Net.Builders
             receiverLink.Closed -= OnClosed;
 
             return consumer;
+        }
+
+        private static string GetAddress(string address, string queue)
+        {
+            return string.IsNullOrEmpty(queue)
+                ? address
+                : CreateFullyQualifiedQueueName(address, queue);
+        }
+
+        private static string CreateFullyQualifiedQueueName(string address, string queue)
+        {
+            return $"{address}::{queue}";
         }
 
         private void OnAttached(ILink link, Attach attach)

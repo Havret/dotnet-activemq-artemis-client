@@ -27,17 +27,16 @@ namespace ActiveMQ.Net
 
         public Endpoint Endpoint { get; }
         public bool IsOpened => _connection.ConnectionState == ConnectionState.Opened;
-
-        public Task<IConsumer> CreateConsumerAsync(string address, RoutingType routingType, CancellationToken cancellationToken)
+        public Task<IConsumer> CreateConsumerAsync(ConsumerConfiguration configuration, CancellationToken cancellationToken)
         {
             var consumerBuilder = new ConsumerBuilder(_loggerFactory, _session);
-            return consumerBuilder.CreateAsync(address, routingType, cancellationToken);
+            return consumerBuilder.CreateAsync(configuration, cancellationToken);
         }
 
-        public Task<IProducer> CreateProducerAsync(string address, RoutingType routingType, CancellationToken cancellationToken)
+        public Task<IProducer> CreateProducerAsync(ProducerConfiguration configuration, CancellationToken cancellationToken)
         {
             var producerBuilder = new ProducerBuilder(_loggerFactory, _session);
-            return producerBuilder.CreateAsync(address, routingType, cancellationToken);
+            return producerBuilder.CreateAsync(configuration, cancellationToken);
         }
 
         public async ValueTask DisposeAsync()
