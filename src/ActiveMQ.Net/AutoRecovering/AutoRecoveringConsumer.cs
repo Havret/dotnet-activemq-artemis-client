@@ -10,16 +10,14 @@ namespace ActiveMQ.Net.AutoRecovering
     internal class AutoRecoveringConsumer : IConsumer, IRecoverable
     {
         private readonly ILogger<AutoRecoveringConsumer> _logger;
-        private readonly string _address;
-        private readonly RoutingType _routingType;
+        private readonly ConsumerConfiguration _configuration;
         private readonly AsyncManualResetEvent _manualResetEvent = new AsyncManualResetEvent(true);
         private IConsumer _consumer;
 
-        public AutoRecoveringConsumer(ILoggerFactory loggerFactory, string address, RoutingType routingType)
+        public AutoRecoveringConsumer(ILoggerFactory loggerFactory, ConsumerConfiguration configuration)
         {
             _logger = loggerFactory.CreateLogger<AutoRecoveringConsumer>();
-            _address = address;
-            _routingType = routingType;
+            _configuration = configuration;
         }
 
         public async ValueTask<Message> ReceiveAsync(CancellationToken cancellationToken = default)
@@ -76,7 +74,7 @@ namespace ActiveMQ.Net.AutoRecovering
                 }
             }
 
-            _consumer = await connection.CreateConsumerAsync(_address, _routingType, cancellationToken).ConfigureAwait(false);
+            _consumer = await connection.CreateConsumerAsync(_configuration, cancellationToken).ConfigureAwait(false);
             Log.ProducerRecovered(_logger);
         }
 

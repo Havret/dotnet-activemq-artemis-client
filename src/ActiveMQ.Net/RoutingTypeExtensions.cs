@@ -11,5 +11,14 @@ namespace ActiveMQ.Net
             RoutingType.Multicast => RoutingCapabilities.Multicast,
             _ => throw new ArgumentOutOfRangeException(nameof(routingType), $"RoutingType {routingType.ToString()} is not supported.")
         };
+
+        public static Symbol[] GetRoutingCapabilities(this RoutingType? routingType) => routingType switch
+        {
+            RoutingType.Anycast => new[] { RoutingCapabilities.Anycast },
+            RoutingType.Multicast => new[] { RoutingCapabilities.Multicast },
+            null => new[] { RoutingCapabilities.Anycast, RoutingCapabilities.Multicast },
+            _ => throw new ArgumentOutOfRangeException(nameof(routingType), $"RoutingType {routingType.ToString()} is not supported.")
+        };
+        
     }
 }

@@ -11,8 +11,8 @@ namespace ActiveMQ.Net
         /// </summary>
         Endpoint Endpoint { get; }
         bool IsOpened { get; }
-        Task<IConsumer> CreateConsumerAsync(string address, RoutingType routingType, CancellationToken cancellationToken);
-        Task<IProducer> CreateProducerAsync(string address, RoutingType routingType, CancellationToken cancellationToken);
+        Task<IConsumer> CreateConsumerAsync(ConsumerConfiguration configuration, CancellationToken cancellationToken);
+        Task<IProducer> CreateProducerAsync(ProducerConfiguration configuration, CancellationToken cancellationToken);
         event EventHandler<ConnectionClosedEventArgs> ConnectionClosed;
         event EventHandler<ConnectionRecoveredEventArgs> ConnectionRecovered;
         event EventHandler<ConnectionRecoveryErrorEventArgs> ConnectionRecoveryError;

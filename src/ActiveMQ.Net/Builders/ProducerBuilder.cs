@@ -12,29 +12,30 @@ namespace ActiveMQ.Net.Builders
     {
         private readonly ILoggerFactory _loggerFactory;
         private readonly Session _session;
-        private readonly TaskCompletionSource<IProducer> _tcs;
+        private readonly TaskCompletionSource<bool> _tcs;
 
         public ProducerBuilder(ILoggerFactory loggerFactory, Session session)
         {
             _loggerFactory = loggerFactory;
             _session = session;
-            _tcs = new TaskCompletionSource<IProducer>(TaskCreationOptions.RunContinuationsAsynchronously);
+            _tcs = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
         }
 
-        public async Task<IProducer> CreateAsync(string address, RoutingType routingType, CancellationToken cancellationToken)
+        public async Task<IProducer> CreateAsync(ProducerConfiguration configuration, CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
             cancellationToken.Register(() => _tcs.TrySetCanceled());
-            
-            var routingCapability = routingType.GetRoutingCapability();
+
+            var routingCapabilities = configuration.DefaultRoutingType.GetRoutingCapabilities();
             var target = new Target
             {
-                Address = address,
-                Capabilities = new[] { routingCapability }
+                Address = configuration.DefaultAddress,
+                Capabilities =  routingCapabilities
             };
             var senderLink = new SenderLink(_session, Guid.NewGuid().ToString(), target, OnAttached);
             senderLink.AddClosedCallback(OnClosed);
-            var producer = await _tcs.Task.ConfigureAwait(false);
+            await _tcs.Task.ConfigureAwait(false);
+            var producer = new Producer(_loggerFactory, senderLink, configuration);
             senderLink.Closed -= OnClosed;
             return producer;
         }
@@ -43,7 +44,7 @@ namespace ActiveMQ.Net.Builders
         {
             if (attach.Source != null)
             {
-                _tcs.TrySetResult(new Producer(_loggerFactory, link as SenderLink));
+                _tcs.TrySetResult(true);
             }
         }
         

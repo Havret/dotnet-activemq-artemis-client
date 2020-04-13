@@ -14,11 +14,13 @@ namespace ActiveMQ.Net
         
         private readonly ILogger<Producer> _logger;
         private readonly SenderLink _senderLink;
+        private readonly ProducerConfiguration _configuration;
 
-        public Producer(ILoggerFactory loggerFactory, SenderLink senderLink)
+        public Producer(ILoggerFactory loggerFactory, SenderLink senderLink, ProducerConfiguration configuration)
         {
             _logger = loggerFactory.CreateLogger<Producer>();
             _senderLink = senderLink;
+            _configuration = configuration;
         }
 
         private bool IsDetaching => _senderLink.LinkState >= LinkState.DetachPipe;
