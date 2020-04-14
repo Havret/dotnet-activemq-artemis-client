@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using ActiveMQ.Net.Tests.Utils;
@@ -90,6 +91,33 @@ namespace ActiveMQ.Net.Tests
             var cts = new CancellationTokenSource();
             cts.CancelAfter(TimeSpan.FromMilliseconds(50));
             await Assert.ThrowsAnyAsync<OperationCanceledException>(async () => await producer.SendAsync(new Message("foo"), cts.Token));
+        }
+
+        [Theory, MemberData(nameof(RoutingTypesData))]
+        public async Task Should_sent_message_using_specified_RoutingType(RoutingType routingType, byte routingAnnotation)
+        {
+            var endpoint = GetUniqueEndpoint();
+
+            using var host = CreateOpenedContainerHost(endpoint);
+            var messageProcessor = host.CreateMessageProcessor("a1");
+
+            await using var connection = await CreateConnection(endpoint);
+            var producer = await connection.CreateProducerAsync("a1", routingType);
+
+            await producer.SendAsync(new Message("foo"));
+
+            var receivedMsg = messageProcessor.Dequeue(Timeout);
+
+            Assert.Equal(routingAnnotation, receivedMsg.MessageAnnotations[SymbolUtils.RoutingType]);
+        }
+
+        public static IEnumerable<object[]> RoutingTypesData()
+        {
+            return new[]
+            {
+                new object[] { RoutingType.Multicast, 0 },
+                new object[] { RoutingType.Anycast, 1 },
+            };
         }
     }
 }

@@ -5,6 +5,10 @@ namespace ActiveMQ.Net
 {
     internal static class RoutingTypeExtensions
     {
+        private static readonly object _addressRoutingTypeAnycast = (byte) 1;
+        private static readonly object _addressRoutingTypeMulticast = (byte) 0;
+        private static readonly object _addressRoutingTypeBoth = null;
+        
         public static Symbol GetRoutingCapability(this RoutingType routingType) => routingType switch
         {
             RoutingType.Anycast => RoutingCapabilities.Anycast,
@@ -20,5 +24,12 @@ namespace ActiveMQ.Net
             _ => throw new ArgumentOutOfRangeException(nameof(routingType), $"RoutingType {routingType.ToString()} is not supported.")
         };
         
+        public static object GetRoutingAnnotation(this RoutingType? routingType) => routingType switch
+        {
+            RoutingType.Anycast => _addressRoutingTypeAnycast,
+            RoutingType.Multicast => _addressRoutingTypeMulticast,
+            null => _addressRoutingTypeBoth,
+            _ => throw new ArgumentOutOfRangeException(nameof(routingType), $"RoutingType {routingType.ToString()} is not supported.")
+        };
     }
 }

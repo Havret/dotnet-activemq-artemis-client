@@ -4,6 +4,7 @@
     {
         private Properties _properties;
         private ApplicationProperties _applicationProperties;
+        private MessageAnnotations _messageAnnotations;
         internal Amqp.Message InnerMessage { get; }
 
         internal Message(Amqp.Message message)
@@ -19,6 +20,8 @@
         public Properties Properties => _properties ??= new Properties(InnerMessage);
 
         public ApplicationProperties ApplicationProperties => _applicationProperties ??= new ApplicationProperties(InnerMessage);
+
+        internal MessageAnnotations MessageAnnotations => _messageAnnotations ??= new MessageAnnotations(InnerMessage);
 
         public T GetBody<T>()
         {
