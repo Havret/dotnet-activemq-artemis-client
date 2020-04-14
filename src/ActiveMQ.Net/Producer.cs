@@ -68,13 +68,16 @@ namespace ActiveMQ.Net
 
         public void Send(Message message)
         {
-            SendInternal(message, null, null, null);
+            SendInternal(message: message, deliveryState: null, callback: null, state: null);
         }
 
         private void SendInternal(Message message, DeliveryState deliveryState, OutcomeCallback callback, object state)
         {
             try
             {
+                message.Properties.To = _configuration.DefaultAddress;
+                message.MessageAnnotations[SymbolUtils.RoutingType] = _configuration.DefaultRoutingType.GetRoutingAnnotation();
+
                 _senderLink.Send(message.InnerMessage, deliveryState, callback, state);
                 Log.MessageSent(_logger);
             }

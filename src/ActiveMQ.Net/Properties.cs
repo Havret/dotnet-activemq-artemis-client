@@ -141,5 +141,10 @@ namespace ActiveMQ.Net
                     _innerProperties.ResetField(12);
             }
         }
+
+        internal string To
+        {
+            set => _innerProperties.To = value;
+        }
     }
 }
