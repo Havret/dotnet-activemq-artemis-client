@@ -9,7 +9,7 @@ namespace ActiveMQ.Net.Tests.Utils
 
         public void SetHandler(Func<AttachContext, bool> attachHandler)
         {
-            this._attachHandler = attachHandler;
+            _attachHandler = attachHandler;
         }
 
         public void Process(AttachContext attachContext)

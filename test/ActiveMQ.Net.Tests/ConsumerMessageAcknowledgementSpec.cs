@@ -19,7 +19,7 @@ namespace ActiveMQ.Net.Tests
 
             var messageSource = host.CreateMessageSource("a1");
             await using var connection = await CreateConnection(endpoint);
-            var consumer = await connection.CreateConsumerAsync("a1");
+            var consumer = await connection.CreateConsumerAsync("a1", QueueRoutingType.Anycast);
             
             messageSource.Enqueue(new Message("foo"));
             var message = await consumer.ReceiveAsync();
@@ -37,7 +37,7 @@ namespace ActiveMQ.Net.Tests
 
             var messageSource = host.CreateMessageSource("a1");
             await using var connection = await CreateConnection(endpoint);
-            var consumer = await connection.CreateConsumerAsync("a1");
+            var consumer = await connection.CreateConsumerAsync("a1", QueueRoutingType.Anycast);
             
             messageSource.Enqueue(new Message("foo"));
             var message = await consumer.ReceiveAsync();
@@ -56,7 +56,7 @@ namespace ActiveMQ.Net.Tests
 
             var messageSource = host.CreateMessageSource("a1");
             await using var connection = await CreateConnection(endpoint);
-            var consumer = await connection.CreateConsumerAsync("a1");
+            var consumer = await connection.CreateConsumerAsync("a1", QueueRoutingType.Anycast);
             
             messageSource.Enqueue(new Message("foo"));
             var message = await consumer.ReceiveAsync();

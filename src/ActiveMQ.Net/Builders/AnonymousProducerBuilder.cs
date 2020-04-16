@@ -8,37 +8,32 @@ using Microsoft.Extensions.Logging;
 
 namespace ActiveMQ.Net.Builders
 {
-    internal class ProducerBuilder
+    public class AnonymousProducerBuilder
     {
         private readonly ILoggerFactory _loggerFactory;
         private readonly Session _session;
         private readonly TaskCompletionSource<bool> _tcs;
 
-        public ProducerBuilder(ILoggerFactory loggerFactory, Session session)
+        public AnonymousProducerBuilder(ILoggerFactory loggerFactory, Session session)
         {
             _loggerFactory = loggerFactory;
             _session = session;
             _tcs = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
         }
 
-        public async Task<IProducer> CreateAsync(ProducerConfiguration configuration, CancellationToken cancellationToken)
+        public async Task<IAnonymousProducer> CreateAsync(CancellationToken cancellationToken)
         {
-            if (configuration == null) throw new ArgumentNullException(nameof(configuration));
-            if (string.IsNullOrWhiteSpace(configuration.Address)) throw new ArgumentNullException(nameof(configuration.Address), "The address cannot be empty.");
-
             cancellationToken.ThrowIfCancellationRequested();
             cancellationToken.Register(() => _tcs.TrySetCanceled());
 
-            var routingCapabilities = configuration.RoutingType.GetRoutingCapabilities();
             var target = new Target
             {
-                Address = configuration.Address,
-                Capabilities = routingCapabilities
+                Address = null,
             };
             var senderLink = new SenderLink(_session, Guid.NewGuid().ToString(), target, OnAttached);
             senderLink.AddClosedCallback(OnClosed);
             await _tcs.Task.ConfigureAwait(false);
-            var producer = new Producer(_loggerFactory, senderLink, configuration);
+            var producer = new AnonymousProducer(_loggerFactory, senderLink);
             senderLink.Closed -= OnClosed;
             return producer;
         }

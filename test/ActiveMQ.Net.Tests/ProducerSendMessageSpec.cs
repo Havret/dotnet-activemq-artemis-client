@@ -36,7 +36,7 @@ namespace ActiveMQ.Net.Tests
             using var host = CreateOpenedContainerHost(endpoint, testHandler);
 
             await using var connection = await CreateConnection(endpoint);
-            var producer = await connection.CreateProducerAsync("a1");
+            var producer = await connection.CreateProducerAsync("a1", AddressRoutingType.Anycast);
 
             await producer.SendAsync(new Message("foo"));
 
@@ -65,7 +65,7 @@ namespace ActiveMQ.Net.Tests
             using var host = CreateOpenedContainerHost(endpoint, testHandler);
 
             await using var connection = await CreateConnection(endpoint);
-            var producer = await connection.CreateProducerAsync("a1");
+            var producer = await connection.CreateProducerAsync("a1", AddressRoutingType.Anycast);
 
             producer.Send(new Message("foo"));
 
@@ -80,21 +80,21 @@ namespace ActiveMQ.Net.Tests
 
             using var host = CreateOpenedContainerHost(endpoint);
             var messageProcessor = host.CreateMessageProcessor("a1");
-            
+
             // do not send outcome from a remote peer
             // as a result send should timeout
             messageProcessor.SetHandler(context => true);
 
             await using var connection = await CreateConnection(endpoint);
-            var producer = await connection.CreateProducerAsync("a1");
-            
+            var producer = await connection.CreateProducerAsync("a1", AddressRoutingType.Anycast);
+
             var cts = new CancellationTokenSource();
             cts.CancelAfter(TimeSpan.FromMilliseconds(50));
             await Assert.ThrowsAnyAsync<OperationCanceledException>(async () => await producer.SendAsync(new Message("foo"), cts.Token));
         }
 
         [Theory, MemberData(nameof(RoutingTypesData))]
-        public async Task Should_sent_message_using_specified_RoutingType(RoutingType routingType, byte routingAnnotation)
+        public async Task Should_sent_message_using_specified_RoutingType(AddressRoutingType routingType, object routingAnnotation)
         {
             var endpoint = GetUniqueEndpoint();
 
@@ -115,8 +115,9 @@ namespace ActiveMQ.Net.Tests
         {
             return new[]
             {
-                new object[] { RoutingType.Multicast, 0 },
-                new object[] { RoutingType.Anycast, 1 },
+                new object[] { AddressRoutingType.Multicast, (byte) 0 },
+                new object[] { AddressRoutingType.Anycast, (byte) 1 },
+                new object[] { AddressRoutingType.Both, null },
             };
         }
     }

@@ -94,8 +94,8 @@ namespace ActiveMQ.Net.Tests.AutoRecovering
             var host1 = CreateOpenedContainerHost(endpoint, testHandler);
 
             var connection = await CreateConnection(endpoint);
-            await connection.CreateProducerAsync("a1");
-            await connection.CreateProducerAsync("a2");
+            await connection.CreateProducerAsync("a1", AddressRoutingType.Anycast);
+            await connection.CreateProducerAsync("a2", AddressRoutingType.Anycast);
 
             Assert.True(producersAttached.Wait(Timeout));
             producersAttached.Reset();
@@ -127,7 +127,7 @@ namespace ActiveMQ.Net.Tests.AutoRecovering
             var host1 = CreateOpenedContainerHost(endpoint, testHandler);
 
             var connection = await CreateConnection(endpoint);
-            var producer = await connection.CreateProducerAsync("a1");
+            var producer = await connection.CreateProducerAsync("a1", AddressRoutingType.Both);
 
             Assert.True(producerAttached.WaitOne(Timeout));
             await producer.DisposeAsync();
@@ -158,8 +158,8 @@ namespace ActiveMQ.Net.Tests.AutoRecovering
             var host1 = CreateOpenedContainerHost(endpoint, testHandler);
 
             var connection = await CreateConnection(endpoint);
-            await connection.CreateConsumerAsync("a1");
-            await connection.CreateConsumerAsync("a1");
+            await connection.CreateConsumerAsync("a1", QueueRoutingType.Anycast);
+            await connection.CreateConsumerAsync("a1", QueueRoutingType.Anycast);
 
             Assert.True(consumersAttached.Wait(Timeout));
             consumersAttached.Reset();
@@ -191,7 +191,7 @@ namespace ActiveMQ.Net.Tests.AutoRecovering
             var host1 = CreateOpenedContainerHost(endpoint, testHandler);
 
             var connection = await CreateConnection(endpoint);
-            var consumer = await connection.CreateConsumerAsync("a1");
+            var consumer = await connection.CreateConsumerAsync("a1", QueueRoutingType.Anycast);
 
             Assert.True(consumerAttached.WaitOne(Timeout));
             await consumer.DisposeAsync();

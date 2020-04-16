@@ -1,6 +1,6 @@
 ﻿namespace ActiveMQ.Net
 {
-    public enum RoutingType
+    public enum QueueRoutingType
     {
         Anycast,
         Multicast

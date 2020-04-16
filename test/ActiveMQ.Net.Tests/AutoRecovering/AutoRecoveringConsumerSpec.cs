@@ -36,7 +36,7 @@ namespace ActiveMQ.Net.Tests.AutoRecovering
             var host1 = CreateOpenedContainerHost(endpoint);
 
             var connection = await CreateConnection(endpoint);
-            var consumer = await connection.CreateConsumerAsync("a1");
+            var consumer = await connection.CreateConsumerAsync("a1", QueueRoutingType.Anycast);
             
             var cts = new CancellationTokenSource(Timeout);
             var receiveTask = consumer.ReceiveAsync(cts.Token);
@@ -108,7 +108,7 @@ namespace ActiveMQ.Net.Tests.AutoRecovering
             var host1 = CreateOpenedContainerHost(endpoint, testHandler);
 
             var connection = await CreateConnection(endpoint);
-            var consumer = await connection.CreateConsumerAsync("a1");
+            var consumer = await connection.CreateConsumerAsync("a1", QueueRoutingType.Anycast);
 
             Assert.True(consumerAttached.WaitOne(Timeout));
             host1.Dispose();

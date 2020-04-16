@@ -5,17 +5,7 @@ namespace ActiveMQ.Net
 {
     public static class ConnectionExtensions
     {
-        public static Task<IConsumer> CreateConsumerAsync(this IConnection connection, string address, CancellationToken cancellationToken = default)
-        {
-            var configuration = new ConsumerConfiguration
-            {
-                Address = address,
-                RoutingType = RoutingType.Anycast
-            };
-            return connection.CreateConsumerAsync(configuration, cancellationToken);
-        }
-
-        public static Task<IConsumer> CreateConsumerAsync(this IConnection connection, string address, RoutingType routingType, CancellationToken cancellationToken = default)
+        public static Task<IConsumer> CreateConsumerAsync(this IConnection connection, string address, QueueRoutingType routingType, CancellationToken cancellationToken = default)
         {
             var configuration = new ConsumerConfiguration
             {
@@ -25,7 +15,7 @@ namespace ActiveMQ.Net
             return connection.CreateConsumerAsync(configuration, cancellationToken);
         }
 
-        public static Task<IConsumer> CreateConsumerAsync(this IConnection connection, string address, RoutingType routingType, string queue, CancellationToken cancellationToken = default)
+        public static Task<IConsumer> CreateConsumerAsync(this IConnection connection, string address, QueueRoutingType routingType, string queue, CancellationToken cancellationToken = default)
         {
             var configuration = new ConsumerConfiguration
             {
@@ -36,21 +26,12 @@ namespace ActiveMQ.Net
             return connection.CreateConsumerAsync(configuration, cancellationToken);
         }
 
-        public static Task<IProducer> CreateProducerAsync(this IConnection connection, string address, CancellationToken cancellationToken = default)
+        public static Task<IProducer> CreateProducerAsync(this IConnection connection, string address, AddressRoutingType routingType, CancellationToken cancellationToken = default)
         {
             var configuration = new ProducerConfiguration
             {
-                DefaultAddress = address,
-            };
-            return connection.CreateProducerAsync(configuration, cancellationToken);
-        }
-
-        public static Task<IProducer> CreateProducerAsync(this IConnection connection, string address, RoutingType routingType, CancellationToken cancellationToken = default)
-        {
-            var configuration = new ProducerConfiguration
-            {
-                DefaultAddress = address,
-                DefaultRoutingType = routingType
+                Address = address,
+                RoutingType = routingType
             };            
             return connection.CreateProducerAsync(configuration, cancellationToken);
         }

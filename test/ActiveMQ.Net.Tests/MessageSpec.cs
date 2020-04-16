@@ -18,7 +18,7 @@ namespace ActiveMQ.Net.Tests
             using var host = CreateOpenedContainerHost();
             var messageProcessor = host.CreateMessageProcessor("a1");
             await using var connection = await CreateConnection(host.Endpoint);
-            var producer = await connection.CreateProducerAsync("a1");
+            var producer = await connection.CreateProducerAsync("a1", AddressRoutingType.Anycast);
 
             var message = new Message("text");
             message.Properties.MessageId = "messageId";
@@ -54,7 +54,7 @@ namespace ActiveMQ.Net.Tests
             using var host = CreateOpenedContainerHost();
             var messageProcessor = host.CreateMessageProcessor("a1");
             await using var connection = await CreateConnection(host.Endpoint);
-            var producer = await connection.CreateProducerAsync("a1");
+            var producer = await connection.CreateProducerAsync("a1", AddressRoutingType.Anycast);
 
             var message = new Message("text");
             message.Properties.MessageId = "messageId";
@@ -106,7 +106,7 @@ namespace ActiveMQ.Net.Tests
             using var host = CreateOpenedContainerHost();
             var messageProcessor = host.CreateMessageProcessor("a1");
             await using var connection = await CreateConnection(host.Endpoint);
-            var producer = await connection.CreateProducerAsync("a1");
+            var producer = await connection.CreateProducerAsync("a1", AddressRoutingType.Anycast);
 
             var message = new Message("text");
             message.ApplicationProperties["charKey"] = 'c';

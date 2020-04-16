@@ -41,7 +41,7 @@ namespace ActiveMQ.Net.Tests
 
             using var host = CreateOpenedContainerHost(endpoint, testHandler);
             await using var connection = await CreateConnection(endpoint);
-            var consumer = await connection.CreateConsumerAsync("test-consumer");
+            var consumer = await connection.CreateConsumerAsync("test-consumer", QueueRoutingType.Anycast);
             await consumer.DisposeAsync();
 
             Assert.True(consumerAttached.WaitOne(Timeout));
@@ -69,7 +69,7 @@ namespace ActiveMQ.Net.Tests
             using var host = CreateOpenedContainerHost(endpoint, testHandler);
 
             await using var connection = await CreateConnection(endpoint);
-            await using var consumer = await connection.CreateConsumerAsync("test-consumer");
+            await using var consumer = await connection.CreateConsumerAsync("test-consumer", QueueRoutingType.Anycast);
 
             Assert.True(consumerAttached.WaitOne(Timeout));
             Assert.IsType<Source>(attachFrame.Source);
@@ -97,7 +97,7 @@ namespace ActiveMQ.Net.Tests
             using var host = CreateOpenedContainerHost(endpoint, testHandler);
 
             await using var connection = await CreateConnection(endpoint);
-            await using var consumer = await connection.CreateConsumerAsync("test-consumer");
+            await using var consumer = await connection.CreateConsumerAsync("test-consumer", QueueRoutingType.Anycast);
 
             Assert.True(consumerAttached.WaitOne(Timeout));
             Assert.NotNull(attachFrame);
@@ -106,7 +106,7 @@ namespace ActiveMQ.Net.Tests
         }
 
         [Theory, MemberData(nameof(RoutingTypesData))]
-        public async Task Should_attach_to_address_with_specified_RoutingType(RoutingType routingType, Symbol routingCapability)
+        public async Task Should_attach_to_address_with_specified_RoutingType(QueueRoutingType routingType, Symbol routingCapability)
         {
             var endpoint = GetUniqueEndpoint();
             var consumerAttached = new ManualResetEvent(false);
@@ -138,8 +138,8 @@ namespace ActiveMQ.Net.Tests
         {
             return new[]
             {
-                new object[] { RoutingType.Anycast, RoutingCapabilities.Anycast },
-                new object[] { RoutingType.Multicast, RoutingCapabilities.Multicast }
+                new object[] { QueueRoutingType.Anycast, RoutingCapabilities.Anycast },
+                new object[] { QueueRoutingType.Multicast, RoutingCapabilities.Multicast }
             };
         }
 
@@ -150,7 +150,7 @@ namespace ActiveMQ.Net.Tests
             using var host = CreateOpenedContainerHost(endpoint);
 
             await using var connection = await CreateConnection(endpoint);
-            await Assert.ThrowsAsync<ArgumentOutOfRangeException>(() => connection.CreateConsumerAsync("test-consumer", (RoutingType) 99));
+            await Assert.ThrowsAsync<ArgumentOutOfRangeException>(() => connection.CreateConsumerAsync("test-consumer", (QueueRoutingType) 99));
         }
 
         [Fact]
@@ -174,7 +174,7 @@ namespace ActiveMQ.Net.Tests
             using var host = CreateOpenedContainerHost(endpoint, testHandler);
 
             await using var connection = await CreateConnection(endpoint);
-            await using var consumer = await connection.CreateConsumerAsync("test-consumer", RoutingType.Anycast, "q1");
+            await using var consumer = await connection.CreateConsumerAsync("test-consumer", QueueRoutingType.Anycast, "q1");
 
             Assert.True(consumerAttached.WaitOne(Timeout));
             Assert.NotNull(attachFrame);
@@ -211,7 +211,7 @@ namespace ActiveMQ.Net.Tests
             host.Open();
 
             await using var connection = await CreateConnection(endpoint);
-            var exception = await Assert.ThrowsAsync<CreateConsumerException>(() => connection.CreateConsumerAsync("a1", RoutingType.Anycast, "q1"));
+            var exception = await Assert.ThrowsAsync<CreateConsumerException>(() => connection.CreateConsumerAsync("a1", QueueRoutingType.Anycast, "q1"));
             Assert.Contains("Queue: 'q1' does not exist", exception.Message);
             Assert.Equal(ErrorCode.NotFound, exception.Condition);
         }
@@ -225,7 +225,7 @@ namespace ActiveMQ.Net.Tests
 
             await using var connection = await CreateConnection(endpoint);
             var cancellationTokenSource = new CancellationTokenSource(ShortTimeout);
-            await Assert.ThrowsAnyAsync<OperationCanceledException>(async () => await connection.CreateConsumerAsync("a1", RoutingType.Anycast, "q1", cancellationTokenSource.Token));
+            await Assert.ThrowsAnyAsync<OperationCanceledException>(async () => await connection.CreateConsumerAsync("a1", QueueRoutingType.Anycast, "q1", cancellationTokenSource.Token));
         }
 
         [Fact]
@@ -237,7 +237,7 @@ namespace ActiveMQ.Net.Tests
 
             await using var connection = await CreateConnection(endpoint);
             var cancellationTokenSource = new CancellationTokenSource(ShortTimeout);
-            await Assert.ThrowsAnyAsync<OperationCanceledException>(async() => await connection.CreateConsumerAsync("test-consumer", RoutingType.Anycast, cancellationTokenSource.Token));
+            await Assert.ThrowsAnyAsync<OperationCanceledException>(async() => await connection.CreateConsumerAsync("test-consumer", QueueRoutingType.Anycast, cancellationTokenSource.Token));
         }
         
         [Fact]
@@ -249,7 +249,7 @@ namespace ActiveMQ.Net.Tests
 
             await using var connection = await CreateConnection(endpoint);
             var cancellationTokenSource = new CancellationTokenSource(ShortTimeout);
-            await Assert.ThrowsAnyAsync<OperationCanceledException>(async() => await connection.CreateConsumerAsync("test-consumer", cancellationTokenSource.Token));
+            await Assert.ThrowsAnyAsync<OperationCanceledException>(async() => await connection.CreateConsumerAsync("test-consumer", QueueRoutingType.Anycast, cancellationTokenSource.Token));
         }
     }
 }

@@ -2,7 +2,7 @@
 {
     public class ProducerConfiguration
     {
-        public string DefaultAddress { get; set; }
-        public RoutingType? DefaultRoutingType { get; set; }
+        public string Address { get; set; }
+        public AddressRoutingType RoutingType { get; set; }
     }
 }
