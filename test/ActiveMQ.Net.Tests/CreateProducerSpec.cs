@@ -40,7 +40,7 @@ namespace ActiveMQ.Net.Tests
             using var host = CreateOpenedContainerHost(endpoint, testHandler);
 
             await using var connection = await CreateConnection(endpoint);
-            var producer = await connection.CreateProducerAsync("a1");
+            var producer = await connection.CreateProducerAsync("a1", AddressRoutingType.Anycast);
             await producer.DisposeAsync();
 
             Assert.True(producerAttached.WaitOne(Timeout));
@@ -68,7 +68,7 @@ namespace ActiveMQ.Net.Tests
             using var host = CreateOpenedContainerHost(endpoint, testHandler);
 
             await using var connection = await CreateConnection(endpoint);
-            await using var producer = await connection.CreateProducerAsync("a1");
+            await using var producer = await connection.CreateProducerAsync("a1", AddressRoutingType.Anycast);
 
             Assert.True(producerAttached.WaitOne(Timeout));
             Assert.IsType<Target>(attachFrame.Target);
@@ -96,7 +96,7 @@ namespace ActiveMQ.Net.Tests
             using var host = CreateOpenedContainerHost(endpoint, testHandler);
 
             await using var connection = await CreateConnection(endpoint);
-            await using var producer = await connection.CreateProducerAsync("a1");
+            await using var producer = await connection.CreateProducerAsync("a1", AddressRoutingType.Anycast);
 
             Assert.True(producerAttached.WaitOne(Timeout));
             Assert.NotNull(attachFrame);
@@ -105,7 +105,7 @@ namespace ActiveMQ.Net.Tests
         }
         
         [Theory, MemberData(nameof(RoutingTypesData))]
-        public async Task Should_attach_to_address_with_specified_RoutingType(RoutingType routingType, Symbol routingCapability)
+        public async Task Should_attach_to_address_with_specified_RoutingType(AddressRoutingType routingType, Symbol routingCapability)
         {
             var endpoint = GetUniqueEndpoint();
             var producerAttached = new ManualResetEvent(false);
@@ -137,8 +137,8 @@ namespace ActiveMQ.Net.Tests
         {
             return new[]
             {
-                new object[] { RoutingType.Anycast, RoutingCapabilities.Anycast },
-                new object[] { RoutingType.Multicast, RoutingCapabilities.Multicast }
+                new object[] { AddressRoutingType.Anycast, RoutingCapabilities.Anycast },
+                new object[] { AddressRoutingType.Multicast, RoutingCapabilities.Multicast }
             };
         }
 
@@ -149,7 +149,7 @@ namespace ActiveMQ.Net.Tests
             using var host = CreateOpenedContainerHost(endpoint);
 
             await using var connection = await CreateConnection(endpoint);
-            await Assert.ThrowsAsync<ArgumentOutOfRangeException>(() => connection.CreateProducerAsync("a1", (RoutingType) 99));
+            await Assert.ThrowsAsync<ArgumentOutOfRangeException>(() => connection.CreateProducerAsync("a1", (AddressRoutingType) 99));
         }
 
         [Fact]
@@ -160,7 +160,7 @@ namespace ActiveMQ.Net.Tests
             await using var connection = await CreateConnection(endpoint);
 
             var cancellationTokenSource = new CancellationTokenSource(ShortTimeout);
-            await Assert.ThrowsAnyAsync<OperationCanceledException>(() => connection.CreateProducerAsync("a1", RoutingType.Multicast, cancellationTokenSource.Token));
+            await Assert.ThrowsAnyAsync<OperationCanceledException>(() => connection.CreateProducerAsync("a1", AddressRoutingType.Multicast, cancellationTokenSource.Token));
         }
         
         [Fact]
@@ -171,7 +171,7 @@ namespace ActiveMQ.Net.Tests
             await using var connection = await CreateConnection(endpoint);
 
             var cancellationTokenSource = new CancellationTokenSource(ShortTimeout);
-            await Assert.ThrowsAnyAsync<OperationCanceledException>(() => connection.CreateProducerAsync("a1", cancellationTokenSource.Token));
+            await Assert.ThrowsAnyAsync<OperationCanceledException>(() => connection.CreateProducerAsync("a1", AddressRoutingType.Multicast, cancellationTokenSource.Token));
         }
     }
 }

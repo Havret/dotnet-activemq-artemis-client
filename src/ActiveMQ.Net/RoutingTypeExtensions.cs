@@ -8,27 +8,27 @@ namespace ActiveMQ.Net
         private static readonly object _addressRoutingTypeAnycast = (byte) 1;
         private static readonly object _addressRoutingTypeMulticast = (byte) 0;
         private static readonly object _addressRoutingTypeBoth = null;
-        
-        public static Symbol GetRoutingCapability(this RoutingType routingType) => routingType switch
+
+        public static Symbol GetRoutingCapability(this QueueRoutingType routingType) => routingType switch
         {
-            RoutingType.Anycast => RoutingCapabilities.Anycast,
-            RoutingType.Multicast => RoutingCapabilities.Multicast,
+            QueueRoutingType.Anycast => RoutingCapabilities.Anycast,
+            QueueRoutingType.Multicast => RoutingCapabilities.Multicast,
             _ => throw new ArgumentOutOfRangeException(nameof(routingType), $"RoutingType {routingType.ToString()} is not supported.")
         };
 
-        public static Symbol[] GetRoutingCapabilities(this RoutingType? routingType) => routingType switch
+        public static Symbol[] GetRoutingCapabilities(this AddressRoutingType routingType) => routingType switch
         {
-            RoutingType.Anycast => new[] { RoutingCapabilities.Anycast },
-            RoutingType.Multicast => new[] { RoutingCapabilities.Multicast },
-            null => new[] { RoutingCapabilities.Anycast, RoutingCapabilities.Multicast },
+            AddressRoutingType.Anycast => new[] { RoutingCapabilities.Anycast },
+            AddressRoutingType.Multicast => new[] { RoutingCapabilities.Multicast },
+            AddressRoutingType.Both => null,
             _ => throw new ArgumentOutOfRangeException(nameof(routingType), $"RoutingType {routingType.ToString()} is not supported.")
         };
-        
-        public static object GetRoutingAnnotation(this RoutingType? routingType) => routingType switch
+
+        public static object GetRoutingAnnotation(this AddressRoutingType routingType) => routingType switch
         {
-            RoutingType.Anycast => _addressRoutingTypeAnycast,
-            RoutingType.Multicast => _addressRoutingTypeMulticast,
-            null => _addressRoutingTypeBoth,
+            AddressRoutingType.Anycast => _addressRoutingTypeAnycast,
+            AddressRoutingType.Multicast => _addressRoutingTypeMulticast,
+            AddressRoutingType.Both => _addressRoutingTypeBoth,
             _ => throw new ArgumentOutOfRangeException(nameof(routingType), $"RoutingType {routingType.ToString()} is not supported.")
         };
     }

@@ -39,6 +39,12 @@ namespace ActiveMQ.Net
             return producerBuilder.CreateAsync(configuration, cancellationToken);
         }
 
+        public Task<IAnonymousProducer> CreateAnonymousProducer(CancellationToken cancellationToken)
+        {
+            var producerBuilder = new AnonymousProducerBuilder(_loggerFactory, _session);
+            return producerBuilder.CreateAsync(cancellationToken);
+        }
+
         public async ValueTask DisposeAsync()
         {
             if (!_closed)

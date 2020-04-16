@@ -144,7 +144,14 @@ namespace ActiveMQ.Net
 
         internal string To
         {
-            set => _innerProperties.To = value;
+            get => _innerProperties.To;
+            set
+            {
+                if (value != default)
+                    _innerProperties.To = value;
+                else
+                    _innerProperties.ResetField(2);
+            }
         }
     }
 }
