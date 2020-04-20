@@ -49,7 +49,7 @@ namespace ActiveMQ.Net
 
         private Task<Session> CreateSession(CancellationToken cancellationToken)
         {
-            var sessionBuilder = new SessionBuilder(_loggerFactory, _connection);
+            var sessionBuilder = new SessionBuilder(_connection);
             return sessionBuilder.CreateAsync(cancellationToken);
         }
 

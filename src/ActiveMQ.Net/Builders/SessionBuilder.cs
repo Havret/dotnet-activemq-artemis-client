@@ -3,7 +3,6 @@ using System.Threading.Tasks;
 using ActiveMQ.Net.Exceptions;
 using Amqp;
 using Amqp.Framing;
-using Microsoft.Extensions.Logging;
 
 namespace ActiveMQ.Net.Builders
 {
@@ -11,14 +10,12 @@ namespace ActiveMQ.Net.Builders
     {
         private const uint DefaultWindowSize = 2048;
         private const int DefaultMaxLinksPerSession = 63;
-        
-        private readonly ILoggerFactory _loggerFactory;
+
         private readonly Amqp.Connection _connection;
         private readonly TaskCompletionSource<bool> _tcs;
 
-        public SessionBuilder(ILoggerFactory loggerFactory, Amqp.Connection connection)
+        public SessionBuilder(Amqp.Connection connection)
         {
-            _loggerFactory = loggerFactory;
             _connection = connection;
             _tcs = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
         }
