@@ -9,7 +9,7 @@ namespace ActiveMQ.Net.Tests.Utils
 
         public TestHandler(Action<Event> action)
         {
-            this._action = action;
+            _action = action;
         }
 
         bool IHandler.CanHandle(EventId id)
@@ -19,7 +19,7 @@ namespace ActiveMQ.Net.Tests.Utils
 
         void IHandler.Handle(Event protocolEvent)
         {
-            this._action(protocolEvent);
+            _action(protocolEvent);
         }
     }
 }

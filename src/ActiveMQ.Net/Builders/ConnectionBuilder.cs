@@ -28,8 +28,7 @@ namespace ActiveMQ.Net.Builders
             connection.AddClosedCallback(OnClosed);
             await _tcs.Task.ConfigureAwait(false);
             connection.Closed -= OnClosed;
-            var session = new Session(connection);
-            return new Connection(_loggerFactory, endpoint, connection, session);
+            return new Connection(_loggerFactory, endpoint, connection);
         }
 
         private void OnOpened(Amqp.IConnection connection, Open open)

@@ -14,29 +14,6 @@ namespace ActiveMQ.Net.Tests
         }
 
         [Fact]
-        public async Task New_connection_should_implicitly_open_new_session()
-        {
-            var endpoint = GetUniqueEndpoint();
-            var sessionOpened = new ManualResetEvent(false);
-
-            var testHandler = new TestHandler(@event =>
-            {
-                switch (@event.Id)
-                {
-                    case EventId.SessionRemoteOpen:
-                        sessionOpened.Set();
-                        break;
-                }
-            });
-
-            using var host = CreateOpenedContainerHost(endpoint, testHandler);
-
-            await using var connection = await CreateConnection(endpoint);
-
-            Assert.True(sessionOpened.WaitOne());
-        }
-
-        [Fact]
         public async Task Should_create_and_close_connection()
         {
             var endpoint = GetUniqueEndpoint();
