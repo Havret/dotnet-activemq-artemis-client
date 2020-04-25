@@ -1,6 +1,6 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ActiveMQ.Net.Tests", "test\ActiveMQ.Net.Tests\ActiveMQ.Net.Tests.csproj", "{042B0533-6AEA-4353-8723-CEFFFCB78398}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ActiveMQ.Net.UnitTests", "test\ActiveMQ.Net.UnitTests\ActiveMQ.Net.UnitTests.csproj", "{042B0533-6AEA-4353-8723-CEFFFCB78398}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ActiveMQ.Net", "src\ActiveMQ.Net\ActiveMQ.Net.csproj", "{FECF1F2E-2DD5-40FE-970E-B0F1BB8152E9}"
 EndProject
