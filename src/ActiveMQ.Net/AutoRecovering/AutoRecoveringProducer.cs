@@ -17,31 +17,37 @@ namespace ActiveMQ.Net.AutoRecovering
 
         public async Task SendAsync(Message message, CancellationToken cancellationToken = default)
         {
-            try
+            while (true)
             {
-                await _producer.SendAsync(message, cancellationToken).ConfigureAwait(false);
-            }
-            catch (ProducerClosedException)
-            {
-                Suspend();
-                await WaitAsync(cancellationToken).ConfigureAwait(false);
-                Log.RetryingSendAsync(Logger);
-                await _producer.SendAsync(message, cancellationToken).ConfigureAwait(false);
+                try
+                {
+                    await _producer.SendAsync(message, cancellationToken).ConfigureAwait(false);
+                    return;
+                }
+                catch (ProducerClosedException)
+                {
+                    HandleProducerClosed();
+                    await WaitAsync(cancellationToken).ConfigureAwait(false);
+                    Log.RetryingSendAsync(Logger);
+                }
             }
         }
 
         public void Send(Message message)
         {
-            try
+            while (true)
             {
-                _producer.Send(message);
-            }
-            catch (ProducerClosedException)
-            {
-                Suspend();
-                Wait();
-                Log.RetryingSendAsync(Logger);
-                _producer.Send(message);
+                try
+                {
+                    _producer.Send(message);
+                    return;
+                }
+                catch (ProducerClosedException)
+                {
+                    HandleProducerClosed();
+                    Wait();
+                    Log.RetryingSendAsync(Logger);
+                }
             }
         }
         

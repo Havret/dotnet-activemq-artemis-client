@@ -35,7 +35,13 @@ namespace ActiveMQ.Net.AutoRecovering
         public async Task RecoverAsync(IConnection connection, CancellationToken cancellationToken)
         {
             await RecoverUnderlyingProducer(connection, cancellationToken).ConfigureAwait(false);
-            Log.ProducerRecovered(Logger);            
+            Log.ProducerRecovered(Logger);
+        }
+
+        protected void HandleProducerClosed()
+        {
+            Suspend();
+            RecoveryRequested?.Invoke();
         }
 
         public void Suspend()

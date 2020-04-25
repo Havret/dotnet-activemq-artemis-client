@@ -15,31 +15,37 @@ namespace ActiveMQ.Net.AutoRecovering
         
         public async Task SendAsync(string address, AddressRoutingType routingType, Message message, CancellationToken cancellationToken = default)
         {
-            try
+            while (true)
             {
-                await _producer.SendAsync(address, routingType, message, cancellationToken).ConfigureAwait(false);
-            }
-            catch (ProducerClosedException)
-            {
-                Suspend();
-                await WaitAsync(cancellationToken).ConfigureAwait(false);
-                Log.RetryingSendAsync(Logger);
-                await _producer.SendAsync(address, routingType, message, cancellationToken).ConfigureAwait(false);
+                try
+                {
+                    await _producer.SendAsync(address, routingType, message, cancellationToken).ConfigureAwait(false);
+                    return;
+                }
+                catch (ProducerClosedException)
+                {
+                    HandleProducerClosed();
+                    await WaitAsync(cancellationToken).ConfigureAwait(false);
+                    Log.RetryingSendAsync(Logger);
+                }
             }
         }
 
         public void Send(string address, AddressRoutingType routingType, Message message)
         {
-            try
+            while (true)
             {
-                _producer.Send(address, routingType, message);
-            }
-            catch (ProducerClosedException)
-            {
-                Suspend();
-                Wait();
-                Log.RetryingSendAsync(Logger);
-                _producer.Send(address, routingType, message);
+                try
+                {
+                    _producer.Send(address, routingType, message);
+                    return;
+                }
+                catch (ProducerClosedException)
+                {
+                    HandleProducerClosed();
+                    Wait();
+                    Log.RetryingSendAsync(Logger);
+                }
             }
         }
 
