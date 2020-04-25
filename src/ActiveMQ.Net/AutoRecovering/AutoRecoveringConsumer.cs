@@ -22,19 +22,20 @@ namespace ActiveMQ.Net.AutoRecovering
 
         public async ValueTask<Message> ReceiveAsync(CancellationToken cancellationToken = default)
         {
-            try
+            while (true)
             {
-                return await _consumer.ReceiveAsync(cancellationToken).ConfigureAwait(false);
-            }
-            // TODO: Use ConsumerClosedException instead
-            catch (ChannelClosedException)
-            {
-                Log.RetryingReceiveAsync(_logger);
-                
-                Suspend();
-                RecoveryRequested?.Invoke();
-                await _manualResetEvent.WaitAsync(cancellationToken).ConfigureAwait(false);
-                return await _consumer.ReceiveAsync(cancellationToken).ConfigureAwait(false);
+                try
+                {
+                    return await _consumer.ReceiveAsync(cancellationToken).ConfigureAwait(false);
+                }
+                // TODO: Use ConsumerClosedException instead
+                catch (ChannelClosedException)
+                {
+                    Log.RetryingReceiveAsync(_logger);
+                    Suspend();
+                    RecoveryRequested?.Invoke();
+                    await _manualResetEvent.WaitAsync(cancellationToken).ConfigureAwait(false);
+                }
             }
         }
 
