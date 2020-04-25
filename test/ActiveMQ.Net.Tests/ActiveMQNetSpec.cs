@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using ActiveMQ.Net.Tests.Logging;
 using ActiveMQ.Net.Tests.Utils;
@@ -67,6 +68,19 @@ namespace ActiveMQ.Net.Tests
             linkProcessor.SetHandler(context => true);
 
             return host;
+        }
+
+        protected static Task DisposeHostAndWaitUntilConnectionNotified(TestContainerHost host, IConnection connection)
+        {
+            var tcs = new TaskCompletionSource<bool>();
+            var cts = new CancellationTokenSource(Timeout);
+            cts.Token.Register(() => tcs.TrySetCanceled());
+            connection.ConnectionClosed += (sender, args) =>
+            {
+                tcs.TrySetResult(true);
+            };
+            host.Dispose();
+            return tcs.Task;
         }
 
         protected static TimeSpan Timeout
