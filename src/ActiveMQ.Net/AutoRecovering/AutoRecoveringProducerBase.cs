@@ -18,8 +18,14 @@ namespace ActiveMQ.Net.AutoRecovering
 
         public void Resume()
         {
+            var wasSuspended = IsSuspended();
             _manualResetEvent.Set();
-            Log.ProducerResumed(Logger);
+            
+            if (wasSuspended)
+            {
+                Log.ProducerResumed(Logger);    
+            }
+        }
 
         private bool IsSuspended()
         {
