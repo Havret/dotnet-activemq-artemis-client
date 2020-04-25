@@ -51,7 +51,7 @@ namespace ActiveMQ.Net.Tests.AutoRecovering
             var connection = await CreateConnection(endpoint);
             var producer = await connection.CreateProducerAsync("a1", AddressRoutingType.Anycast);
 
-            host1.Dispose();
+            await DisposeHostAndWaitUntilConnectionNotified(host1, connection);
 
             var cts = new CancellationTokenSource(Timeout);
             var produceTask = producer.SendAsync(new Message("foo"), cts.Token);
