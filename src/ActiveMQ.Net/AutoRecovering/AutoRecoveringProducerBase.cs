@@ -20,6 +20,10 @@ namespace ActiveMQ.Net.AutoRecovering
         {
             _manualResetEvent.Set();
             Log.ProducerResumed(Logger);
+
+        private bool IsSuspended()
+        {
+            return !_manualResetEvent.IsSet;
         }
 
         public async Task RecoverAsync(IConnection connection, CancellationToken cancellationToken)
@@ -30,10 +34,13 @@ namespace ActiveMQ.Net.AutoRecovering
 
         public void Suspend()
         {
+            var wasSuspended = IsSuspended();
             _manualResetEvent.Reset();
-            RecoveryRequested?.Invoke();
 
-            Log.ProducerSuspended(Logger);
+            if (!wasSuspended)
+            {
+                Log.ProducerSuspended(Logger);                
+            }
         }
 
         protected void Wait()
