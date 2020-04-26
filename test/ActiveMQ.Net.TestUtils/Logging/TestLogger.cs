@@ -2,7 +2,7 @@
 using Microsoft.Extensions.Logging;
 using Xunit.Abstractions;
 
-namespace ActiveMQ.Net.Tests.Logging
+namespace ActiveMQ.Net.TestUtils.Logging
 {
     public sealed class TestLogger : ILogger
     {

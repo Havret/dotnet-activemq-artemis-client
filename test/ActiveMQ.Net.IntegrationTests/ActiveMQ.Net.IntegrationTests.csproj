@@ -1,11 +1,9 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
 
     <IsPackable>false</IsPackable>
-
-    <RootNamespace>ActiveMQ.Net.Tests</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>
@@ -18,12 +16,6 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\ActiveMQ.Net\ActiveMQ.Net.csproj" />
     <ProjectReference Include="..\ActiveMQ.Net.TestUtils\ActiveMQ.Net.TestUtils.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Update="xunit.runner.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
   </ItemGroup>
 
 </Project>
