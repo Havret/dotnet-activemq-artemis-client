@@ -2,8 +2,8 @@
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using ActiveMQ.Net.Tests.Logging;
 using ActiveMQ.Net.Tests.Utils;
+using ActiveMQ.Net.TestUtils.Logging;
 using Amqp.Handler;
 using Microsoft.Extensions.Logging;
 using Xunit.Abstractions;

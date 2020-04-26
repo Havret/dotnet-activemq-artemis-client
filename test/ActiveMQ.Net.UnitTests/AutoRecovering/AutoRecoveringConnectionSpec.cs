@@ -3,6 +3,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using ActiveMQ.Net.AutoRecovering.RecoveryPolicy;
 using ActiveMQ.Net.Tests.Utils;
+using ActiveMQ.Net.TestUtils;
 using Amqp.Framing;
 using Amqp.Handler;
 using Xunit;

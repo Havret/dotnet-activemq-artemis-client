@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 
-namespace ActiveMQ.Net.Tests.Utils
+namespace ActiveMQ.Net.TestUtils
 {
     public static class DisposeUtil
     {
@@ -15,7 +15,7 @@ namespace ActiveMQ.Net.Tests.Utils
                 }
                 catch (Exception)
                 {
-                    // ignored
+                    // ignore
                 }
             }
         }

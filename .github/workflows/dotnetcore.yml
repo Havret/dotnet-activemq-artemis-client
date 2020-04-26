@@ -9,11 +9,21 @@ on:
       - master
 
 jobs:
-  build:
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os: [ubuntu-latest, windows-latest]
+  linux:
+    runs-on: ubuntu-latest
+    env:
+      ARTEMIS_USERNAME: "guest"
+      ARTEMIS_PASSWORD: "guest"
+      ARTEMIS_HOST: "localhost"
+      ARTEMIS_PORT: 5672
+    services:
+      activemq-artemis:
+        image: vromero/activemq-artemis:2.11-latest
+        env:
+          ARTEMIS_USERNAME: "guest"
+          ARTEMIS_PASSWORD: "guest"
+        ports:
+          - 5672:5672
     steps:
       - uses: actions/checkout@v1
       - name: Setup .NET Core
@@ -24,3 +34,15 @@ jobs:
         run: dotnet build --configuration Release
       - name: Test with dotnet
         run: dotnet test --configuration Release
+  windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v1
+      - name: Setup .NET Core
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: "3.1.100"
+      - name: Build with dotnet
+        run: dotnet build --configuration Release
+      - name: Test with dotnet
+        run: dotnet test --filter "FullyQualifiedName!~IntegrationTests"
