@@ -12,17 +12,20 @@ namespace ActiveMQ.Net.Builders
     {
         private readonly ILoggerFactory _loggerFactory;
         private readonly Session _session;
-        private readonly TaskCompletionSource<IConsumer> _tcs;
+        private readonly TaskCompletionSource<bool> _tcs;
 
         public ConsumerBuilder(ILoggerFactory loggerFactory, Session session)
         {
             _loggerFactory = loggerFactory;
             _session = session;
-            _tcs = new TaskCompletionSource<IConsumer>(TaskCreationOptions.RunContinuationsAsynchronously);
+            _tcs = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
         }
 
         public async Task<IConsumer> CreateAsync(ConsumerConfiguration configuration, CancellationToken cancellationToken)
         {
+            if (configuration == null) throw new ArgumentNullException(nameof(configuration));
+            if (string.IsNullOrWhiteSpace(configuration.Address)) throw new ArgumentNullException(nameof(configuration.Address), "The address cannot be empty.");
+
             cancellationToken.ThrowIfCancellationRequested();
             cancellationToken.Register(() => _tcs.TrySetCanceled());
 
@@ -35,10 +38,9 @@ namespace ActiveMQ.Net.Builders
 
             var receiverLink = new ReceiverLink(_session, Guid.NewGuid().ToString(), source, OnAttached);
             receiverLink.AddClosedCallback(OnClosed);
-            var consumer = await _tcs.Task.ConfigureAwait(false);
+            await _tcs.Task.ConfigureAwait(false);
             receiverLink.Closed -= OnClosed;
-
-            return consumer;
+            return new Consumer(_loggerFactory, receiverLink);
         }
 
         private static string GetAddress(string address, string queue)
@@ -57,7 +59,7 @@ namespace ActiveMQ.Net.Builders
         {
             if (attach.Source != null)
             {
-                _tcs.TrySetResult(new Consumer(_loggerFactory, link as ReceiverLink));
+                _tcs.TrySetResult(true);
             }
         }
         

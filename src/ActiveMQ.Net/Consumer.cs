@@ -7,7 +7,7 @@ using Microsoft.Extensions.Logging;
 
 namespace ActiveMQ.Net
 {
-    public class Consumer : IConsumer
+    internal class Consumer : IConsumer
     {
         private readonly ILogger<Consumer> _logger;
         private readonly ReceiverLink _receiverLink;

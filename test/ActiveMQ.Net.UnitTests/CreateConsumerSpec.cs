@@ -251,5 +251,35 @@ namespace ActiveMQ.Net.Tests
             var cancellationTokenSource = new CancellationTokenSource(ShortTimeout);
             await Assert.ThrowsAnyAsync<OperationCanceledException>(async() => await connection.CreateConsumerAsync("test-consumer", QueueRoutingType.Anycast, cancellationTokenSource.Token));
         }
+
+        [Fact]
+        public async Task Throws_when_created_with_null_configuration()
+        {
+            var endpoint = GetUniqueEndpoint();
+            using var host = CreateOpenedContainerHost(endpoint);
+
+            await using var connection = await CreateConnection(endpoint);
+            await Assert.ThrowsAsync<ArgumentNullException>(() => connection.CreateConsumerAsync(null));
+        }
+
+        [Fact]
+        public async Task Throws_when_created_with_null_address()
+        {
+            var endpoint = GetUniqueEndpoint();
+            using var host = CreateOpenedContainerHost(endpoint);
+
+            await using var connection = await CreateConnection(endpoint);
+            await Assert.ThrowsAsync<ArgumentNullException>(() => connection.CreateConsumerAsync(null, QueueRoutingType.Anycast));
+        }
+        
+        [Fact]
+        public async Task Throws_when_created_with_empty_address()
+        {
+            var endpoint = GetUniqueEndpoint();
+            using var host = CreateOpenedContainerHost(endpoint);
+
+            await using var connection = await CreateConnection(endpoint);
+            await Assert.ThrowsAsync<ArgumentNullException>(() => connection.CreateConsumerAsync(string.Empty, QueueRoutingType.Anycast));
+        }
     }
 }
