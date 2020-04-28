@@ -14,14 +14,14 @@ namespace ActiveMQ.Net
         private readonly ChannelReader<Message> _reader;
         private readonly ChannelWriter<Message> _writer;
 
-        public Consumer(ILoggerFactory loggerFactory, ReceiverLink receiverLink)
+        public Consumer(ILoggerFactory loggerFactory, ReceiverLink receiverLink, ConsumerConfiguration configuration)
         {
             _logger = loggerFactory.CreateLogger<Consumer>();
             _receiverLink = receiverLink;
-            var channel = Channel.CreateBounded<Message>(200);
+            var channel = Channel.CreateBounded<Message>(configuration.Credit);
             _reader = channel.Reader;
             _writer = channel.Writer;
-            _receiverLink.Start(200, (receiver, m) =>
+            _receiverLink.Start(configuration.Credit, (receiver, m) =>
             {
                 var message = new Message(m);
                 if (_writer.TryWrite(message))
