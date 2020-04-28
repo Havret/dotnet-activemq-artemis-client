@@ -25,6 +25,7 @@ namespace ActiveMQ.Net.Builders
         {
             if (configuration == null) throw new ArgumentNullException(nameof(configuration));
             if (string.IsNullOrWhiteSpace(configuration.Address)) throw new ArgumentNullException(nameof(configuration.Address), "The address cannot be empty.");
+            if (configuration.Credit < 1) throw new ArgumentOutOfRangeException(nameof(configuration.Credit), "Credit should be >= 1.");
 
             cancellationToken.ThrowIfCancellationRequested();
             cancellationToken.Register(() => _tcs.TrySetCanceled());
@@ -40,7 +41,7 @@ namespace ActiveMQ.Net.Builders
             receiverLink.AddClosedCallback(OnClosed);
             await _tcs.Task.ConfigureAwait(false);
             receiverLink.Closed -= OnClosed;
-            return new Consumer(_loggerFactory, receiverLink);
+            return new Consumer(_loggerFactory, receiverLink, configuration);
         }
 
         private static string GetAddress(string address, string queue)

@@ -281,5 +281,39 @@ namespace ActiveMQ.Net.Tests
             await using var connection = await CreateConnection(endpoint);
             await Assert.ThrowsAsync<ArgumentNullException>(() => connection.CreateConsumerAsync(string.Empty, QueueRoutingType.Anycast));
         }
+
+        [Theory]
+        [InlineData(-1)]
+        [InlineData(0)]
+        public async Task Throws_when_created_with_credit_less_than_1(int credit)
+        {
+            var endpoint = GetUniqueEndpoint();
+            using var host = CreateOpenedContainerHost(endpoint);
+            await using var connection = await CreateConnection(endpoint);
+
+            await Assert.ThrowsAsync<ArgumentOutOfRangeException>(() => connection.CreateConsumerAsync(new ConsumerConfiguration
+            {
+                Address = "a1",
+                RoutingType = QueueRoutingType.Multicast,
+                Credit = credit
+            }));
+        }
+
+        [Theory]
+        [InlineData(1)]
+        [InlineData(100)]
+        public async Task Should_create_Consumer_when_credit_is_greater_or_equal_to_1(int credit)
+        {
+            var endpoint = GetUniqueEndpoint();
+            using var host = CreateOpenedContainerHost(endpoint);
+            await using var connection = await CreateConnection(endpoint);
+
+            await using var consumer = await connection.CreateConsumerAsync(new ConsumerConfiguration
+            {
+                Address = "a1",
+                RoutingType = QueueRoutingType.Multicast,
+                Credit = credit
+            });
+        }
     }
 }
