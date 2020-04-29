@@ -1,7 +1,7 @@
 # ActiveMQ.Net
 Unofficial [ActiveMQ Artemis](https://activemq.apache.org/components/artemis/) . NET Client for . NET Core and . NET Framework
 
-Apache ActiveMQ Artemis is an open source project to build a multi-protocol, embeddable, very high performance, clustered, asynchronous messaging system. 
+Apache ActiveMQ Artemis is an open-source project to build a multi-protocol, embeddable, very high performance, clustered, asynchronous messaging system. 
 
 This lightweight .NET client library built on top of [Amqp.Net Lite](http://azure.github.io/amqpnetlite/) tries to fully leverage Apache ActiveMQ Artemis capabilities.
 
@@ -23,7 +23,7 @@ The core API interfaces and classes are:
 
 ## Usage
 
-Before any message can be sent or received, a connection to the broker endpoint has to be opened. The AMQP endpoint where the client connects is represented as an `Endpoint` object. The `Endpoint` object can be created using factory method `Create` that accepts individual parameters specifying different parts of the Uri.
+Before any message can be sent or received, a connection to the broker endpoint has to be opened. The AMQP endpoint where the client connects is represented as an `Endpoint` object. The `Endpoint` object can be created using the factory method `Create` that accepts individual parameters specifying different parts of the Uri.
 
 ``` 
 Endpoint.Create(host: "localhost", port: 5672, user: "guest", password: "guest", scheme: Scheme.Amqp)
@@ -37,7 +37,7 @@ Endpoint.Create(host: "localhost", port: 5672, user: "guest", password: "guest",
 
 To open a connection to an ActiveMQ Artemis node, first instantiate a `ConnectionFactory` object. `ConnectionFactory` provides an asynchronous connection creation method that accepts `Endpoint` object.
 
-The following snippet connects to an ActiveMQ Artemis node on `localhost` on port `5672` as a `guest` user using `guest` as a password via insecure channel (AMQP). 
+The following snippet connects to an ActiveMQ Artemis node on `localhost` on port `5672` as a `guest` user using `guest` as a password via the insecure channel (AMQP). 
 
 ``` 
 var connectionFactory = new ConnectionFactory();
@@ -47,7 +47,7 @@ var connection = await connectionFactory.CreateAsync(endpoint);
 
 ### Disconnecting from ActiveMQ Artemis
 
-Closing connection, same as opening, is fully asynchronous operation.
+Closing connection, the same as opening, is a fully asynchronous operation.
 
 To disconnect, simply call `DisposeAsync` on connection object:
 
@@ -57,13 +57,13 @@ await connection.DisposeAsync();
 
 ### Sending messages
 
-ActiveMQ.Net uses `IProducer` and `IAnonymousProducer` interfaces for sending messages. In order to create instance of `IProducer` you need to specify an address name and a routing type to which messages will be sent. 
+ActiveMQ.Net uses `IProducer` and `IAnonymousProducer` interfaces for sending messages. To to create an instance of `IProducer` you need to specify an address name and a routing type to which messages will be sent. 
 
 ``` 
 var producer = await connection.CreateProducerAsync("a1", AddressRoutingType.Anycast);
 ```
 
-All messages send using this producer will be automatically routed to address `a1` using `Anycast` routing type:
+All messages sent using this producer will be automatically routed to address `a1` using `Anycast` routing type:
 
 ``` 
 await producer.SendAsync(new Message("foo"));
@@ -89,13 +89,13 @@ ActiveMQ.Net uses `IConsumer` interface for receiving messages. `IConsumer` can 
 var consumer = await connection.CreateConsumerAsync("a1", QueueRoutingType.Anycast);
 ```
 
-As soon as the subscription is set up, the messages will be delivered automatically as the arrive, and then buffered inside consumer object. The amount of buffered messages can be controlled by `Consumer Credit`. In order to actually get a message, simply call `ReceiveAsync` on `IConsumer`.
+As soon as the subscription is set up, the messages will be delivered automatically as they arrive, and then buffered inside consumer object. The number of buffered messages can be controlled by `Consumer Credit`. In order to get a message, simply call `ReceiveAsync` on `IConsumer`.
 
 ```
 var message = await consumer.ReceiveAsync();
 ```
 
-If there are no messages buffered `ReceiveAsync` will asynchronously wait, and returns as soon as the new message appears on the client.
+If there are no messages buffered `ReceiveAsync` will asynchronously wait and returns as soon as the new message appears on the client.
 
 This operation can potentially last an indefinite amount of time (if there are no messages), `ReceiveAsync` accepts `CancellationToken` that can be used to cancel the operation.
 
@@ -104,8 +104,8 @@ var cts = new CancellationTokenSource();
 var message = await consumer.ReceiveAsync(cts.Token);
 ```
 
-This may be particularly useful when you want to quickly shut down you application.
+This may be particularly useful when you want to quickly shut down your application.
 
 ### Resources lifespan
 
-Connections, producers and consumers are meant to be long-lived objects. The underlying protocol is designed and optimized for long running connections. That means that opening a new connection per operation, e.g. sending a message, is unnecessary and strongly discouraged as it will introduce a lot of network round trips and overhead. The same rule applies to all ActiveMQ.Net resources.
+Connections, producers, and consumers are meant to be long-lived objects. The underlying protocol is designed and optimized for long-running connections. That means that opening a new connection per operation, e.g. sending a message, is unnecessary and strongly discouraged as it will introduce a lot of network round trips and overhead. The same rule applies to all ActiveMQ.Net resources.
