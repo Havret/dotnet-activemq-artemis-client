@@ -168,5 +168,79 @@ namespace ActiveMQ.Net.Tests
                 },
             }, resetMsg.ApplicationProperties["MapKey"]);
         }
+
+        [Fact]
+        public Task Should_send_message_with_char_payload() => ShouldSendMessageWithPayload(char.MaxValue);
+
+        [Fact]
+        public Task Should_send_message_with_string_payload() => ShouldSendMessageWithPayload("foo");
+
+        [Fact]
+        public Task Should_send_message_with_byte_payload() => ShouldSendMessageWithPayload(byte.MaxValue);
+
+        [Fact]
+        public Task Should_send_message_with_sbyte_payload() => ShouldSendMessageWithPayload(sbyte.MaxValue);
+
+        [Fact]
+        public Task Should_send_message_with_short_payload() => ShouldSendMessageWithPayload(short.MaxValue);
+
+        [Fact]
+        public Task Should_send_message_with_ushort_payload() => ShouldSendMessageWithPayload(ushort.MaxValue);
+
+        [Fact]
+        public Task Should_send_message_with_int_payload() => ShouldSendMessageWithPayload(int.MaxValue);
+
+        [Fact]
+        public Task Should_send_message_with_uint_payload() => ShouldSendMessageWithPayload(uint.MaxValue);
+
+        [Fact]
+        public Task Should_send_message_with_long_payload() => ShouldSendMessageWithPayload(long.MaxValue);
+
+        [Fact]
+        public Task Should_send_message_with_ulong_payload() => ShouldSendMessageWithPayload(ulong.MaxValue);
+
+        [Fact]
+        public Task Should_send_message_with_float_payload() => ShouldSendMessageWithPayload(float.MaxValue);
+
+        [Fact]
+        public Task Should_send_message_with_double_payload() => ShouldSendMessageWithPayload(double.MaxValue);
+
+        [Fact]
+        public Task Should_send_message_with_Guid_payload() => ShouldSendMessageWithPayload(Guid.NewGuid());
+
+        [Fact]
+        public Task Should_send_message_with_DateTime_payload()
+        {
+            // drop tics precision, as AMQP timestamp is represented as milliseconds from Unix epoch
+            const long ticksPerMillisecond = 10000;
+            var dateTime = new DateTime(DateTime.UtcNow.Ticks / ticksPerMillisecond * ticksPerMillisecond, DateTimeKind.Utc);
+            
+            return ShouldSendMessageWithPayload(dateTime);
+        }
+
+        [Fact]
+        public Task Should_send_message_with_bytes_payload() => ShouldSendMessageWithPayload(new byte[] { 1, 2, 3, 4 });
+
+        [Fact]
+        public Task Should_send_message_with_List_payload() => ShouldSendMessageWithPayload(new List
+        {
+            char.MaxValue, "foo", byte.MaxValue, sbyte.MaxValue, short.MaxValue, ushort.MaxValue, int.MaxValue, uint.MaxValue, long.MaxValue, ulong.MaxValue, float.MaxValue, double.MaxValue, new byte[] { 1, 2, 3, 4 },
+            new List { 1, 2, 3, 4 }
+        });
+
+        private async Task ShouldSendMessageWithPayload<T>(T payload)
+        {
+            using var host = CreateOpenedContainerHost();
+            var messageProcessor = host.CreateMessageProcessor("a1");
+            await using var connection = await CreateConnection(host.Endpoint);
+            await using var producer = await connection.CreateProducerAsync("a1", AddressRoutingType.Anycast);
+
+            var message = new Message(payload);
+            await producer.SendAsync(message);
+
+            var received = messageProcessor.Dequeue(Timeout);
+
+            Assert.Equal(payload, received.GetBody<T>());
+        }
     }
 }
