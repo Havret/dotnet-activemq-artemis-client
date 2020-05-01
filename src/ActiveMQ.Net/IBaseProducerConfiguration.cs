@@ -3,5 +3,6 @@
     public interface IBaseProducerConfiguration
     {
         byte? MessagePriority { get; }
+        DurabilityMode? MessageDurabilityMode { get; }
     }
 }

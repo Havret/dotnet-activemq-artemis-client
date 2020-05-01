@@ -63,6 +63,23 @@ namespace ActiveMQ.Net
         internal MessageAnnotations MessageAnnotations => _messageAnnotations ??= new MessageAnnotations(InnerMessage);
         public ApplicationProperties ApplicationProperties => _applicationProperties ??= new ApplicationProperties(InnerMessage);
 
+        public DurabilityMode? DurabilityMode
+        {
+            get => Header.Durable switch
+            {
+                true => Net.DurabilityMode.Durable,
+                false => Net.DurabilityMode.Nondurable,
+                null => null
+            };
+            set => Header.Durable = value switch
+            {
+                Net.DurabilityMode.Durable => true,
+                Net.DurabilityMode.Nondurable => false,
+                null => null,
+                _ => throw new ArgumentOutOfRangeException(nameof(value))
+            };
+        }
+
         public byte? Priority
         {
             get => Header.Priority;

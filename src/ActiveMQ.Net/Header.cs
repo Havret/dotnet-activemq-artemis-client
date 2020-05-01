@@ -8,6 +8,18 @@
         {
             _innerHeader = innerMessage.Header ??= new Amqp.Framing.Header();
         }
+        
+        public bool? Durable
+        {
+            get => _innerHeader.HasField(0) ? _innerHeader.Durable : default(bool?);
+            set
+            {
+                if (value != default)
+                    _innerHeader.Durable = value.Value;
+                else
+                    _innerHeader.ResetField(0);
+            }
+        }
 
         public byte? Priority
         {
