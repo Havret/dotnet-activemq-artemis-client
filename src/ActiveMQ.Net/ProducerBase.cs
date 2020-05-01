@@ -8,17 +8,19 @@ using Microsoft.Extensions.Logging;
 
 namespace ActiveMQ.Net
 {
-    internal class ProducerBase
+    internal abstract class ProducerBase
     {
         private static readonly OutcomeCallback _onOutcome = OnOutcome;
 
         private readonly ILogger _logger;
         private readonly SenderLink _senderLink;
+        private readonly IBaseProducerConfiguration _configuration;
 
-        public ProducerBase(ILoggerFactory loggerFactory, SenderLink senderLink)
+        protected ProducerBase(ILoggerFactory loggerFactory, SenderLink senderLink, IBaseProducerConfiguration configuration)
         {
             _logger = loggerFactory.CreateLogger(GetType());
             _senderLink = senderLink;
+            _configuration = configuration;
         }
 
         private bool IsDetaching => _senderLink.LinkState >= LinkState.DetachPipe;
@@ -78,6 +80,7 @@ namespace ActiveMQ.Net
             
             try
             {
+                message.Priority ??= _configuration.MessagePriority;
                 message.Properties.To = address;
                 message.MessageAnnotations[SymbolUtils.RoutingType] = routingType.GetRoutingAnnotation();
                 

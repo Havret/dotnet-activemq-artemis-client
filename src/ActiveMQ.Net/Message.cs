@@ -6,10 +6,10 @@ namespace ActiveMQ.Net
 {
     public class Message
     {
+        private Header _header;
         private Properties _properties;
         private ApplicationProperties _applicationProperties;
         private MessageAnnotations _messageAnnotations;
-        internal Amqp.Message InnerMessage { get; }
 
         internal Message(Amqp.Message message)
         {
@@ -54,11 +54,24 @@ namespace ActiveMQ.Net
             }
         }
 
-        public Properties Properties => _properties ??= new Properties(InnerMessage);
+        internal Amqp.Message InnerMessage { get; }
 
-        public ApplicationProperties ApplicationProperties => _applicationProperties ??= new ApplicationProperties(InnerMessage);
+        private Header Header => _header ??= new Header(InnerMessage);
+
+        internal Properties Properties => _properties ??= new Properties(InnerMessage);
 
         internal MessageAnnotations MessageAnnotations => _messageAnnotations ??= new MessageAnnotations(InnerMessage);
+        public ApplicationProperties ApplicationProperties => _applicationProperties ??= new ApplicationProperties(InnerMessage);
+
+        public byte? Priority
+        {
+            get => Header.Priority;
+            set
+            {
+                if (value > 9) throw new ArgumentOutOfRangeException(nameof(value), $"Priority value {value} is out of range (0..9).");
+                Header.Priority = value;
+            }
+        }
 
         public T GetBody<T>()
         {

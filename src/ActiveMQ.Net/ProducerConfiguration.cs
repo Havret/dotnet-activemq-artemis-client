@@ -1,8 +1,9 @@
 ﻿namespace ActiveMQ.Net
 {
-    public class ProducerConfiguration
+    public class ProducerConfiguration : IBaseProducerConfiguration
     {
         public string Address { get; set; }
         public AddressRoutingType RoutingType { get; set; }
+        public byte? MessagePriority { get; set; }
     }
 }
