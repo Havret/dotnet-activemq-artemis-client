@@ -7,10 +7,12 @@ namespace ActiveMQ.Net.AutoRecovering
 {
     internal class AutoRecoveringAnonymousProducer : AutoRecoveringProducerBase, IAnonymousProducer
     {
+        private readonly AnonymousProducerConfiguration _configuration;
         private IAnonymousProducer _producer;
 
-        public AutoRecoveringAnonymousProducer(ILoggerFactory loggerFactory) : base(loggerFactory)
+        public AutoRecoveringAnonymousProducer(ILoggerFactory loggerFactory, AnonymousProducerConfiguration configuration) : base(loggerFactory)
         {
+            _configuration = configuration;
         }
         
         public async Task SendAsync(string address, AddressRoutingType routingType, Message message, CancellationToken cancellationToken = default)
@@ -51,7 +53,7 @@ namespace ActiveMQ.Net.AutoRecovering
 
         protected override async Task RecoverUnderlyingProducer(IConnection connection, CancellationToken cancellationToken)
         {
-            _producer = await connection.CreateAnonymousProducer(cancellationToken).ConfigureAwait(false);
+            _producer = await connection.CreateAnonymousProducer(_configuration, cancellationToken).ConfigureAwait(false);
         }
 
         protected override ValueTask DisposeUnderlyingProducer()

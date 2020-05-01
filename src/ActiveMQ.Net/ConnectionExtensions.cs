@@ -35,5 +35,11 @@ namespace ActiveMQ.Net
             };            
             return connection.CreateProducerAsync(configuration, cancellationToken);
         }
+
+        public static Task<IAnonymousProducer> CreateAnonymousProducer(this IConnection connection, CancellationToken cancellationToken = default)
+        {
+            var configuration = new AnonymousProducerConfiguration();
+            return connection.CreateAnonymousProducer(configuration, cancellationToken);
+        }
     }
 }

@@ -10,7 +10,7 @@ using Xunit.Abstractions;
 
 namespace ActiveMQ.Net.Tests
 {
-    public class ActiveMQNetSpec
+    public abstract class ActiveMQNetSpec
     {
         private readonly ITestOutputHelper _output;
 

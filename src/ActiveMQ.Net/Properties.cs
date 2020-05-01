@@ -2,7 +2,7 @@
 
 namespace ActiveMQ.Net
 {
-    public sealed class Properties
+    internal sealed class Properties
     {
         private readonly Amqp.Framing.Properties _innerProperties;
 
@@ -22,6 +22,7 @@ namespace ActiveMQ.Net
                     _innerProperties.ResetField(0);
             }
         }
+
         public byte[] UserId
         {
             get => _innerProperties.UserId;
@@ -142,10 +143,10 @@ namespace ActiveMQ.Net
             }
         }
 
-        internal string To
+        public string To
         {
             get => _innerProperties.To;
-            set
+            internal set
             {
                 if (value != default)
                     _innerProperties.To = value;

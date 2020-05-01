@@ -9,7 +9,7 @@ namespace ActiveMQ.Net
     {
         private readonly ProducerConfiguration _configuration;
 
-        public Producer(ILoggerFactory loggerFactory, SenderLink senderLink, ProducerConfiguration configuration) : base(loggerFactory, senderLink)
+        public Producer(ILoggerFactory loggerFactory, SenderLink senderLink, ProducerConfiguration configuration) : base(loggerFactory, senderLink, configuration)
         {
             _configuration = configuration;
         }

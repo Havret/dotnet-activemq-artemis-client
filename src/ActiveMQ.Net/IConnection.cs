@@ -13,7 +13,7 @@ namespace ActiveMQ.Net
         bool IsOpened { get; }
         Task<IConsumer> CreateConsumerAsync(ConsumerConfiguration configuration, CancellationToken cancellationToken = default);
         Task<IProducer> CreateProducerAsync(ProducerConfiguration configuration, CancellationToken cancellationToken = default);
-        Task<IAnonymousProducer> CreateAnonymousProducer(CancellationToken cancellationToken = default);
+        Task<IAnonymousProducer> CreateAnonymousProducer(AnonymousProducerConfiguration configuration, CancellationToken cancellationToken = default);
         event EventHandler<ConnectionClosedEventArgs> ConnectionClosed;
         event EventHandler<ConnectionRecoveredEventArgs> ConnectionRecovered;
         event EventHandler<ConnectionRecoveryErrorEventArgs> ConnectionRecoveryError;

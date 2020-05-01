@@ -167,9 +167,9 @@ namespace ActiveMQ.Net.AutoRecovering
             return autoRecoveringProducer;
         }
 
-        public async Task<IAnonymousProducer> CreateAnonymousProducer(CancellationToken cancellationToken)
+        public async Task<IAnonymousProducer> CreateAnonymousProducer(AnonymousProducerConfiguration configuration, CancellationToken cancellationToken = default)
         {
-            var autoRecoveringAnonymousProducer = new AutoRecoveringAnonymousProducer(_loggerFactory);
+            var autoRecoveringAnonymousProducer = new AutoRecoveringAnonymousProducer(_loggerFactory, configuration);
             await PrepareRecoverable(autoRecoveringAnonymousProducer, cancellationToken);
             return autoRecoveringAnonymousProducer;
         }

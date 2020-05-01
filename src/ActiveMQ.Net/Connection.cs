@@ -40,11 +40,11 @@ namespace ActiveMQ.Net
             return await producerBuilder.CreateAsync(configuration, cancellationToken).ConfigureAwait(false);
         }
 
-        public async Task<IAnonymousProducer> CreateAnonymousProducer(CancellationToken cancellationToken)
+        public async Task<IAnonymousProducer> CreateAnonymousProducer(AnonymousProducerConfiguration configuration, CancellationToken cancellationToken)
         {
             var session = await CreateSession(cancellationToken).ConfigureAwait(false);
             var producerBuilder = new AnonymousProducerBuilder(_loggerFactory, session);
-            return await producerBuilder.CreateAsync(cancellationToken).ConfigureAwait(false);
+            return await producerBuilder.CreateAsync(configuration, cancellationToken).ConfigureAwait(false);
         }
 
         private Task<Session> CreateSession(CancellationToken cancellationToken)

@@ -21,8 +21,10 @@ namespace ActiveMQ.Net.Builders
             _tcs = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
         }
 
-        public async Task<IAnonymousProducer> CreateAsync(CancellationToken cancellationToken)
+        public async Task<IAnonymousProducer> CreateAsync(AnonymousProducerConfiguration configuration, CancellationToken cancellationToken)
         {
+            if (configuration == null) throw new ArgumentNullException(nameof(configuration));
+            
             cancellationToken.ThrowIfCancellationRequested();
             cancellationToken.Register(() => _tcs.TrySetCanceled());
 
@@ -33,7 +35,7 @@ namespace ActiveMQ.Net.Builders
             var senderLink = new SenderLink(_session, Guid.NewGuid().ToString(), target, OnAttached);
             senderLink.AddClosedCallback(OnClosed);
             await _tcs.Task.ConfigureAwait(false);
-            var producer = new AnonymousProducer(_loggerFactory, senderLink);
+            var producer = new AnonymousProducer(_loggerFactory, senderLink, configuration);
             senderLink.Closed -= OnClosed;
             return producer;
         }

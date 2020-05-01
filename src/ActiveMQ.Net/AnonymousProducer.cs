@@ -8,7 +8,7 @@ namespace ActiveMQ.Net
 {
     internal class AnonymousProducer : ProducerBase, IAnonymousProducer
     {
-        public AnonymousProducer(ILoggerFactory loggerFactory, SenderLink senderLink) : base(loggerFactory, senderLink)
+        public AnonymousProducer(ILoggerFactory loggerFactory, SenderLink senderLink, AnonymousProducerConfiguration configuration) : base(loggerFactory, senderLink, configuration)
         {
         }
         
