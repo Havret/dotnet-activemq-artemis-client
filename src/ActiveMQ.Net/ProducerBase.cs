@@ -31,6 +31,8 @@ namespace ActiveMQ.Net
             cancellationToken.ThrowIfCancellationRequested();
             var tcs = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
             cancellationToken.Register(() => tcs.TrySetCanceled());
+
+            message.DurabilityMode ??= _configuration.MessageDurabilityMode ?? DurabilityMode.Durable;
             Send(address, routingType, message, null, _onOutcome, tcs);
             return tcs.Task;
         }
@@ -63,6 +65,7 @@ namespace ActiveMQ.Net
 
         protected void SendInternal(string address, AddressRoutingType routingType, Message message)
         {
+            message.DurabilityMode ??= _configuration.MessageDurabilityMode ?? DurabilityMode.Nondurable;
             Send(address: address, routingType: routingType, message: message, deliveryState: null, callback: null, state: null);
         }
 

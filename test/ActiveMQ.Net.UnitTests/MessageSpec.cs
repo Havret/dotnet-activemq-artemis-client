@@ -214,7 +214,7 @@ namespace ActiveMQ.Net.Tests
             // drop tics precision, as AMQP timestamp is represented as milliseconds from Unix epoch
             const long ticksPerMillisecond = 10000;
             var dateTime = new DateTime(DateTime.UtcNow.Ticks / ticksPerMillisecond * ticksPerMillisecond, DateTimeKind.Utc);
-            
+
             return ShouldSendMessageWithPayload(dateTime);
         }
 

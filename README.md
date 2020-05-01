@@ -147,6 +147,38 @@ If `T` matches the type of the payload, the value will be returned, otherwise, y
 
 ### Message properties
 
+#### DurabilityMode
+
+ActiveMQ Artemis supports two types of durability modes for messages: durable and nondurable. By default each message sent by the client using `SendAsync` method is durable. That means that the broker actually has to persist the message on the disk before the confirmation frame (ack) will be sent back to the client. The confirmation frame is what we can *await* for.
+
+```csharp
+await producer.SendAsync(new Message("foo")
+```
+
+When `SendAsync` completes without errors we may expect that the message will be delivered with *at least once* semantics. Durable messages incur more overhead due to the need to store the message, and value reliability over performance.
+
+Setting message durability mode to `Nondurable` instructs the broker not to persist the message. By default each message sent by the client using `Send` method is nondurable. `Send` is non-blocking both in terms of packets transmission (it uses [Socket.SendAsync](https://docs.microsoft.com/en-us/dotnet/api/system.net.sockets.socket.sendasync) method in the fire and forget manner) and in terms of waiting for confirmation from the broker (it doesn't). As a result, *at most once* is all that you can expect in terms of message delivery guarantees from this combination. Nondurable messages incur less overhead and value performance over reliability.
+
+Default message durability settings may be overridden via producer configuration:
+
+```csharp
+var producer = await connection.CreateProducerAsync(new ProducerConfiguration
+{
+    Address = "a1",
+    RoutingType = AddressRoutingType.Anycast,
+    MessageDurabilityMode = DurabilityMode.Nondurable
+});
+```
+
+And for each message individually:
+
+```csharp
+await producer.SendAsync(new Message("foo")
+{
+    DurabilityMode = DurabilityMode.Nondurable // takes precedence over priority specified on producer level
+});
+```
+
 #### Priority
 
 This property defines the level of importance of a message. ActiveMQ Artemis uses it to prioritize message delivery. Messages with higher priority will be delivered before messages with lower priority. Messages with the same priority level should be delivered according to the order they were sent with. There are 10 levels of message priority, ranging from 0 (the lowest) to 9 (the highest). If no message priority is set on the client (Priority set to `null`), the message will be treated as if it was assigned a normal priority (4).
@@ -162,7 +194,7 @@ var producer = await connection.CreateProducerAsync(new ProducerConfiguration
 });
 ```
 
-Each message sent with this producer will automatically have priority set to `9` unless specified otherwise. The priority set explicitly on the message object takes the highest precedence.
+Each message sent with this producer will automatically have priority set to `9` unless specified otherwise. The priority set explicitly on the message object takes the precedence.
 
 ```csharp
 await producer.SendAsync(new Message("foo")
