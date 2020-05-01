@@ -1,10 +1,10 @@
-# ActiveMQ. Net
+# ActiveMQ.Net
 
-Unofficial [ActiveMQ Artemis](https://activemq.apache.org/components/artemis/) . NET Client for . NET Core and . NET Framework
+Unofficial [ActiveMQ Artemis](https://activemq.apache.org/components/artemis/) .NET Client for .NET Core and .NET Framework
 
-Apache ActiveMQ Artemis is an open-source project to build a multi-protocol, embeddable, very high performance, clustered, asynchronous messaging system. 
+Apache ActiveMQ Artemis is an open-source project to build a multi-protocol, embeddable, very high performance, clustered, asynchronous messaging system.
 
-This lightweight . NET client library built on top of [Amqp. Net Lite](http://azure.github.io/amqpnetlite/) tries to fully leverage Apache ActiveMQ Artemis capabilities.
+This lightweight .NET client library built on top of [Amqp.Net Lite](http://azure.github.io/amqpnetlite/) tries to fully leverage Apache ActiveMQ Artemis capabilities.
 
 ## API overview
 
@@ -58,7 +58,7 @@ await connection.DisposeAsync();
 
 ### Sending messages
 
-ActiveMQ. Net uses `IProducer` and `IAnonymousProducer` interfaces for sending messages. To to create an instance of `IProducer` you need to specify an address name and a routing type to which messages will be sent. 
+ActiveMQ.Net uses `IProducer` and `IAnonymousProducer` interfaces for sending messages. To to create an instance of `IProducer` you need to specify an address name and a routing type to which messages will be sent.
 
 ```csharp
 var producer = await connection.CreateProducerAsync("a1", AddressRoutingType.Anycast);
@@ -175,7 +175,7 @@ And for each message individually:
 ```csharp
 await producer.SendAsync(new Message("foo")
 {
-    DurabilityMode = DurabilityMode.Nondurable // takes precedence over durability mode specified on producer level
+    DurabilityMode = DurabilityMode.Nondurable // takes precedence over durability ode specified on producer level
 });
 ```
 
@@ -205,4 +205,4 @@ await producer.SendAsync(new Message("foo")
 
 ### Resources lifespan
 
-Connections, producers, and consumers are meant to be long-lived objects. The underlying protocol is designed and optimized for long-running connections. That means that opening a new connection per operation, e.g. sending a message, is unnecessary and strongly discouraged as it will introduce a lot of network round trips and overhead. The same rule applies to all ActiveMQ. Net resources.
+Connections, producers, and consumers are meant to be long-lived objects. The underlying protocol is designed and optimized for long-running connections. That means that opening a new connection per operation, e.g. sending a message, is unnecessary and strongly discouraged as it will introduce a lot of network round trips and overhead. The same rule applies to all ActiveMQ.Net resources.
