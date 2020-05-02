@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using ActiveMQ.Net.Exceptions;
 using Amqp;
 using Amqp.Framing;
+using Amqp.Types;
 using Microsoft.Extensions.Logging;
 
 namespace ActiveMQ.Net.Builders
@@ -35,6 +36,7 @@ namespace ActiveMQ.Net.Builders
             {
                 Address = GetAddress(configuration.Address, configuration.Queue),
                 Capabilities = new[] { routingCapability },
+                FilterSet = GetFilterSet(configuration.FilterExpression)
             };
 
             var receiverLink = new ReceiverLink(_session, Guid.NewGuid().ToString(), source, OnAttached);
@@ -49,6 +51,17 @@ namespace ActiveMQ.Net.Builders
             return string.IsNullOrEmpty(queue)
                 ? address
                 : CreateFullyQualifiedQueueName(address, queue);
+        }
+
+        private static Map GetFilterSet(string filterExpression)
+        {
+            var filterSet = new Map();
+            if (!string.IsNullOrWhiteSpace(filterExpression))
+            {
+                filterSet.Add(FilterExpression.FilterExpressionName, new FilterExpression(filterExpression));
+            }
+
+            return filterSet;
         }
 
         private static string CreateFullyQualifiedQueueName(string address, string queue)
