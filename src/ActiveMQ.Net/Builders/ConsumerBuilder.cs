@@ -27,6 +27,8 @@ namespace ActiveMQ.Net.Builders
             if (configuration == null) throw new ArgumentNullException(nameof(configuration));
             if (string.IsNullOrWhiteSpace(configuration.Address)) throw new ArgumentNullException(nameof(configuration.Address), "The address cannot be empty.");
             if (configuration.Credit < 1) throw new ArgumentOutOfRangeException(nameof(configuration.Credit), "Credit should be >= 1.");
+            if (configuration.RoutingType == QueueRoutingType.Anycast && configuration.NoLocalFilter)
+                throw new ArgumentException($"{nameof(ConsumerConfiguration.NoLocalFilter)} cannot be used with {QueueRoutingType.Anycast.ToString()} routing type.");
 
             cancellationToken.ThrowIfCancellationRequested();
             cancellationToken.Register(() => _tcs.TrySetCanceled());
@@ -36,7 +38,7 @@ namespace ActiveMQ.Net.Builders
             {
                 Address = GetAddress(configuration.Address, configuration.Queue),
                 Capabilities = new[] { routingCapability },
-                FilterSet = GetFilterSet(configuration.FilterExpression)
+                FilterSet = GetFilterSet(configuration.FilterExpression, configuration.NoLocalFilter)
             };
 
             var receiverLink = new ReceiverLink(_session, Guid.NewGuid().ToString(), source, OnAttached);
@@ -53,12 +55,17 @@ namespace ActiveMQ.Net.Builders
                 : CreateFullyQualifiedQueueName(address, queue);
         }
 
-        private static Map GetFilterSet(string filterExpression)
+        private static Map GetFilterSet(string filterExpression, bool noLocalFilter)
         {
             var filterSet = new Map();
             if (!string.IsNullOrWhiteSpace(filterExpression))
             {
                 filterSet.Add(FilterExpression.FilterExpressionName, new FilterExpression(filterExpression));
+            }
+
+            if (noLocalFilter)
+            {
+                filterSet.Add(NoLocalFilter.NoLocalFilterName, NoLocalFilter.Instance);
             }
 
             return filterSet;
