@@ -32,5 +32,17 @@
                     _innerHeader.ResetField(1);
             }
         }
+
+        public uint? Ttl
+        {
+            get => _innerHeader.HasField(2) ? _innerHeader.Ttl : default(uint?);
+            set
+            {
+                if (value != default)
+                    _innerHeader.Ttl = value.Value;
+                else
+                    _innerHeader.ResetField(2);
+            }            
+        }
     }
 }

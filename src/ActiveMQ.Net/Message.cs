@@ -102,6 +102,16 @@ namespace ActiveMQ.Net
             set => Properties.GroupSequence = value;
         }
 
+        public TimeSpan? TimeToLive
+        {
+            get => Header.Ttl.HasValue ? TimeSpan.FromMilliseconds(Header.Ttl.Value) : default(TimeSpan?);
+            set => Header.Ttl = value switch
+            {
+                { } timeSpan => Convert.ToUInt32(timeSpan.TotalMilliseconds),
+                null => null
+            };
+        }
+
         public T GetBody<T>()
         {
             if (InnerMessage.Body is T body)

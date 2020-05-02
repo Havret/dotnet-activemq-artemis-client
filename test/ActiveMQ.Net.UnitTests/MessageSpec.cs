@@ -310,5 +310,39 @@ namespace ActiveMQ.Net.Tests
 
             Assert.Equal(1u, received.GroupSequence);
         }
+
+        [Fact]
+        public async Task Should_send_message_without_TimeToLive_set()
+        {
+            using var host = CreateOpenedContainerHost();
+            var messageProcessor = host.CreateMessageProcessor("a1");
+            await using var connection = await CreateConnection(host.Endpoint);
+            await using var producer = await connection.CreateProducerAsync("a1", AddressRoutingType.Anycast);
+
+            await producer.SendAsync(new Message("foo"));
+
+            var received = messageProcessor.Dequeue(Timeout);
+
+            Assert.Null(received.TimeToLive);
+        }
+
+        [Fact]
+        public async Task Should_send_message_with_TimeToLive_set()
+        {
+            using var host = CreateOpenedContainerHost();
+            var messageProcessor = host.CreateMessageProcessor("a1");
+            await using var connection = await CreateConnection(host.Endpoint);
+            await using var producer = await connection.CreateProducerAsync("a1", AddressRoutingType.Anycast);
+
+            var message = new Message("foo")
+            {
+                TimeToLive = TimeSpan.FromMilliseconds(10)
+            };
+            await producer.SendAsync(message);
+
+            var received = messageProcessor.Dequeue(Timeout);
+
+            Assert.Equal(TimeSpan.FromMilliseconds(10), received.TimeToLive);
+        }
     }
 }
