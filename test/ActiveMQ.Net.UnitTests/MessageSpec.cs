@@ -242,5 +242,43 @@ namespace ActiveMQ.Net.Tests
 
             Assert.Equal(payload, received.GetBody<T>());
         }
+
+        [Fact]
+        public async Task Should_send_message_with_GroupId_set()
+        {
+            using var host = CreateOpenedContainerHost();
+            var messageProcessor = host.CreateMessageProcessor("a1");
+            await using var connection = await CreateConnection(host.Endpoint);
+            await using var producer = await connection.CreateProducerAsync("a1", AddressRoutingType.Anycast);
+
+            var message = new Message("foo")
+            {
+                GroupId = "bar"
+            };
+            await producer.SendAsync(message);
+
+            var received = messageProcessor.Dequeue(Timeout);
+
+            Assert.Equal("bar", received.GroupId);
+        }
+
+        [Fact]
+        public async Task Should_send_message_with_GroupSequence_set()
+        {
+            using var host = CreateOpenedContainerHost();
+            var messageProcessor = host.CreateMessageProcessor("a1");
+            await using var connection = await CreateConnection(host.Endpoint);
+            await using var producer = await connection.CreateProducerAsync("a1", AddressRoutingType.Anycast);
+
+            var message = new Message("foo")
+            {
+                GroupSequence = 1u
+            };
+            await producer.SendAsync(message);
+
+            var received = messageProcessor.Dequeue(Timeout);
+
+            Assert.Equal(1u, received.GroupSequence);
+        }
     }
 }
