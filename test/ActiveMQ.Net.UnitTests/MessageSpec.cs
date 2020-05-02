@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
+using ActiveMQ.Net.TestUtils;
 using Amqp.Types;
 using Xunit;
 using Xunit.Abstractions;
@@ -209,14 +210,7 @@ namespace ActiveMQ.Net.Tests
         public Task Should_send_message_with_Guid_payload() => ShouldSendMessageWithPayload(Guid.NewGuid());
 
         [Fact]
-        public Task Should_send_message_with_DateTime_payload()
-        {
-            // drop tics precision, as AMQP timestamp is represented as milliseconds from Unix epoch
-            const long ticksPerMillisecond = 10000;
-            var dateTime = new DateTime(DateTime.UtcNow.Ticks / ticksPerMillisecond * ticksPerMillisecond, DateTimeKind.Utc);
-
-            return ShouldSendMessageWithPayload(dateTime);
-        }
+        public Task Should_send_message_with_DateTime_payload() => ShouldSendMessageWithPayload(DateTime.UtcNow.DropTicsPrecision());
 
         [Fact]
         public Task Should_send_message_with_bytes_payload() => ShouldSendMessageWithPayload(new byte[] { 1, 2, 3, 4 });

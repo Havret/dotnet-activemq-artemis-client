@@ -83,6 +83,10 @@ namespace ActiveMQ.Net
             
             try
             {
+                if (_configuration.SetMessageCreationTime && !message.CreationTime.HasValue)
+                {
+                    message.CreationTime = DateTime.UtcNow;
+                }
                 message.Priority ??= _configuration.MessagePriority;
                 message.Properties.To = address;
                 message.MessageAnnotations[SymbolUtils.RoutingType] = routingType.GetRoutingAnnotation();
