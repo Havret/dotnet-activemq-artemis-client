@@ -242,6 +242,21 @@ namespace ActiveMQ.Net.Tests
 
             Assert.Equal(payload, received.GetBody<T>());
         }
+        
+        [Fact]
+        public async Task Should_send_message_without_GroupId_set()
+        {
+            using var host = CreateOpenedContainerHost();
+            var messageProcessor = host.CreateMessageProcessor("a1");
+            await using var connection = await CreateConnection(host.Endpoint);
+            await using var producer = await connection.CreateProducerAsync("a1", AddressRoutingType.Anycast);
+
+            await producer.SendAsync(new Message("foo"));
+
+            var received = messageProcessor.Dequeue(Timeout);
+
+            Assert.Null(received.GroupId);
+        }
 
         [Fact]
         public async Task Should_send_message_with_GroupId_set()
@@ -260,6 +275,21 @@ namespace ActiveMQ.Net.Tests
             var received = messageProcessor.Dequeue(Timeout);
 
             Assert.Equal("bar", received.GroupId);
+        }
+        
+        [Fact]
+        public async Task Should_send_message_without_GroupSequence_set()
+        {
+            using var host = CreateOpenedContainerHost();
+            var messageProcessor = host.CreateMessageProcessor("a1");
+            await using var connection = await CreateConnection(host.Endpoint);
+            await using var producer = await connection.CreateProducerAsync("a1", AddressRoutingType.Anycast);
+
+            await producer.SendAsync(new Message("foo"));
+
+            var received = messageProcessor.Dequeue(Timeout);
+
+            Assert.Null(received.GroupSequence);
         }
 
         [Fact]
