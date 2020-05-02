@@ -90,6 +90,18 @@ namespace ActiveMQ.Net
             }
         }
 
+        public string GroupId
+        {
+            get => Properties.GroupId;
+            set => Properties.GroupId = value;
+        }
+
+        public uint? GroupSequence
+        {
+            get => Properties.GroupSequence;
+            set => Properties.GroupSequence = value;
+        }
+
         public T GetBody<T>()
         {
             if (InnerMessage.Body is T body)
