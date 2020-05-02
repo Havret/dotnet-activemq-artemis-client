@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
 using ActiveMQ.Net.TestUtils.Logging;
 using Microsoft.Extensions.Logging;
@@ -39,6 +40,20 @@ namespace ActiveMQ.Net.IntegrationTests
         private ILoggerFactory CreateTestLoggerFactory()
         {
             return new TestLoggerFactory(_output);
+        }
+
+        protected static CancellationToken CancellationToken => new CancellationTokenSource(Timeout).Token;
+
+        private static TimeSpan Timeout
+        {
+            get
+            {
+#if DEBUG
+                return TimeSpan.FromMinutes(1);
+#else
+                return TimeSpan.FromSeconds(10);
+#endif
+            }
         }
     }
 }

@@ -10,5 +10,10 @@ namespace ActiveMQ.Net.TestUtils
             const long ticksPerMillisecond = 10000;
             return new DateTime(DateTime.UtcNow.Ticks / ticksPerMillisecond * ticksPerMillisecond, DateTimeKind.Utc);
         }
+
+        public static long ToUnixTimeMilliseconds(this DateTime dateTime)
+        {
+            return new DateTimeOffset(dateTime).ToUnixTimeMilliseconds();
+        }
     }
 }
