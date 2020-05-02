@@ -97,7 +97,7 @@ namespace ActiveMQ.Net
 
         public DateTime? CreationTime
         {
-            get => _innerProperties.HasField(8) ? _innerProperties.CreationTime : default(DateTime?);
+            get => _innerProperties.HasField(9) ? _innerProperties.CreationTime : default(DateTime?);
             set
             {
                 if (value != default)

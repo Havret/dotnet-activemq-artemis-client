@@ -112,6 +112,12 @@ namespace ActiveMQ.Net
             };
         }
 
+        public DateTime? CreationTime
+        {
+            get => Properties.CreationTime;
+            set => Properties.CreationTime = value;
+        }
+
         public T GetBody<T>()
         {
             if (InnerMessage.Body is T body)
