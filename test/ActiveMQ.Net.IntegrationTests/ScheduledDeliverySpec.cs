@@ -22,9 +22,9 @@ namespace ActiveMQ.Net.IntegrationTests
 
             await producer.SendAsync(new Message("foo")
             {
-                ScheduledDeliveryTime = DateTime.UtcNow.AddMilliseconds(250)
+                ScheduledDeliveryTime = DateTime.UtcNow.AddMilliseconds(500)
             });
-            await Assert.ThrowsAsync<OperationCanceledException>(async () => await consumer.ReceiveAsync(new CancellationTokenSource(TimeSpan.FromMilliseconds(150)).Token));
+            await Assert.ThrowsAsync<OperationCanceledException>(async () => await consumer.ReceiveAsync(new CancellationTokenSource(TimeSpan.FromMilliseconds(250)).Token));
 
             var msg = await consumer.ReceiveAsync();
             Assert.Equal("foo", msg.GetBody<string>());
