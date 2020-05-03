@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
-using ActiveMQ.Net.TestUtils;
+using ActiveMQ.Net.InternalUtilities;
 using Xunit;
 using Xunit.Abstractions;
 

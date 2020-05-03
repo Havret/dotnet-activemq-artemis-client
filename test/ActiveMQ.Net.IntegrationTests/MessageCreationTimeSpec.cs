@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
-using ActiveMQ.Net.TestUtils;
+using ActiveMQ.Net.InternalUtilities;
 using Xunit;
 using Xunit.Abstractions;
 

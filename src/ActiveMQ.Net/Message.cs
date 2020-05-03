@@ -1,4 +1,5 @@
 ﻿using System;
+using ActiveMQ.Net.InternalUtilities;
 using Amqp.Framing;
 using Amqp.Types;
 
@@ -116,6 +117,34 @@ namespace ActiveMQ.Net
         {
             get => Properties.CreationTime;
             set => Properties.CreationTime = value;
+        }
+
+        public DateTime? ScheduledDeliveryTime
+        {
+            get => MessageAnnotations.ScheduledDeliveryTime switch
+            {
+                { } scheduledDeliveryTime => DateTimeExtensions.FromUnixTimeMilliseconds(scheduledDeliveryTime),
+                null => null
+            };
+            set => MessageAnnotations.ScheduledDeliveryTime = value switch
+            {
+                { } scheduledDeliveryTime => scheduledDeliveryTime.ToUnixTimeMilliseconds(),
+                null => null
+            };
+        }
+        
+        public TimeSpan? ScheduledDeliveryDelay
+        {
+            get => MessageAnnotations.ScheduledDeliveryDelay switch
+            {
+                { } scheduledDeliveryDelay => TimeSpan.FromMilliseconds(scheduledDeliveryDelay),
+                null => null
+            };
+            set => MessageAnnotations.ScheduledDeliveryDelay = value switch
+            {
+                { } scheduledDeliveryDelay => Convert.ToUInt32(scheduledDeliveryDelay.TotalMilliseconds),
+                null => null
+            };
         }
 
         public T GetBody<T>()
