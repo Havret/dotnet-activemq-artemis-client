@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
-using ActiveMQ.Net.TestUtils;
+using ActiveMQ.Net.InternalUtilities;
 using Amqp.Types;
 using Xunit;
 using Xunit.Abstractions;
@@ -249,6 +249,84 @@ namespace ActiveMQ.Net.Tests
             var received = messageProcessor.Dequeue(Timeout);
 
             Assert.Equal(TimeSpan.FromMilliseconds(10), received.TimeToLive);
+        }
+
+        [Fact]
+        public async Task Should_send_message_without_ScheduledDeliveryTime_set()
+        {
+            using var host = CreateOpenedContainerHost();
+            var messageProcessor = host.CreateMessageProcessor("a1");
+            await using var connection = await CreateConnection(host.Endpoint);
+            await using var producer = await connection.CreateProducerAsync("a1", AddressRoutingType.Anycast);
+
+            var message = new Message("foo")
+            {
+                ScheduledDeliveryTime = null
+            };
+            await producer.SendAsync(message);
+
+            var received = messageProcessor.Dequeue(Timeout);
+
+            Assert.Null(received.ScheduledDeliveryTime);
+        }
+        
+        [Fact]
+        public async Task Should_send_message_with_ScheduledDeliveryTime_set()
+        {
+            using var host = CreateOpenedContainerHost();
+            var messageProcessor = host.CreateMessageProcessor("a1");
+            await using var connection = await CreateConnection(host.Endpoint);
+            await using var producer = await connection.CreateProducerAsync("a1", AddressRoutingType.Anycast);
+
+            var scheduledDeliveryTime = DateTime.UtcNow.AddHours(1).DropTicsPrecision();
+            var message = new Message("foo")
+            {
+                ScheduledDeliveryTime = scheduledDeliveryTime
+            };
+            await producer.SendAsync(message);
+
+            var received = messageProcessor.Dequeue(Timeout);
+
+            Assert.Equal(scheduledDeliveryTime, received.ScheduledDeliveryTime);
+        }
+        
+        [Fact]
+        public async Task Should_send_message_without_ScheduledDeliveryDelay_set()
+        {
+            using var host = CreateOpenedContainerHost();
+            var messageProcessor = host.CreateMessageProcessor("a1");
+            await using var connection = await CreateConnection(host.Endpoint);
+            await using var producer = await connection.CreateProducerAsync("a1", AddressRoutingType.Anycast);
+
+            var message = new Message("foo")
+            {
+                ScheduledDeliveryDelay = null
+            };
+            await producer.SendAsync(message);
+
+            var received = messageProcessor.Dequeue(Timeout);
+
+            Assert.Null(received.ScheduledDeliveryDelay);
+        }
+        
+        [Fact]
+        public async Task Should_send_message_with_ScheduledDeliveryDelay_set()
+        {
+            using var host = CreateOpenedContainerHost();
+            var messageProcessor = host.CreateMessageProcessor("a1");
+            await using var connection = await CreateConnection(host.Endpoint);
+            await using var producer = await connection.CreateProducerAsync("a1", AddressRoutingType.Anycast);
+        
+            var scheduledDeliveryDelay = TimeSpan.FromHours(1);
+            var message = new Message("foo")
+            {
+                ScheduledDeliveryDelay = scheduledDeliveryDelay
+            };
+            await producer.SendAsync(message);
+        
+            var received = messageProcessor.Dequeue(Timeout);
+        
+            Assert.Equal(scheduledDeliveryDelay, received.ScheduledDeliveryDelay);
         }
     }
 }
