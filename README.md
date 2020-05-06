@@ -204,7 +204,7 @@ And for each message individually:
 ```csharp
 await producer.SendAsync(new Message("foo")
 {
-    DurabilityMode = DurabilityMode.Nondurable // takes precedence over durability ode specified on producer level
+    DurabilityMode = DurabilityMode.Nondurable // takes precedence over durability mode specified on producer level
 });
 ```
 
