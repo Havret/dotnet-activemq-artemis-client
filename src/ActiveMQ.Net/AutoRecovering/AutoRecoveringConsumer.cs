@@ -2,6 +2,7 @@
 using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
+using ActiveMQ.Net.Transactions;
 using Microsoft.Extensions.Logging;
 using Nito.AsyncEx;
 
@@ -39,9 +40,9 @@ namespace ActiveMQ.Net.AutoRecovering
             }
         }
 
-        public void Accept(Message message)
+        public ValueTask AcceptAsync(Message message, Transaction transaction, CancellationToken cancellationToken = default)
         {
-            _consumer.Accept(message);
+            return _consumer.AcceptAsync(message, transaction, cancellationToken);
         }
 
         public void Reject(Message message)

@@ -189,6 +189,7 @@ namespace ActiveMQ.Net.IntegrationTests
             for (int i = 0; i < count; i++)
             {
                 var message = await consumer.ReceiveAsync(CancellationToken);
+                await consumer.AcceptAsync(message);
                 messages.Add(message);
             }
 
