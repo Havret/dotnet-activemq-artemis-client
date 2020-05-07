@@ -16,7 +16,7 @@ namespace ActiveMQ.Net.IntegrationTests
         public async Task Should_deliver_message_at_scheduled_time()
         {
             await using var connection = await CreateConnection();
-            var address = nameof(Should_deliver_message_at_scheduled_time);
+            var address = Guid.NewGuid().ToString();
             await using var producer = await connection.CreateProducerAsync(address, AddressRoutingType.Anycast);
             await using var consumer = await connection.CreateConsumerAsync(address, QueueRoutingType.Anycast);
 

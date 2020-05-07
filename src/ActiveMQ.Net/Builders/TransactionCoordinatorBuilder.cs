@@ -5,42 +5,47 @@ using ActiveMQ.Net.Exceptions;
 using ActiveMQ.Net.Transactions;
 using Amqp;
 using Amqp.Framing;
-using Microsoft.Extensions.Logging;
+using Amqp.Transactions;
 
 namespace ActiveMQ.Net.Builders
 {
-    internal class AnonymousProducerBuilder
+    internal class TransactionCoordinatorBuilder
     {
-        private readonly ILoggerFactory _loggerFactory;
-        private readonly TransactionsManager _transactionsManager;
         private readonly Session _session;
         private readonly TaskCompletionSource<bool> _tcs;
 
-        public AnonymousProducerBuilder(ILoggerFactory loggerFactory, TransactionsManager transactionsManager, Session session)
+        public TransactionCoordinatorBuilder(Session session)
         {
-            _loggerFactory = loggerFactory;
-            _transactionsManager = transactionsManager;
             _session = session;
             _tcs = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
         }
 
-        public async Task<IAnonymousProducer> CreateAsync(AnonymousProducerConfiguration configuration, CancellationToken cancellationToken)
+        public async Task<TransactionCoordinator> CreateAsync(CancellationToken cancellationToken)
         {
-            if (configuration == null) throw new ArgumentNullException(nameof(configuration));
-            
             cancellationToken.ThrowIfCancellationRequested();
             cancellationToken.Register(() => _tcs.TrySetCanceled());
 
-            var target = new Target
+            var attach = new Attach
             {
-                Address = null,
+                Target = new Coordinator
+                {
+                    Capabilities = new[] { TxnCapabilities.LocalTransactions }
+                },
+                Source = new Source(),
+                SndSettleMode = SenderSettleMode.Unsettled,
+                RcvSettleMode = ReceiverSettleMode.First
             };
-            var senderLink = new SenderLink(_session, Guid.NewGuid().ToString(), target, OnAttached);
+            var senderLink = new SenderLink(_session, GetName(), attach, OnAttached);
             senderLink.AddClosedCallback(OnClosed);
             await _tcs.Task.ConfigureAwait(false);
-            var producer = new AnonymousProducer(_loggerFactory, senderLink, _transactionsManager, configuration);
+            var transactionCoordinator = new TransactionCoordinator(senderLink);
             senderLink.Closed -= OnClosed;
-            return producer;
+            return transactionCoordinator;
+        }
+        
+        private static string GetName()
+        {
+            return "coordinator-link-" + Guid.NewGuid().ToString("N").Substring(0, 5);
         }
         
         private void OnAttached(ILink link, Attach attach)
@@ -55,7 +60,7 @@ namespace ActiveMQ.Net.Builders
         {
             if (error != null)
             {
-                _tcs.TrySetException(CreateProducerException.FromError(error));
+                _tcs.TrySetException(CreateTransactionCoordinatorException.FromError(error));
             }
         }
     }

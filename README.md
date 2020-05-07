@@ -32,7 +32,7 @@ The following table shows what features are currently supported.
 |Address Model|✔|Advanced routing strategies use FQQN, thus require queues to be pre-configured.|
 |Logging|✔|Uses [Microsoft.Extensions.Logging.Abstractions](https://www.nuget.org/packages/Microsoft.Extensions.Logging.Abstractions/).|
 |Queue Browser|❌||
-|Transactions|❌||
+|Transactions|✔||
 |Consumer Priority|❌||
 
 ## API overview

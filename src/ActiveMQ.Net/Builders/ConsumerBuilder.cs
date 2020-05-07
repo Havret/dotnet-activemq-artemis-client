@@ -2,6 +2,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 using ActiveMQ.Net.Exceptions;
+using ActiveMQ.Net.Transactions;
 using Amqp;
 using Amqp.Framing;
 using Amqp.Types;
@@ -12,12 +13,14 @@ namespace ActiveMQ.Net.Builders
     internal class ConsumerBuilder
     {
         private readonly ILoggerFactory _loggerFactory;
+        private readonly TransactionsManager _transactionsManager;
         private readonly Session _session;
         private readonly TaskCompletionSource<bool> _tcs;
 
-        public ConsumerBuilder(ILoggerFactory loggerFactory, Session session)
+        public ConsumerBuilder(ILoggerFactory loggerFactory, TransactionsManager transactionsManager, Session session)
         {
             _loggerFactory = loggerFactory;
+            _transactionsManager = transactionsManager;
             _session = session;
             _tcs = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
         }
@@ -45,7 +48,7 @@ namespace ActiveMQ.Net.Builders
             receiverLink.AddClosedCallback(OnClosed);
             await _tcs.Task.ConfigureAwait(false);
             receiverLink.Closed -= OnClosed;
-            return new Consumer(_loggerFactory, receiverLink, configuration);
+            return new Consumer(_loggerFactory, receiverLink, _transactionsManager, configuration);
         }
 
         private static string GetAddress(string address, string queue)

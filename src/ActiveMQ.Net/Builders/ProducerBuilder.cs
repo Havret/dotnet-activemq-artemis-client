@@ -2,6 +2,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 using ActiveMQ.Net.Exceptions;
+using ActiveMQ.Net.Transactions;
 using Amqp;
 using Amqp.Framing;
 using Microsoft.Extensions.Logging;
@@ -11,12 +12,14 @@ namespace ActiveMQ.Net.Builders
     internal class ProducerBuilder
     {
         private readonly ILoggerFactory _loggerFactory;
+        private readonly TransactionsManager _transactionsManager;
         private readonly Session _session;
         private readonly TaskCompletionSource<bool> _tcs;
 
-        public ProducerBuilder(ILoggerFactory loggerFactory, Session session)
+        public ProducerBuilder(ILoggerFactory loggerFactory, TransactionsManager transactionsManager, Session session)
         {
             _loggerFactory = loggerFactory;
+            _transactionsManager = transactionsManager;
             _session = session;
             _tcs = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
         }
@@ -38,7 +41,7 @@ namespace ActiveMQ.Net.Builders
             var senderLink = new SenderLink(_session, Guid.NewGuid().ToString(), target, OnAttached);
             senderLink.AddClosedCallback(OnClosed);
             await _tcs.Task.ConfigureAwait(false);
-            var producer = new Producer(_loggerFactory, senderLink, configuration);
+            var producer = new Producer(_loggerFactory, senderLink, _transactionsManager, configuration);
             senderLink.Closed -= OnClosed;
             return producer;
         }

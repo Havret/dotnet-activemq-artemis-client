@@ -1,6 +1,7 @@
 ﻿using System.Threading;
 using System.Threading.Tasks;
 using ActiveMQ.Net.Exceptions;
+using ActiveMQ.Net.Transactions;
 using Microsoft.Extensions.Logging;
 
 namespace ActiveMQ.Net.AutoRecovering
@@ -15,13 +16,13 @@ namespace ActiveMQ.Net.AutoRecovering
             _configuration = configuration;
         }
 
-        public async Task SendAsync(Message message, CancellationToken cancellationToken = default)
+        public async Task SendAsync(Message message, Transaction transaction, CancellationToken cancellationToken = default)
         {
             while (true)
             {
                 try
                 {
-                    await _producer.SendAsync(message, cancellationToken).ConfigureAwait(false);
+                    await _producer.SendAsync(message, transaction, cancellationToken).ConfigureAwait(false);
                     return;
                 }
                 catch (ProducerClosedException)

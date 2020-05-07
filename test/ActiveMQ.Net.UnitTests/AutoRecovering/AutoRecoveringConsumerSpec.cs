@@ -64,7 +64,7 @@ namespace ActiveMQ.Net.Tests.AutoRecovering
 
             var cts = new CancellationTokenSource(Timeout);
             var message = await consumer.ReceiveAsync(cts.Token);
-            consumer.Accept(message);
+            await consumer.AcceptAsync(message);
 
             var dispositionContext = messageSource.GetNextDisposition(Timeout);
             Assert.IsType<Accepted>(dispositionContext.DeliveryState);

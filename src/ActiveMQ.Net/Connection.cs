@@ -2,6 +2,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 using ActiveMQ.Net.Builders;
+using ActiveMQ.Net.Transactions;
 using Amqp;
 using Amqp.Framing;
 using Microsoft.Extensions.Logging;
@@ -12,6 +13,7 @@ namespace ActiveMQ.Net
     {
         private readonly Amqp.Connection _connection;
         private readonly ILoggerFactory _loggerFactory;
+        private readonly TransactionsManager _transactionsManager;
         private bool _closed;
         private Error _error;
 
@@ -21,6 +23,7 @@ namespace ActiveMQ.Net
             Endpoint = endpoint;
             _connection = connection;
             _connection.AddClosedCallback(OnConnectionClosed);
+            _transactionsManager = new TransactionsManager(this);
         }
 
         public Endpoint Endpoint { get; }
@@ -29,22 +32,29 @@ namespace ActiveMQ.Net
         public async Task<IConsumer> CreateConsumerAsync(ConsumerConfiguration configuration, CancellationToken cancellationToken)
         {
             var session = await CreateSession(cancellationToken).ConfigureAwait(false);
-            var consumerBuilder = new ConsumerBuilder(_loggerFactory, session);
+            var consumerBuilder = new ConsumerBuilder(_loggerFactory, _transactionsManager, session);
             return await consumerBuilder.CreateAsync(configuration, cancellationToken).ConfigureAwait(false);
         }
 
         public async Task<IProducer> CreateProducerAsync(ProducerConfiguration configuration, CancellationToken cancellationToken)
         {
             var session = await CreateSession(cancellationToken).ConfigureAwait(false);
-            var producerBuilder = new ProducerBuilder(_loggerFactory, session);
+            var producerBuilder = new ProducerBuilder(_loggerFactory, _transactionsManager, session);
             return await producerBuilder.CreateAsync(configuration, cancellationToken).ConfigureAwait(false);
         }
 
         public async Task<IAnonymousProducer> CreateAnonymousProducer(AnonymousProducerConfiguration configuration, CancellationToken cancellationToken)
         {
             var session = await CreateSession(cancellationToken).ConfigureAwait(false);
-            var producerBuilder = new AnonymousProducerBuilder(_loggerFactory, session);
+            var producerBuilder = new AnonymousProducerBuilder(_loggerFactory, _transactionsManager, session);
             return await producerBuilder.CreateAsync(configuration, cancellationToken).ConfigureAwait(false);
+        }
+
+        internal async Task<TransactionCoordinator> CreateTransactionCoordinator(CancellationToken cancellationToken)
+        {
+            var session = await CreateSession(cancellationToken).ConfigureAwait(false);
+            var transactionCoordinatorBuilder = new TransactionCoordinatorBuilder(session);
+            return await transactionCoordinatorBuilder.CreateAsync(cancellationToken).ConfigureAwait(false);
         }
 
         private Task<Session> CreateSession(CancellationToken cancellationToken)

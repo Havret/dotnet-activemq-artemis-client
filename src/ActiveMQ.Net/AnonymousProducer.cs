@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
+using ActiveMQ.Net.Transactions;
 using Amqp;
 using Microsoft.Extensions.Logging;
 
@@ -8,23 +9,24 @@ namespace ActiveMQ.Net
 {
     internal class AnonymousProducer : ProducerBase, IAnonymousProducer
     {
-        public AnonymousProducer(ILoggerFactory loggerFactory, SenderLink senderLink, AnonymousProducerConfiguration configuration) : base(loggerFactory, senderLink, configuration)
+        public AnonymousProducer(ILoggerFactory loggerFactory, SenderLink senderLink, TransactionsManager transactionsManager, AnonymousProducerConfiguration configuration) :
+            base(loggerFactory, senderLink, transactionsManager, configuration)
         {
         }
-        
-        public Task SendAsync(string address, AddressRoutingType routingType, Message message, CancellationToken cancellationToken = default)
+
+        public Task SendAsync(string address, AddressRoutingType routingType, Message message, Transaction transaction, CancellationToken cancellationToken = default)
         {
             CheckAddress(address);
             CheckMessage(message);
 
-            return SendInternalAsync(address, routingType, message, cancellationToken);
+            return SendInternalAsync(address, routingType, message, transaction, cancellationToken);
         }
 
         public void Send(string address, AddressRoutingType routingType, Message message)
         {
             CheckAddress(address);
-            CheckMessage(message);            
-            
+            CheckMessage(message);
+
             SendInternal(address, routingType, message);
         }
 

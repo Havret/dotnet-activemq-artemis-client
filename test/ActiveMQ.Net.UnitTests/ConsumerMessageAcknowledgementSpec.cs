@@ -41,7 +41,7 @@ namespace ActiveMQ.Net.Tests
             
             messageSource.Enqueue(new Message("foo"));
             var message = await consumer.ReceiveAsync();
-            consumer.Accept(message);
+            await consumer.AcceptAsync(message);
 
             var dispositionContext = messageSource.GetNextDisposition(Timeout);
             Assert.IsType<Accepted>(dispositionContext.DeliveryState);
