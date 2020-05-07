@@ -1,10 +1,10 @@
-# ActiveMQ.Net
+# .NET Client for ActiveMQ Artemis
 
-Unofficial [ActiveMQ Artemis](https://activemq.apache.org/components/artemis/) .NET Client for .NET Core and .NET Framework
+Unofficial [ActiveMQ Artemis](https://activemq.apache.org/components/artemis/) .NET Client for .NET Core and .NET Framework.
 
 Apache ActiveMQ Artemis is an open-source project to build a multi-protocol, embeddable, very high performance, clustered, asynchronous messaging system.
 
-This lightweight .NET client library built on top of [Amqp.Net Lite](http://azure.github.io/amqpnetlite/) tries to fully leverage Apache ActiveMQ Artemis capabilities.
+This lightweight .NET client library built on top of [AmqpNetLite](http://azure.github.io/amqpnetlite/) tries to fully leverage Apache ActiveMQ Artemis capabilities.
 
 ## Features
 
@@ -37,10 +37,10 @@ The following table shows what features are currently supported.
 
 ## API overview
 
-The API interfaces and classes are defined in the `ActiveMQ.Net` namespace:
+The API interfaces and classes are defined in the `ActiveMQ.Artemis.Client` namespace:
 
 ```csharp
-using ActiveMQ.Net;
+using ActiveMQ.Artemis.Client;
 ```
 
 The core API interfaces and classes are:
@@ -87,7 +87,7 @@ await connection.DisposeAsync();
 
 ### Sending messages
 
-ActiveMQ.Net uses `IProducer` and `IAnonymousProducer` interfaces for sending messages. To to create an instance of `IProducer` you need to specify an address name and a routing type to which messages will be sent.
+The client uses `IProducer` and `IAnonymousProducer` interfaces for sending messages. To to create an instance of `IProducer` you need to specify an address name and a routing type to which messages will be sent.
 
 ```csharp
 var producer = await connection.CreateProducerAsync("a1", AddressRoutingType.Anycast);
@@ -113,7 +113,7 @@ await anonymousProducer.SendAsync("a2", AddressRoutingType.Multicast, new Messag
 
 ### Receiving messages
 
-ActiveMQ.Net uses `IConsumer` interface for receiving messages. `IConsumer` can be created as follows:
+The client uses `IConsumer` interface for receiving messages. `IConsumer` can be created as follows:
 
 ```csharp
 var consumer = await connection.CreateConsumerAsync("a1", QueueRoutingType.Anycast);
@@ -138,7 +138,7 @@ This may be particularly useful when you want to shut down your application.
 
 ### Message payload
 
-ActiveMQ.Net uses `Message` class to represent messages which may be transmitted. A `Message` can carry various types of payload and accompanying metadata.
+The client uses `Message` class to represent messages which may be transmitted. A `Message` can carry various types of payload and accompanying metadata.
 
 A new message can be created as follows:
 
@@ -234,4 +234,4 @@ await producer.SendAsync(new Message("foo")
 
 ### Resources lifespan
 
-Connections, producers, and consumers are meant to be long-lived objects. The underlying protocol is designed and optimized for long-running connections. That means that opening a new connection per operation, e.g. sending a message, is unnecessary and strongly discouraged as it will introduce a lot of network round trips and overhead. The same rule applies to all ActiveMQ.Net resources.
+Connections, producers, and consumers are meant to be long-lived objects. The underlying protocol is designed and optimized for long-running connections. That means that opening a new connection per operation, e.g. sending a message, is unnecessary and strongly discouraged as it will introduce a lot of network round trips and overhead. The same rule applies to all client resources.
