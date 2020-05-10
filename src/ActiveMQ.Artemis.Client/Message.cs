@@ -64,6 +64,27 @@ namespace ActiveMQ.Artemis.Client
         internal MessageAnnotations MessageAnnotations => _messageAnnotations ??= new MessageAnnotations(InnerMessage);
         public ApplicationProperties ApplicationProperties => _applicationProperties ??= new ApplicationProperties(InnerMessage);
 
+        public string MessageId
+        {
+            get => Properties.MessageId;
+            set => Properties.MessageId = value;
+        }
+
+        public T GetMessageId<T>()
+        {
+            if (Properties.ObjectMessageId is T messageId)
+            {
+                return messageId;
+            }
+
+            return default;
+        }
+
+        public void SetMessageId<T>(T messageId)
+        {
+            Properties.ObjectMessageId = messageId;
+        }
+
         public DurabilityMode? DurabilityMode
         {
             get => Header.Durable switch

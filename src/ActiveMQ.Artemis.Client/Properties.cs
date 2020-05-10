@@ -23,6 +23,22 @@ namespace ActiveMQ.Artemis.Client
             }
         }
 
+        public object ObjectMessageId
+        {
+            get => _innerProperties.GetMessageId();
+            set
+            {
+                if (value is null)
+                {
+                    _innerProperties.ResetField(0);
+                }
+                else
+                {
+                    _innerProperties.SetMessageId(value);    
+                }
+            }
+        }
+
         public byte[] UserId
         {
             get => _innerProperties.UserId;
