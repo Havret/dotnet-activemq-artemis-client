@@ -2,6 +2,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using ActiveMQ.Artemis.Client.Exceptions;
+using ActiveMQ.Artemis.Client.MessageIdPolicy;
 using ActiveMQ.Artemis.Client.Transactions;
 using Amqp;
 using Amqp.Framing;
@@ -93,6 +94,11 @@ namespace ActiveMQ.Artemis.Client
                 if (_configuration.SetMessageCreationTime && !message.CreationTime.HasValue)
                 {
                     message.CreationTime = DateTime.UtcNow;
+                }
+
+                if (message.GetMessageId<object>() == null && _configuration.MessageIdPolicy != null && !(_configuration.MessageIdPolicy is DisableMessageIdPolicy))
+                {
+                    message.SetMessageId(_configuration.MessageIdPolicy.GetNextMessageId());
                 }
 
                 message.Priority ??= _configuration.MessagePriority;
