@@ -9,6 +9,6 @@ namespace ActiveMQ.Artemis.Client
     {
         ValueTask<Message> ReceiveAsync(CancellationToken cancellationToken = default);
         ValueTask AcceptAsync(Message message, Transaction transaction, CancellationToken cancellationToken = default);
-        void Reject(Message message);
+        void Reject(Message message, bool undeliverableHere = false);
     }
 }

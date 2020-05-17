@@ -45,9 +45,9 @@ namespace ActiveMQ.Artemis.Client.AutoRecovering
             return _consumer.AcceptAsync(message, transaction, cancellationToken);
         }
 
-        public void Reject(Message message)
+        public void Reject(Message message, bool undeliverableHere)
         {
-            _consumer.Reject(message);
+            _consumer.Reject(message, undeliverableHere);
         }
         
         public void Suspend()

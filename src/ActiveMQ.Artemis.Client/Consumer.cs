@@ -56,9 +56,9 @@ namespace ActiveMQ.Artemis.Client
             Log.MessageAccepted(_logger);
         }
 
-        public void Reject(Message message)
+        public void Reject(Message message, bool undeliverableHere)
         {
-            _receiverLink.Reject(message.InnerMessage);
+            _receiverLink.Modify(message.InnerMessage, deliveryFailed: true, undeliverableHere: undeliverableHere);
             Log.MessageRejected(_logger);
         }
 
