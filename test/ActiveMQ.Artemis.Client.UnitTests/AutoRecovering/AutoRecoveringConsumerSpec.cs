@@ -85,7 +85,7 @@ namespace ActiveMQ.Artemis.Client.UnitTests.AutoRecovering
             consumer.Reject(message);
 
             var dispositionContext = messageSource.GetNextDisposition(Timeout);
-            Assert.IsType<Rejected>(dispositionContext.DeliveryState);
+            Assert.IsType<Modified>(dispositionContext.DeliveryState);
             Assert.True(dispositionContext.Settled);
             
             await DisposeUtil.DisposeAll(consumer, connection, host);

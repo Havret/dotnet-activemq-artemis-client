@@ -49,7 +49,7 @@ namespace ActiveMQ.Artemis.Client.UnitTests
         }
 
         [Fact]
-        public async Task Should_send_rejected_disposition_frame_when_message_rejected()
+        public async Task Should_send_modified_disposition_frame_when_message_rejected()
         {
             var endpoint = GetUniqueEndpoint();
             using var host = CreateOpenedContainerHost(endpoint);
@@ -63,7 +63,7 @@ namespace ActiveMQ.Artemis.Client.UnitTests
             consumer.Reject(message);
 
             var dispositionContext = messageSource.GetNextDisposition(Timeout);
-            Assert.IsType<Rejected>(dispositionContext.DeliveryState);
+            Assert.IsType<Modified>(dispositionContext.DeliveryState);
             Assert.True(dispositionContext.Settled);
         }
     }
