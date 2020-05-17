@@ -19,13 +19,15 @@ jobs:
         with:
           node-version: 12.x
 
-      - name: Install dependencies
+      - name: Install and Build 🔧
         working-directory: ./website
-        run: yarn install --frozen-lockfile
+        run: |
+          yarn install --frozen-lockfile
+          yarn build
 
       - name: Deploy 🚀
         uses: JamesIves/github-pages-deploy-action@releases/v3
         with:
           ACCESS_TOKEN: ${{ secrets.ACCESS_TOKEN }}
           BRANCH: gh-pages # The branch the action should deploy to.
-          FOLDER: ./website/build # The folder the action should deploy.
+          FOLDER: website/build # The folder the action should deploy.
