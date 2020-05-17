@@ -35,7 +35,7 @@ To retry indefinite amount of times `RetryCount` should return `int.MaxValue`.
 
 :::tip
 
-If the initial connection to an ActiveMQ Artemis node fails, automatic connection recovery will kick in as well. It may be problematic is some scenarios, as `ConnectionFactory.CreateAsync` won't signal any issues until the recovery policy gives up. If your recovery policy is configured to try to recover forever it may even never happen. That means you would be asynchronously waiting for the result of `CreateAsync` forever. To address this issue you can pass `CancellationToken` to `CreateAsync`. This allows you to arbitrarily break the operation at any point.
+If the initial connection to an ActiveMQ Artemis node fails, automatic connection recovery will kick in as well. It may be problematic in some scenarios, as `ConnectionFactory.CreateAsync` won't signal any issues until the recovery policy gives up. If your recovery policy is configured to try to recover forever it may even never happen. That means you would be asynchronously waiting for the result of `CreateAsync` forever. To address this issue you can pass `CancellationToken` to `CreateAsync`. This allows you to arbitrarily break the operation at any point.
 
 :::
 
