@@ -2,7 +2,7 @@ module.exports = {
   title: '.NET Client for ActiveMQ Artemis',
   tagline: 'Unofficial ActiveMQ Artemis .NET Client for .NET Core and .NET Framework',
   url: 'https://havret.github.io/dotnet-activemq-artemis-client',
-  baseUrl: '/',
+  baseUrl: '/dotnet-activemq-artemis-client/',
   favicon: 'img/favicon.ico',
   organizationName: 'havret', // Usually your GitHub org/user name.
   projectName: 'dotnet-activemq-artemis-client', // Usually your repo name.
