@@ -60,7 +60,7 @@ namespace ActiveMQ.Artemis.Client.Builders
         {
             if (error != null)
             {
-                _tcs.TrySetException(CreateTransactionCoordinatorException.FromError(error));
+                _tcs.TrySetException(new CreateTransactionCoordinatorException(error.Description, error.Condition));
             }
         }
     }

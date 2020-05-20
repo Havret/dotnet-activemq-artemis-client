@@ -45,7 +45,8 @@ namespace ActiveMQ.Artemis.Client.Transactions
             }
             else if (outcome.Descriptor.Code == MessageOutcomes.Rejected.Descriptor.Code)
             {
-                tcs.SetException(TransactionException.FromError(((Rejected) outcome).Error));
+                var rejected = (Rejected) outcome;
+                tcs.SetException(new TransactionException(rejected.Error?.Description, rejected.Error?.Condition));
             }
             else
             {
@@ -62,7 +63,8 @@ namespace ActiveMQ.Artemis.Client.Transactions
             }
             else if (outcome.Descriptor.Code == MessageOutcomes.Rejected.Descriptor.Code)
             {
-                tcs.SetException(TransactionException.FromError(((Rejected) outcome).Error));
+                var rejected = (Rejected) outcome;
+                tcs.SetException(new TransactionException(rejected.Error?.Description, rejected.Error?.Condition));
             }
             else
             {

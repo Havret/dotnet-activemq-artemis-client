@@ -55,11 +55,12 @@ namespace ActiveMQ.Artemis.Client
             }
             else if (link.IsDetaching() || link.IsClosed)
             {
-                tcs.TrySetException(ProducerClosedException.BecauseProducerDetached());
+                tcs.TrySetException(new ProducerClosedException("Producer detached."));
             }
             else if (outcome.Descriptor.Code == MessageOutcomes.Rejected.Descriptor.Code)
             {
-                tcs.TrySetException(MessageSendException.FromError(((Rejected) outcome).Error));
+                var rejected = (Rejected) outcome;
+                tcs.TrySetException(new MessageSendException(rejected.Error.Description, rejected.Error.Condition));
             }
             else if (outcome.Descriptor.Code == MessageOutcomes.Released.Descriptor.Code)
             {
@@ -86,7 +87,7 @@ namespace ActiveMQ.Artemis.Client
         {
             if (_senderLink.IsDetaching() || _senderLink.IsClosed)
             {
-                throw ProducerClosedException.BecauseProducerDetached();
+                throw new ProducerClosedException("Producer detached.");
             }
 
             try
@@ -110,19 +111,19 @@ namespace ActiveMQ.Artemis.Client
             }
             catch (AmqpException e) when (IsClosed || IsDetaching)
             {
-                throw ProducerClosedException.FromError(e.Error);
+                throw new ProducerClosedException(e.Error.Description, e.Error.Condition, e);
             }
             catch (AmqpException e)
             {
-                throw MessageSendException.FromError(e.Error);
+                throw new MessageSendException(e.Error.Description, e.Error.Condition, e);
             }
             catch (ObjectDisposedException e)
             {
-                throw ProducerClosedException.FromException(e);
+                throw new ProducerClosedException("Producer detached.", e);
             }
             catch (Exception e)
             {
-                throw MessageSendException.FromMessage(e.ToString());
+                throw new MessageSendException("Failed to send the message.", e);
             }
         }
 

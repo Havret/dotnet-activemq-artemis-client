@@ -86,12 +86,12 @@ namespace ActiveMQ.Artemis.Client.Builders
                 _tcs.TrySetResult(true);
             }
         }
-        
+
         private void OnClosed(IAmqpObject sender, Error error)
         {
             if (error != null)
             {
-                _tcs.TrySetException(CreateConsumerException.FromError(error));
+                _tcs.TrySetException(new CreateConsumerException(error.Description, error.Condition));
             }
         }
     }

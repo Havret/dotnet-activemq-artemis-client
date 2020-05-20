@@ -54,7 +54,7 @@ namespace ActiveMQ.Artemis.Client
             }
             catch (AmqpException e)
             {
-                throw CreateEndpointException.FromError(e.Error);
+                throw new CreateEndpointException(e.Error.Description, e.Error.Condition, e);
             }
             catch (Exception e)
             {
@@ -68,7 +68,7 @@ namespace ActiveMQ.Artemis.Client
             {
                 Scheme.Amqp => Amqp,
                 Scheme.Amqps => Amqps,
-                _ => throw new CreateEndpointException(ErrorCode.InvalidField, $"Protocol scheme {scheme.ToString()} is invalid.")
+                _ => throw new CreateEndpointException($"Protocol scheme {scheme.ToString()} is invalid.", ErrorCode.InvalidField)
             };
         }
 

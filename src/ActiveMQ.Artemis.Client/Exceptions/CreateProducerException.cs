@@ -1,20 +1,9 @@
-﻿using System;
-using Amqp.Framing;
-
-namespace ActiveMQ.Artemis.Client.Exceptions
+﻿namespace ActiveMQ.Artemis.Client.Exceptions
 {
-    public class CreateProducerException : Exception
+    public class CreateProducerException : ActiveMQArtemisClientException
     {
-        public string Condition { get; }
-
-        private CreateProducerException(string condition, string description) : base(description)
+        public CreateProducerException(string message, string errorCode) : base(message, errorCode)
         {
-            Condition = condition;
-        }
-
-        internal static CreateProducerException FromError(Error error)
-        {
-            return new CreateProducerException(error.Condition, error.Description);
         }
     }
 }

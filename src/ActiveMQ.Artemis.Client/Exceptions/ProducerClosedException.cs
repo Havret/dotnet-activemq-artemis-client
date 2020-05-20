@@ -1,35 +1,19 @@
 ﻿using System;
-using Amqp;
-using Amqp.Framing;
 
 namespace ActiveMQ.Artemis.Client.Exceptions
 {
-    public class ProducerClosedException : Exception
+    public class ProducerClosedException : ActiveMQArtemisClientException
     {
-        public string Condition { get; }
-
-        private ProducerClosedException(string condition, string description) : base(description)
-        {
-            Condition = condition;
-        }
-
-        private ProducerClosedException(string message, Exception innerException) : base(message, innerException)
+        public ProducerClosedException(string message) : base(message)
         {
         }
 
-        internal static ProducerClosedException BecauseProducerDetached()
+        public ProducerClosedException(string message, Exception innerException) : base(message, innerException)
         {
-            return new ProducerClosedException(ErrorCode.IllegalState, "Producer detached.");
         }
-        
-        internal static ProducerClosedException FromError(Error error)
+
+        public ProducerClosedException(string message, string errorCode, Exception innerException) : base(message, errorCode, innerException)
         {
-            return new ProducerClosedException(error.Condition, error.Description);
-        }
-        
-        internal static ProducerClosedException FromException(Exception innerException)
-        {
-            return new ProducerClosedException(innerException.Message, innerException);
         }
     }
 }

@@ -1,20 +1,9 @@
-﻿using System;
-using Amqp.Framing;
-
-namespace ActiveMQ.Artemis.Client.Exceptions
+﻿namespace ActiveMQ.Artemis.Client.Exceptions
 {
-    public class TransactionException : Exception
+    public class TransactionException : ActiveMQArtemisClientException
     {
-        public string Condition { get; }
-
-        private TransactionException(string condition, string description) : base(description)
+        public TransactionException(string message, string errorCode) : base(message, errorCode)
         {
-            Condition = condition;
-        }
-
-        internal static TransactionException FromError(Error error)
-        {
-            return new TransactionException(error.Condition, error.Description);
         }
     }
 }

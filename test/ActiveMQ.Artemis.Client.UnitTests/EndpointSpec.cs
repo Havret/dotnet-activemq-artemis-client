@@ -54,7 +54,7 @@ namespace ActiveMQ.Artemis.Client.UnitTests
         public void Throws_when_invalid_scheme_specified()
         {
             var exception = Assert.Throws<CreateEndpointException>(() => Endpoint.Create("localhost", 5672, "guest", "guest", (Scheme) 999));
-            Assert.Equal(ErrorCode.InvalidField, exception.Condition);
+            Assert.Equal(ErrorCode.InvalidField, exception.ErrorCode);
         }
 
         [Theory, MemberData(nameof(EndpointData))]
