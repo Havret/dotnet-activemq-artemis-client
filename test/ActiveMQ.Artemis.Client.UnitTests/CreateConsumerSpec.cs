@@ -213,7 +213,7 @@ namespace ActiveMQ.Artemis.Client.UnitTests
             await using var connection = await CreateConnection(endpoint);
             var exception = await Assert.ThrowsAsync<CreateConsumerException>(() => connection.CreateConsumerAsync("a1", QueueRoutingType.Anycast, "q1"));
             Assert.Contains("Queue: 'q1' does not exist", (string) exception.Message);
-            Assert.Equal(ErrorCode.NotFound, exception.Condition);
+            Assert.Equal(ErrorCode.NotFound, exception.ErrorCode);
         }
         
         [Fact]

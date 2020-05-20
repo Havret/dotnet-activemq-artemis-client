@@ -1,20 +1,9 @@
-﻿using System;
-using Amqp.Framing;
-
-namespace ActiveMQ.Artemis.Client.Exceptions
+﻿namespace ActiveMQ.Artemis.Client.Exceptions
 {
-    public class CreateSessionException : Exception
+    public class CreateSessionException : ActiveMQArtemisClientException
     {
-        public string Condition { get; }
-
-        private CreateSessionException(string condition, string description) : base(description)
+        public CreateSessionException(string message, string errorCode) : base(message, errorCode)
         {
-            Condition = condition;
-        }
-
-        internal static CreateSessionException FromError(Error error)
-        {
-            return new CreateSessionException(error.Condition, error.Description);
         }
     }
 }

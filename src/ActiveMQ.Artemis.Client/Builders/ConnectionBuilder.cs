@@ -43,7 +43,7 @@ namespace ActiveMQ.Artemis.Client.Builders
         {
             if (error != null)
             {
-                _tcs.TrySetException(CreateConnectionException.FromError(error));
+                _tcs.TrySetException(new CreateConnectionException(error.Description, error.Condition));
             }
         }
     }

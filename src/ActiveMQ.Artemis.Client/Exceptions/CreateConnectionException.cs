@@ -1,24 +1,13 @@
-﻿using System;
-using Amqp.Framing;
-
-namespace ActiveMQ.Artemis.Client.Exceptions
+﻿namespace ActiveMQ.Artemis.Client.Exceptions
 {
-    public class CreateConnectionException : Exception
+    public class CreateConnectionException : ActiveMQArtemisClientException
     {
-        public string Condition { get; }
+        public CreateConnectionException(string message, string errorCode) : base(message, errorCode)
+        {
+        }
 
-        private CreateConnectionException(string condition, string description) : base(description)
+        public CreateConnectionException(string message) : base(message)
         {
-            Condition = condition;
-        }
-        
-        internal CreateConnectionException(string message) : base(message)
-        {
-        }
-        
-        internal static CreateConnectionException FromError(Error error)
-        {
-            return new CreateConnectionException(error.Condition, error.Description);
         }
     }
 }

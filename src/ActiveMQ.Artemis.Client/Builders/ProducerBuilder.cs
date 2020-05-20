@@ -58,7 +58,7 @@ namespace ActiveMQ.Artemis.Client.Builders
         {
             if (error != null)
             {
-                _tcs.TrySetException(CreateProducerException.FromError(error));
+                _tcs.TrySetException(new CreateProducerException(error.Description, error.Condition));
             }
         }
     }

@@ -1,25 +1,19 @@
 ﻿using System;
-using Amqp.Framing;
 
 namespace ActiveMQ.Artemis.Client.Exceptions
 {
-    public class MessageSendException : Exception
+    public class MessageSendException : ActiveMQArtemisClientException
     {
-        public MessageSendException(string condition, string description) : base(description)
+        public MessageSendException(string message, Exception innerException) : base(message, innerException)
         {
-            Condition = condition;
         }
 
-        public string Condition { get; }
-
-        internal static MessageSendException FromError(Error error)
+        public MessageSendException(string message, string errorCode) : base(message, errorCode)
         {
-            return new MessageSendException(error.Condition, error.Description);
         }
 
-        public static MessageSendException FromMessage(string message)
+        public MessageSendException(string message, string errorCode, Exception innerException) : base(message, errorCode, innerException)
         {
-            return new MessageSendException(null, message);
         }
     }
 }
