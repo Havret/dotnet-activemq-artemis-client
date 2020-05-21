@@ -2,6 +2,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 using ActiveMQ.Artemis.Client.Builders;
+using ActiveMQ.Artemis.Client.MessageIdPolicy;
 using ActiveMQ.Artemis.Client.Transactions;
 using Amqp;
 using Amqp.Framing;
@@ -12,16 +13,18 @@ namespace ActiveMQ.Artemis.Client
     internal class Connection : IConnection
     {
         private readonly Amqp.Connection _connection;
+        private readonly Func<IMessageIdPolicy> _messageIdPolicyFactory;
         private readonly ILoggerFactory _loggerFactory;
         private readonly TransactionsManager _transactionsManager;
         private bool _closed;
         private Error _error;
 
-        public Connection(ILoggerFactory loggerFactory, Endpoint endpoint, Amqp.Connection connection)
+        public Connection(ILoggerFactory loggerFactory, Endpoint endpoint, Amqp.Connection connection, Func<IMessageIdPolicy> messageIdPolicyFactory)
         {
             _loggerFactory = loggerFactory;
             Endpoint = endpoint;
             _connection = connection;
+            _messageIdPolicyFactory = messageIdPolicyFactory;
             _connection.AddClosedCallback(OnConnectionClosed);
             _transactionsManager = new TransactionsManager(this);
         }
@@ -39,7 +42,7 @@ namespace ActiveMQ.Artemis.Client
         public async Task<IProducer> CreateProducerAsync(ProducerConfiguration configuration, CancellationToken cancellationToken)
         {
             var session = await CreateSession(cancellationToken).ConfigureAwait(false);
-            var producerBuilder = new ProducerBuilder(_loggerFactory, _transactionsManager, session);
+            var producerBuilder = new ProducerBuilder(_loggerFactory, _transactionsManager, session, _messageIdPolicyFactory);
             return await producerBuilder.CreateAsync(configuration, cancellationToken).ConfigureAwait(false);
         }
 

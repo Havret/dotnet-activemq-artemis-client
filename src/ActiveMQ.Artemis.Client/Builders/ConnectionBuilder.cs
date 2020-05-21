@@ -1,6 +1,8 @@
-﻿using System.Threading;
+﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
 using ActiveMQ.Artemis.Client.Exceptions;
+using ActiveMQ.Artemis.Client.MessageIdPolicy;
 using Amqp;
 using Amqp.Framing;
 using Microsoft.Extensions.Logging;
@@ -10,11 +12,13 @@ namespace ActiveMQ.Artemis.Client.Builders
     internal class ConnectionBuilder
     {
         private readonly ILoggerFactory _loggerFactory;
+        private readonly Func<IMessageIdPolicy> _messageIdPolicyFactory;
         private readonly TaskCompletionSource<bool> _tcs;
 
-        public ConnectionBuilder(ILoggerFactory loggerFactory)
+        public ConnectionBuilder(ILoggerFactory loggerFactory, Func<IMessageIdPolicy> messageIdPolicyFactory)
         {
             _loggerFactory = loggerFactory;
+            _messageIdPolicyFactory = messageIdPolicyFactory;
             _tcs = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
         }
 
@@ -28,7 +32,7 @@ namespace ActiveMQ.Artemis.Client.Builders
             connection.AddClosedCallback(OnClosed);
             await _tcs.Task.ConfigureAwait(false);
             connection.Closed -= OnClosed;
-            return new Connection(_loggerFactory, endpoint, connection);
+            return new Connection(_loggerFactory, endpoint, connection, _messageIdPolicyFactory);
         }
 
         private void OnOpened(Amqp.IConnection connection, Open open)
