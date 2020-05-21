@@ -41,7 +41,7 @@ namespace ActiveMQ.Artemis.Client.UnitTests
 
             var cts = new CancellationTokenSource();
             cts.CancelAfter(TimeSpan.FromMilliseconds(50));
-            await Assert.ThrowsAsync<OperationCanceledException>(async () => await consumer.ReceiveAsync(cts.Token));
+            await Assert.ThrowsAnyAsync<OperationCanceledException>(async () => await consumer.ReceiveAsync(cts.Token));
         }
     }
 }
