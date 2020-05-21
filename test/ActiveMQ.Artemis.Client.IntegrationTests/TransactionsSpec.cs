@@ -440,5 +440,33 @@ namespace ActiveMQ.Artemis.Client.IntegrationTests
             Assert.NotNull(msg1);
             Assert.NotNull(msg2);
         }
+
+        [Fact]
+        public async Task Should_send_transacted_and_non_transacted_messages_alternately()
+        {
+            await using var connection = await CreateConnection();
+            var address = Guid.NewGuid().ToString();
+            await using var producer = await connection.CreateProducerAsync(address, AddressRoutingType.Anycast);
+            await using var consumer = await connection.CreateConsumerAsync(address, QueueRoutingType.Anycast);
+
+            var transaction = new Transaction();
+            await producer.SendAsync(new Message("foo1"), transaction);
+            await producer.SendAsync(new Message("foo2"), transaction);
+            await producer.SendAsync(new Message("foo3"));
+            await producer.SendAsync(new Message("foo4"), transaction);
+            
+            var msg3 = await consumer.ReceiveAsync(CancellationToken);
+            Assert.Equal("foo3", msg3.GetBody<string>());
+            
+            await transaction.CommitAsync();
+
+            var msg1 = await consumer.ReceiveAsync(CancellationToken);
+            var msg2 = await consumer.ReceiveAsync(CancellationToken);
+            var msg4 = await consumer.ReceiveAsync(CancellationToken);
+            
+            Assert.Equal("foo1", msg1.GetBody<string>());
+            Assert.Equal("foo2", msg2.GetBody<string>());
+            Assert.Equal("foo4", msg4.GetBody<string>());
+        }
     }
 }
