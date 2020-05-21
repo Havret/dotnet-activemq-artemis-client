@@ -2,6 +2,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 using ActiveMQ.Artemis.Client.Exceptions;
+using ActiveMQ.Artemis.Client.MessageIdPolicy;
 using ActiveMQ.Artemis.Client.Transactions;
 using Amqp;
 using Amqp.Framing;
@@ -14,13 +15,15 @@ namespace ActiveMQ.Artemis.Client.Builders
         private readonly ILoggerFactory _loggerFactory;
         private readonly TransactionsManager _transactionsManager;
         private readonly Session _session;
+        private readonly Func<IMessageIdPolicy> _messageIdPolicyFactory;
         private readonly TaskCompletionSource<bool> _tcs;
 
-        public ProducerBuilder(ILoggerFactory loggerFactory, TransactionsManager transactionsManager, Session session)
+        public ProducerBuilder(ILoggerFactory loggerFactory, TransactionsManager transactionsManager, Session session, Func<IMessageIdPolicy> messageIdPolicyFactory)
         {
             _loggerFactory = loggerFactory;
             _transactionsManager = transactionsManager;
             _session = session;
+            _messageIdPolicyFactory = messageIdPolicyFactory;
             _tcs = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
         }
 
@@ -41,7 +44,8 @@ namespace ActiveMQ.Artemis.Client.Builders
             var senderLink = new SenderLink(_session, Guid.NewGuid().ToString(), target, OnAttached);
             senderLink.AddClosedCallback(OnClosed);
             await _tcs.Task.ConfigureAwait(false);
-            var producer = new Producer(_loggerFactory, senderLink, _transactionsManager, configuration);
+            configuration.MessageIdPolicy ??= _messageIdPolicyFactory();
+            var producer = new Producer(_loggerFactory, senderLink, _transactionsManager, configuration, _messageIdPolicyFactory);
             senderLink.Closed -= OnClosed;
             return producer;
         }

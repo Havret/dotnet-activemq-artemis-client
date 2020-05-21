@@ -1,5 +1,7 @@
-﻿using System.Threading;
+﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
+using ActiveMQ.Artemis.Client.MessageIdPolicy;
 using ActiveMQ.Artemis.Client.Transactions;
 using Amqp;
 using Microsoft.Extensions.Logging;
@@ -10,7 +12,7 @@ namespace ActiveMQ.Artemis.Client
     {
         private readonly ProducerConfiguration _configuration;
 
-        public Producer(ILoggerFactory loggerFactory, SenderLink senderLink, TransactionsManager transactionsManager, ProducerConfiguration configuration) :
+        public Producer(ILoggerFactory loggerFactory, SenderLink senderLink, TransactionsManager transactionsManager, ProducerConfiguration configuration, Func<IMessageIdPolicy> messageIdPolicyFactory) :
             base(loggerFactory, senderLink, transactionsManager, configuration)
         {
             _configuration = configuration;

@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using ActiveMQ.Artemis.Client.AutoRecovering;
 using ActiveMQ.Artemis.Client.AutoRecovering.RecoveryPolicy;
 using ActiveMQ.Artemis.Client.Exceptions;
+using ActiveMQ.Artemis.Client.MessageIdPolicy;
 using ActiveMQ.Artemis.Client.UnitTests.Utils;
 using Amqp.Handler;
 using Xunit;
@@ -92,6 +93,20 @@ namespace ActiveMQ.Artemis.Client.UnitTests
         {
             var connectionFactory = CreateConnectionFactory();
             connectionFactory.RecoveryPolicy = RecoveryPolicyFactory.ConstantBackoff(TimeSpan.FromSeconds(1));
+        }
+
+        [Fact]
+        public void Should_throw_exception_when_null_assigned_as_message_id_policy_factory()
+        {
+            var connectionFactory = CreateConnectionFactory();
+            Assert.Throws<ArgumentNullException>(() => { connectionFactory.MessageIdPolicyFactory = null; });            
+        }
+        
+        [Fact]
+        public void Should_assign_custom_message_id_policy_factory()
+        {
+            var connectionFactory = CreateConnectionFactory();
+            connectionFactory.MessageIdPolicyFactory = MessageIdPolicyFactory.GuidMessageIdPolicy;
         }
     }
 }

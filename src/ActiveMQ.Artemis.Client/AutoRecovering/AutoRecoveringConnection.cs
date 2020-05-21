@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using ActiveMQ.Artemis.Client.AutoRecovering.RecoveryPolicy;
 using ActiveMQ.Artemis.Client.Builders;
 using ActiveMQ.Artemis.Client.InternalUtilities;
+using ActiveMQ.Artemis.Client.MessageIdPolicy;
 using Microsoft.Extensions.Logging;
 using Polly;
 using Polly.Retry;
@@ -17,6 +18,7 @@ namespace ActiveMQ.Artemis.Client.AutoRecovering
     {
         private IConnection _connection;
         private readonly ILoggerFactory _loggerFactory;
+        private readonly Func<IMessageIdPolicy> _messageIdPolicyFactory;
         private readonly ILogger<AutoRecoveringConnection> _logger;
         private readonly Endpoint[] _endpoints;
         private readonly ChannelReader<ConnectCommand> _reader;
@@ -26,10 +28,11 @@ namespace ActiveMQ.Artemis.Client.AutoRecovering
         private readonly AsyncRetryPolicy<IConnection> _connectionRetryPolicy;
         private readonly Task _recoveryLoopTask;
 
-        public AutoRecoveringConnection(ILoggerFactory loggerFactory, IEnumerable<Endpoint> endpoints, IRecoveryPolicy recoveryPolicy)
+        public AutoRecoveringConnection(ILoggerFactory loggerFactory, IEnumerable<Endpoint> endpoints, IRecoveryPolicy recoveryPolicy, Func<IMessageIdPolicy> messageIdPolicyFactory)
         {
             _logger = loggerFactory.CreateLogger<AutoRecoveringConnection>();
             _loggerFactory = loggerFactory;
+            _messageIdPolicyFactory = messageIdPolicyFactory;
             _endpoints = endpoints.ToArray();
 
             var channel = Channel.CreateUnbounded<ConnectCommand>();
@@ -148,7 +151,7 @@ namespace ActiveMQ.Artemis.Client.AutoRecovering
             return _connectionRetryPolicy.ExecuteAsync((context, ct) =>
             {
                 var endpoint = GetCurrentEndpoint(context);
-                var connectionBuilder = new ConnectionBuilder(_loggerFactory);
+                var connectionBuilder = new ConnectionBuilder(_loggerFactory, _messageIdPolicyFactory);
                 return connectionBuilder.CreateAsync(endpoint, ct);
             }, ctx, cancellationToken);
         }
