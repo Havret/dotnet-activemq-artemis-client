@@ -64,11 +64,11 @@ namespace ActiveMQ.Artemis.Client
             }
             else if (outcome.Descriptor.Code == MessageOutcomes.Released.Descriptor.Code)
             {
-                tcs.TrySetException(new MessageSendException(ErrorCode.MessageReleased, "Message was released by remote peer."));
+                tcs.TrySetException(new MessageSendException("Message was released by remote peer.", ErrorCode.MessageReleased));
             }
             else
             {
-                tcs.TrySetException(new MessageSendException(ErrorCode.InternalError, outcome.ToString()));
+                tcs.TrySetException(new MessageSendException(outcome.ToString(), ErrorCode.InternalError));
             }
         }
 
