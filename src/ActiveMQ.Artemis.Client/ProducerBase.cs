@@ -107,7 +107,7 @@ namespace ActiveMQ.Artemis.Client
                 message.MessageAnnotations[SymbolUtils.RoutingType] = routingType.GetRoutingAnnotation();
 
                 _senderLink.Send(message.InnerMessage, deliveryState, callback, state);
-                Log.MessageSent(_logger);
+                Log.MessageSent(_logger, message);
             }
             catch (AmqpException e) when (IsClosed || IsDetaching)
             {
@@ -134,16 +134,16 @@ namespace ActiveMQ.Artemis.Client
 
         private static class Log
         {
-            private static readonly Action<ILogger, Exception> _messageSent = LoggerMessage.Define(
+            private static readonly Action<ILogger, object, Exception> _messageSent = LoggerMessage.Define<object>(
                 LogLevel.Trace,
                 0,
-                "Message sent.");
+                "Message sent. MessageId: '{0}'.");
 
-            public static void MessageSent(ILogger logger)
+            public static void MessageSent(ILogger logger, Message message)
             {
                 if (logger.IsEnabled(LogLevel.Trace))
                 {
-                    _messageSent(logger, null);
+                    _messageSent(logger, message.GetMessageId<object>(), null);
                 }
             }
         }
