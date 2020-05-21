@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using ActiveMQ.Artemis.Client.MessageIdPolicy;
 using ActiveMQ.Artemis.Client.TestUtils.Logging;
 using ActiveMQ.Artemis.Client.UnitTests.Utils;
 using Amqp.Handler;
@@ -38,7 +39,11 @@ namespace ActiveMQ.Artemis.Client.UnitTests
 
         protected ConnectionFactory CreateConnectionFactory()
         {
-            return new ConnectionFactory { LoggerFactory = CreateTestLoggerFactory() };
+            return new ConnectionFactory
+            {
+                LoggerFactory = CreateTestLoggerFactory(),
+                MessageIdPolicyFactory = MessageIdPolicyFactory.GuidMessageIdPolicy
+            };
         }
 
         protected ILoggerFactory CreateTestLoggerFactory()

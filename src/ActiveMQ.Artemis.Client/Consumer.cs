@@ -31,19 +31,19 @@ namespace ActiveMQ.Artemis.Client
                 var message = new Message(m);
                 if (_writer.TryWrite(message))
                 {
-                    Log.MessageBuffered(_logger);
+                    Log.MessageBuffered(_logger, message);
                 }
                 else
                 {
-                    Log.FailedToBufferMessage(_logger);
+                    Log.FailedToBufferMessage(_logger, message);
                 }
             });
         }
 
-        public ValueTask<Message> ReceiveAsync(CancellationToken cancellationToken = default)
+        public async ValueTask<Message> ReceiveAsync(CancellationToken cancellationToken = default)
         {
             Log.ReceivingMessage(_logger);
-            return _reader.ReadAsync(cancellationToken);
+            return await _reader.ReadAsync(cancellationToken);
         }
 
         public async ValueTask AcceptAsync(Message message, Transaction transaction, CancellationToken cancellationToken = default)
@@ -53,13 +53,13 @@ namespace ActiveMQ.Artemis.Client
                 ? (DeliveryState) new TransactionalState { Outcome = new Accepted(), TxnId = txnId }
                 : new Accepted();
             _receiverLink.Complete(message.InnerMessage, deliveryState);
-            Log.MessageAccepted(_logger);
+            Log.MessageAccepted(_logger, message);
         }
 
         public void Reject(Message message, bool undeliverableHere)
         {
             _receiverLink.Modify(message.InnerMessage, deliveryFailed: true, undeliverableHere: undeliverableHere);
-            Log.MessageRejected(_logger);
+            Log.MessageRejected(_logger, message);
         }
 
         public async ValueTask DisposeAsync()
@@ -73,44 +73,44 @@ namespace ActiveMQ.Artemis.Client
 
         private static class Log
         {
-            private static readonly Action<ILogger, Exception> _messageBuffered = LoggerMessage.Define(
+            private static readonly Action<ILogger, object, Exception> _messageBuffered = LoggerMessage.Define<object>(
                 LogLevel.Trace,
                 0,
-                "Message buffered.");
+                "Message buffered. MessageId: '{0}'.");
 
-            private static readonly Action<ILogger, Exception> _failedToBufferMessage = LoggerMessage.Define(
+            private static readonly Action<ILogger, object, Exception> _failedToBufferMessage = LoggerMessage.Define<object>(
                 LogLevel.Warning,
                 0,
-                "Failed to buffer message.");
+                "Failed to buffer message. MessageId: '{0}'.");
 
             private static readonly Action<ILogger, Exception> _receivingMessage = LoggerMessage.Define(
                 LogLevel.Trace,
                 0,
                 "Receiving message.");
 
-            private static readonly Action<ILogger, Exception> _messageAccepted = LoggerMessage.Define(
+            private static readonly Action<ILogger, object, Exception> _messageAccepted = LoggerMessage.Define<object>(
                 LogLevel.Trace,
                 0,
-                "Message accepted.");
+                "Message accepted. MessageId: '{0}'.");
 
-            private static readonly Action<ILogger, Exception> _messageRejected = LoggerMessage.Define(
+            private static readonly Action<ILogger, object, Exception> _messageRejected = LoggerMessage.Define<object>(
                 LogLevel.Trace,
                 0,
-                "Message rejected.");
+                "Message rejected. MessageId: '{0}'.");
 
-            public static void MessageBuffered(ILogger logger)
+            public static void MessageBuffered(ILogger logger, Message message)
             {
                 if (logger.IsEnabled(LogLevel.Trace))
                 {
-                    _messageBuffered(logger, null);
+                    _messageBuffered(logger, message.GetMessageId<object>(), null);
                 }
             }
 
-            public static void FailedToBufferMessage(ILogger logger)
+            public static void FailedToBufferMessage(ILogger logger, Message message)
             {
                 if (logger.IsEnabled(LogLevel.Warning))
                 {
-                    _failedToBufferMessage(logger, null);
+                    _failedToBufferMessage(logger, message.GetMessageId<object>(), null);
                 }
             }
 
@@ -122,19 +122,19 @@ namespace ActiveMQ.Artemis.Client
                 }
             }
 
-            public static void MessageAccepted(ILogger logger)
+            public static void MessageAccepted(ILogger logger, Message message)
             {
                 if (logger.IsEnabled(LogLevel.Trace))
                 {
-                    _messageAccepted(logger, null);
+                    _messageAccepted(logger, message.GetMessageId<object>(), null);
                 }
             }
 
-            public static void MessageRejected(ILogger logger)
+            public static void MessageRejected(ILogger logger, Message message)
             {
                 if (logger.IsEnabled(LogLevel.Trace))
                 {
-                    _messageRejected(logger, null);
+                    _messageRejected(logger, message.GetMessageId<object>(), null);
                 }
             }
         }
