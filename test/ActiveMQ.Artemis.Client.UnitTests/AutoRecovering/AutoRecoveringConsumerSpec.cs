@@ -1,5 +1,8 @@
-﻿using System.Threading;
+﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
+using ActiveMQ.Artemis.Client.AutoRecovering.RecoveryPolicy;
+using ActiveMQ.Artemis.Client.Exceptions;
 using ActiveMQ.Artemis.Client.TestUtils;
 using ActiveMQ.Artemis.Client.UnitTests.Utils;
 using Amqp.Framing;
@@ -89,6 +92,47 @@ namespace ActiveMQ.Artemis.Client.UnitTests.AutoRecovering
             Assert.True(dispositionContext.Settled);
             
             await DisposeUtil.DisposeAll(consumer, connection, host);
+        }
+        
+        [Fact]
+        public async Task Throws_when_recovery_policy_gave_up_and_consumer_was_not_able_to_receive_message_if_ReceiveAsync_called_after_connection_lost()
+        {
+            var endpoint = GetUniqueEndpoint();
+
+            var host = CreateOpenedContainerHost(endpoint);
+
+            var connectionFactory = CreateConnectionFactory();
+            connectionFactory.RecoveryPolicy = RecoveryPolicyFactory.ConstantBackoff(TimeSpan.FromMilliseconds(100), 1);
+
+            await using var connection = await connectionFactory.CreateAsync(endpoint);
+
+            var consumer = await connection.CreateConsumerAsync("a1", QueueRoutingType.Anycast);
+
+            await DisposeHostAndWaitUntilConnectionNotified(host, connection);
+
+            var cts = new CancellationTokenSource(Timeout);
+            await Assert.ThrowsAsync<ConsumerClosedException>(async() => await consumer.ReceiveAsync(cts.Token));
+        }
+        
+        [Fact]
+        public async Task Throws_when_recovery_policy_gave_up_and_consumer_was_not_able_to_receive_message_if_ReceiveAsync_called_before_connection_lost()
+        {
+            var endpoint = GetUniqueEndpoint();
+
+            var host = CreateOpenedContainerHost(endpoint);
+
+            var connectionFactory = CreateConnectionFactory();
+            connectionFactory.RecoveryPolicy = RecoveryPolicyFactory.ConstantBackoff(TimeSpan.FromMilliseconds(100), 1);
+
+            await using var connection = await connectionFactory.CreateAsync(endpoint);
+
+            var consumer = await connection.CreateConsumerAsync("a1", QueueRoutingType.Anycast);
+            var cts = new CancellationTokenSource(TimeSpan.FromSeconds(20));
+            var receiveTask = consumer.ReceiveAsync(cts.Token);
+
+            await DisposeHostAndWaitUntilConnectionNotified(host, connection);
+
+            await Assert.ThrowsAsync<ConsumerClosedException>(async() => await receiveTask);
         }
 
         private async Task<(IConsumer consumer, MessageSource messageSource, TestContainerHost host, IConnection connection)> CreateReattachedConsumer()

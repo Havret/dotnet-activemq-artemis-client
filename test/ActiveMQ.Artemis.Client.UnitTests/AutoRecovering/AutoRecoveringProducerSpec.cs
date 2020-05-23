@@ -1,5 +1,8 @@
-﻿using System.Threading;
+﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
+using ActiveMQ.Artemis.Client.AutoRecovering.RecoveryPolicy;
+using ActiveMQ.Artemis.Client.Exceptions;
 using ActiveMQ.Artemis.Client.TestUtils;
 using ActiveMQ.Artemis.Client.UnitTests.Utils;
 using Amqp.Framing;
@@ -67,6 +70,46 @@ namespace ActiveMQ.Artemis.Client.UnitTests.AutoRecovering
             Assert.Equal("foo", message.GetBody<string>());
 
             await DisposeUtil.DisposeAll(connection, host2);
+        }
+
+        [Fact]
+        public async Task Throws_when_recovery_policy_gave_up_and_producer_was_not_able_to_SendAsync_message()
+        {
+            var endpoint = GetUniqueEndpoint();
+
+            var host1 = CreateOpenedContainerHost(endpoint);
+
+            var connectionFactory = CreateConnectionFactory();
+            connectionFactory.RecoveryPolicy = RecoveryPolicyFactory.ConstantBackoff(TimeSpan.FromMilliseconds(100), 1);
+
+            await using var connection = await connectionFactory.CreateAsync(endpoint);
+
+            var producer = await connection.CreateProducerAsync("a1", AddressRoutingType.Anycast);
+
+            await DisposeHostAndWaitUntilConnectionNotified(host1, connection);
+
+            var cts = new CancellationTokenSource(Timeout);
+            await Assert.ThrowsAsync<ProducerClosedException>(() => producer.SendAsync(new Message("foo"), cts.Token));
+        }
+        
+        [Fact]
+        public async Task Throws_when_recovery_policy_gave_up_and_producer_was_not_able_to_Send_message()
+        {
+            var endpoint = GetUniqueEndpoint();
+
+            var host1 = CreateOpenedContainerHost(endpoint);
+
+            var connectionFactory = CreateConnectionFactory();
+            connectionFactory.RecoveryPolicy = RecoveryPolicyFactory.ConstantBackoff(TimeSpan.FromMilliseconds(100), 1);
+
+            await using var connection = await connectionFactory.CreateAsync(endpoint);
+
+            var producer = await connection.CreateProducerAsync("a1", AddressRoutingType.Anycast);
+
+            await DisposeHostAndWaitUntilConnectionNotified(host1, connection);
+
+            var cts = new CancellationTokenSource(Timeout);
+            Assert.Throws<ProducerClosedException>(() => producer.Send(new Message("foo"), cts.Token));
         }
 
         [Fact]

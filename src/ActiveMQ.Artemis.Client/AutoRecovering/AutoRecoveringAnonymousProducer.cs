@@ -20,6 +20,7 @@ namespace ActiveMQ.Artemis.Client.AutoRecovering
         {
             while (true)
             {
+                CheckClosed();
                 try
                 {
                     await _producer.SendAsync(address, routingType, message, transaction, cancellationToken).ConfigureAwait(false);
@@ -34,19 +35,20 @@ namespace ActiveMQ.Artemis.Client.AutoRecovering
             }
         }
 
-        public void Send(string address, AddressRoutingType routingType, Message message)
+        public void Send(string address, AddressRoutingType routingType, Message message, CancellationToken cancellationToken)
         {
             while (true)
             {
+                CheckClosed();
                 try
                 {
-                    _producer.Send(address, routingType, message);
+                    _producer.Send(address, routingType, message, cancellationToken);
                     return;
                 }
                 catch (ProducerClosedException)
                 {
                     HandleProducerClosed();
-                    Wait();
+                    Wait(cancellationToken);
                     Log.RetryingSendAsync(Logger);
                 }
             }

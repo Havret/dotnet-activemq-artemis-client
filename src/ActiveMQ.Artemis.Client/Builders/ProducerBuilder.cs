@@ -45,7 +45,7 @@ namespace ActiveMQ.Artemis.Client.Builders
             senderLink.AddClosedCallback(OnClosed);
             await _tcs.Task.ConfigureAwait(false);
             configuration.MessageIdPolicy ??= _messageIdPolicyFactory();
-            var producer = new Producer(_loggerFactory, senderLink, _transactionsManager, configuration, _messageIdPolicyFactory);
+            var producer = new Producer(_loggerFactory, senderLink, _transactionsManager, configuration);
             senderLink.Closed -= OnClosed;
             return producer;
         }

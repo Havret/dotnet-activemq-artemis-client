@@ -1,4 +1,5 @@
-﻿using System.Threading;
+﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace ActiveMQ.Artemis.Client.AutoRecovering
@@ -14,5 +15,6 @@ namespace ActiveMQ.Artemis.Client.AutoRecovering
         void Resume();
         event Closed Closed;
         event RecoveryRequested RecoveryRequested;
+        Task TerminateAsync(Exception exception);
     }
 }

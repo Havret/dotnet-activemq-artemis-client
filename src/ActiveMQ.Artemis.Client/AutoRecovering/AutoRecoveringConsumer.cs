@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Threading;
-using System.Threading.Channels;
 using System.Threading.Tasks;
+using ActiveMQ.Artemis.Client.Exceptions;
 using ActiveMQ.Artemis.Client.Transactions;
 using Microsoft.Extensions.Logging;
 using Nito.AsyncEx;
@@ -13,6 +13,7 @@ namespace ActiveMQ.Artemis.Client.AutoRecovering
         private readonly ILogger<AutoRecoveringConsumer> _logger;
         private readonly ConsumerConfiguration _configuration;
         private readonly AsyncManualResetEvent _manualResetEvent = new AsyncManualResetEvent(true);
+        private Exception _failureCause;
         private IConsumer _consumer;
 
         public AutoRecoveringConsumer(ILoggerFactory loggerFactory, ConsumerConfiguration configuration)
@@ -25,14 +26,18 @@ namespace ActiveMQ.Artemis.Client.AutoRecovering
         {
             while (true)
             {
+                CheckClosed();
+                
                 try
                 {
                     return await _consumer.ReceiveAsync(cancellationToken).ConfigureAwait(false);
                 }
-                // TODO: Use ConsumerClosedException instead
-                catch (ChannelClosedException)
+                catch (ConsumerClosedException)
                 {
+                    CheckClosed();
+                    
                     Log.RetryingReceiveAsync(_logger);
+                    
                     Suspend();
                     RecoveryRequested?.Invoke();
                     await _manualResetEvent.WaitAsync(cancellationToken).ConfigureAwait(false);
@@ -79,6 +84,21 @@ namespace ActiveMQ.Artemis.Client.AutoRecovering
 
         public async Task RecoverAsync(IConnection connection, CancellationToken cancellationToken)
         {
+            await DisposeUnderlyingConsumer().ConfigureAwait(false);
+            _consumer = await connection.CreateConsumerAsync(_configuration, cancellationToken).ConfigureAwait(false);
+            Log.ProducerRecovered(_logger);
+        }
+
+        public async Task TerminateAsync(Exception exception)
+        {
+            _failureCause = exception;
+            _manualResetEvent.Set();
+            
+            await DisposeUnderlyingConsumer().ConfigureAwait(false);
+        }
+
+        private async Task DisposeUnderlyingConsumer()
+        {
             if (_consumer != null)
             {
                 try
@@ -90,9 +110,14 @@ namespace ActiveMQ.Artemis.Client.AutoRecovering
                     // ignored
                 }
             }
+        }
 
-            _consumer = await connection.CreateConsumerAsync(_configuration, cancellationToken).ConfigureAwait(false);
-            Log.ProducerRecovered(_logger);
+        private void CheckClosed()
+        {
+            if (_failureCause != null)
+            {
+                throw new ConsumerClosedException("The Consumer was closed due to an unrecoverable error.", _failureCause);
+            }
         }
 
         public async ValueTask DisposeAsync()
@@ -102,6 +127,7 @@ namespace ActiveMQ.Artemis.Client.AutoRecovering
         }
 
         public event Closed Closed;
+
         public event RecoveryRequested RecoveryRequested;
 
         private static class Log

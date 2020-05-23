@@ -122,6 +122,12 @@ namespace ActiveMQ.Artemis.Client.AutoRecovering
                 catch (Exception e)
                 {
                     Log.MainRecoveryLoopException(_logger, e);
+
+                    foreach (var recoverable in _recoverables.Values)
+                    {
+                        await recoverable.TerminateAsync(e).ConfigureAwait(false);
+                    }
+                    
                     ConnectionRecoveryError?.Invoke(this, new ConnectionRecoveryErrorEventArgs(e));
                 }
             });
