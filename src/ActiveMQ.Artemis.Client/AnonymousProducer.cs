@@ -9,12 +9,12 @@ namespace ActiveMQ.Artemis.Client
 {
     internal class AnonymousProducer : ProducerBase, IAnonymousProducer
     {
-        public AnonymousProducer(ILoggerFactory loggerFactory, SenderLink senderLink, TransactionsManager transactionsManager, AnonymousProducerConfiguration configuration) :
+        public AnonymousProducer(ILoggerFactory loggerFactory, SenderLink senderLink, TransactionsManager transactionsManager, IBaseProducerConfiguration configuration) :
             base(loggerFactory, senderLink, transactionsManager, configuration)
         {
         }
 
-        public Task SendAsync(string address, AddressRoutingType routingType, Message message, Transaction transaction, CancellationToken cancellationToken = default)
+        public Task SendAsync(string address, AddressRoutingType routingType, Message message, Transaction transaction, CancellationToken cancellationToken)
         {
             CheckAddress(address);
             CheckMessage(message);
@@ -22,7 +22,7 @@ namespace ActiveMQ.Artemis.Client
             return SendInternalAsync(address, routingType, message, transaction, cancellationToken);
         }
 
-        public void Send(string address, AddressRoutingType routingType, Message message)
+        public void Send(string address, AddressRoutingType routingType, Message message, CancellationToken cancellationToken)
         {
             CheckAddress(address);
             CheckMessage(message);

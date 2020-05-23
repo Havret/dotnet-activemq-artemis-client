@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
+using ActiveMQ.Artemis.Client.Exceptions;
 using Microsoft.Extensions.Logging;
 using Nito.AsyncEx;
 
@@ -10,7 +11,8 @@ namespace ActiveMQ.Artemis.Client.AutoRecovering
     {
         protected readonly ILogger Logger;
         private readonly AsyncManualResetEvent _manualResetEvent = new AsyncManualResetEvent(true);
-        
+        private Exception _failureCause;
+
         protected AutoRecoveringProducerBase(ILoggerFactory loggerFactory)
         {
             Logger = loggerFactory.CreateLogger(GetType());
@@ -55,9 +57,9 @@ namespace ActiveMQ.Artemis.Client.AutoRecovering
             }
         }
 
-        protected void Wait()
+        protected void Wait(CancellationToken cancellationToken)
         {
-            _manualResetEvent.Wait();
+            _manualResetEvent.Wait(cancellationToken);
         }
 
         protected Task WaitAsync(CancellationToken cancellationToken)
@@ -68,10 +70,25 @@ namespace ActiveMQ.Artemis.Client.AutoRecovering
         public event Closed Closed;
         public event RecoveryRequested RecoveryRequested;
         
+        public Task TerminateAsync(Exception exception)
+        {
+            _failureCause = exception;
+            _manualResetEvent.Set();
+            return Task.CompletedTask;
+        }
+
         public async ValueTask DisposeAsync()
         {
             await DisposeUnderlyingProducer().ConfigureAwait(false);
             Closed?.Invoke(this);
+        }
+
+        protected void CheckClosed()
+        {
+            if (_failureCause != null)
+            {
+                throw new ProducerClosedException("Producer was closed due to an unrecoverable error.", _failureCause);
+            }
         }
 
         protected abstract ValueTask DisposeUnderlyingProducer();

@@ -2,6 +2,7 @@
 using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
+using ActiveMQ.Artemis.Client.Exceptions;
 using ActiveMQ.Artemis.Client.Transactions;
 using Amqp;
 using Amqp.Framing;
@@ -42,8 +43,20 @@ namespace ActiveMQ.Artemis.Client
 
         public async ValueTask<Message> ReceiveAsync(CancellationToken cancellationToken = default)
         {
-            Log.ReceivingMessage(_logger);
-            return await _reader.ReadAsync(cancellationToken);
+            if (_receiverLink.IsDetaching() || _receiverLink.IsClosed)
+            {
+                throw new ConsumerClosedException();
+            }
+            
+            try
+            {
+                Log.ReceivingMessage(_logger);
+                return await _reader.ReadAsync(cancellationToken).ConfigureAwait(false);
+            }
+            catch (ChannelClosedException e)
+            {
+                throw new ConsumerClosedException(e);
+            }
         }
 
         public async ValueTask AcceptAsync(Message message, Transaction transaction, CancellationToken cancellationToken = default)
