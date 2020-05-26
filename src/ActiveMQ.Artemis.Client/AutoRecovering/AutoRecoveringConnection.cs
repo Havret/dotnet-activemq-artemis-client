@@ -217,7 +217,8 @@ namespace ActiveMQ.Artemis.Client.AutoRecovering
         {
             _recoveryCancellationToken.Cancel();
             await _recoveryLoopTask.ConfigureAwait(false);
-            await DisposeInnerConnection();
+            await Task.WhenAll(_recoverables.Values.Select(async x => await x.DisposeAsync().ConfigureAwait(false)));
+            await DisposeInnerConnection().ConfigureAwait(false);
         }
 
         private async Task DisposeInnerConnection()

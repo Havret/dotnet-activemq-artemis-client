@@ -64,9 +64,13 @@ namespace ActiveMQ.Artemis.Client.Management
             }
         }
 
-        public ValueTask DisposeAsync()
+        public async ValueTask DisposeAsync()
         {
-            return DisposeUtil.DisposeAll(_receiverLink, _senderLink);
+            await ActionUtil.ExecuteAll(
+                () => _receiverLink.CloseAsync(),
+                () => _senderLink.CloseAsync(),
+                () => _senderLink.Session.CloseAsync()
+            ).ConfigureAwait(false);
         }
     }
 }

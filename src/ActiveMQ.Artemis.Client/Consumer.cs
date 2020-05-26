@@ -19,6 +19,7 @@ namespace ActiveMQ.Artemis.Client
         private readonly ConsumerConfiguration _configuration;
         private readonly ChannelReader<Message> _reader;
         private readonly ChannelWriter<Message> _writer;
+        private bool _disposed;
 
         public Consumer(ILoggerFactory loggerFactory, ReceiverLink receiverLink, TransactionsManager transactionsManager, ConsumerConfiguration configuration)
         {
@@ -45,11 +46,8 @@ namespace ActiveMQ.Artemis.Client
 
         public async ValueTask<Message> ReceiveAsync(CancellationToken cancellationToken = default)
         {
-            if (_receiverLink.IsDetaching() || _receiverLink.IsClosed)
-            {
-                throw new ConsumerClosedException();
-            }
-            
+            CheckState();
+
             try
             {
                 Log.ReceivingMessage(_logger);
@@ -63,6 +61,8 @@ namespace ActiveMQ.Artemis.Client
 
         public async ValueTask AcceptAsync(Message message, Transaction transaction, CancellationToken cancellationToken = default)
         {
+            CheckState();
+            
             var txnId = await _transactionsManager.GetTxnIdAsync(transaction, cancellationToken).ConfigureAwait(false);
             var deliveryState = txnId != null
                 ? (DeliveryState) new TransactionalState { Outcome = new Accepted(), TxnId = txnId }
@@ -73,26 +73,51 @@ namespace ActiveMQ.Artemis.Client
 
         public void Reject(Message message, bool undeliverableHere)
         {
+            CheckState();
+            
             _receiverLink.Modify(message.InnerMessage, deliveryFailed: true, undeliverableHere: undeliverableHere);
             Log.MessageRejected(_logger, message);
+        }
+
+        private void CheckState()
+        {
+            if (_disposed)
+            {
+                throw new ObjectDisposedException(nameof(Consumer));
+            }
+            
+            if (_receiverLink.IsDetaching() || _receiverLink.IsClosed)
+            {
+                throw new ConsumerClosedException();
+            }
         }
 
         public async ValueTask DisposeAsync()
         {
             _writer.TryComplete();
-            if (_receiverLink.IsClosed)
+            if (_disposed)
             {
                 return;
             }
 
-            if (_configuration.Durable)
+            if (!_receiverLink.IsClosed)
             {
-                await _receiverLink.DetachAsync().ConfigureAwait(false);    
+                if (_configuration.Durable)
+                {
+                    await _receiverLink.DetachAsync().ConfigureAwait(false);
+                }
+                else
+                {
+                    await _receiverLink.CloseAsync().ConfigureAwait(false);
+                }
             }
-            else
+
+            if (!_receiverLink.Session.IsClosed)
             {
-                await _receiverLink.CloseAsync().ConfigureAwait(false);    
+                await _receiverLink.Session.CloseAsync().ConfigureAwait(false);    
             }
+
+            _disposed = true;
         }
 
         private static class Log

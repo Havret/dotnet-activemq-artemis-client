@@ -1,4 +1,5 @@
-﻿using System.Threading;
+﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
 using ActiveMQ.Artemis.Client.Exceptions;
 using ActiveMQ.Artemis.Client.Transactions;
@@ -20,7 +21,8 @@ namespace ActiveMQ.Artemis.Client.AutoRecovering
         {
             while (true)
             {
-                CheckClosed();
+                CheckState();
+                
                 try
                 {
                     await _producer.SendAsync(address, routingType, message, transaction, cancellationToken).ConfigureAwait(false);
@@ -39,7 +41,8 @@ namespace ActiveMQ.Artemis.Client.AutoRecovering
         {
             while (true)
             {
-                CheckClosed();
+                CheckState();
+                
                 try
                 {
                     _producer.Send(address, routingType, message, cancellationToken);
@@ -54,14 +57,11 @@ namespace ActiveMQ.Artemis.Client.AutoRecovering
             }
         }
 
+        protected override IAsyncDisposable UnderlyingResource => _producer;
+
         protected override async Task RecoverUnderlyingProducer(IConnection connection, CancellationToken cancellationToken)
         {
             _producer = await connection.CreateAnonymousProducer(_configuration, cancellationToken).ConfigureAwait(false);
-        }
-
-        protected override ValueTask DisposeUnderlyingProducer()
-        {
-            return _producer.DisposeAsync();
         }
     }
 }

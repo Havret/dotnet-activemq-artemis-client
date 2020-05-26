@@ -8,7 +8,7 @@ namespace ActiveMQ.Artemis.Client.AutoRecovering
 
     internal delegate void RecoveryRequested();
 
-    internal interface IRecoverable
+    internal interface IRecoverable : IAsyncDisposable
     {
         Task RecoverAsync(IConnection connection, CancellationToken cancellationToken);
         void Suspend();
