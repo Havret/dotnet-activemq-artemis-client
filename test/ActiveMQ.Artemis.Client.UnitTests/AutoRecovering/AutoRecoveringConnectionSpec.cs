@@ -179,6 +179,7 @@ namespace ActiveMQ.Artemis.Client.UnitTests.AutoRecovering
         {
             var endpoint = GetUniqueEndpoint();
             var consumerAttached = new ManualResetEvent(false);
+            var connectionRecovered = new ManualResetEvent(false);
             var testHandler = new TestHandler(@event =>
             {
                 switch (@event.Id)
@@ -192,15 +193,19 @@ namespace ActiveMQ.Artemis.Client.UnitTests.AutoRecovering
             var host1 = CreateOpenedContainerHost(endpoint, testHandler);
 
             var connection = await CreateConnection(endpoint);
+            connection.ConnectionRecovered += (sender, args) => connectionRecovered.Set();
             var consumer = await connection.CreateConsumerAsync("a1", RoutingType.Anycast);
 
             Assert.True(consumerAttached.WaitOne(Timeout));
             await consumer.DisposeAsync();
             
             consumerAttached.Reset();
-            host1.Dispose();
+
+            await DisposeHostAndWaitUntilConnectionNotified(host1, connection);
 
             var host2 = CreateOpenedContainerHost(endpoint, testHandler);
+            
+            Assert.True(connectionRecovered.WaitOne(Timeout));
 
             Assert.False(consumerAttached.WaitOne(ShortTimeout));
 

@@ -20,6 +20,7 @@ namespace ActiveMQ.Artemis.Client
         private readonly SenderLink _senderLink;
         private readonly TransactionsManager _transactionsManager;
         private readonly IBaseProducerConfiguration _configuration;
+        private bool _disposed;
 
         protected ProducerBase(ILoggerFactory loggerFactory, SenderLink senderLink, TransactionsManager transactionsManager, IBaseProducerConfiguration configuration)
         {
@@ -55,7 +56,7 @@ namespace ActiveMQ.Artemis.Client
             }
             else if (link.IsDetaching() || link.IsClosed)
             {
-                tcs.TrySetException(new ProducerClosedException("Producer detached."));
+                tcs.TrySetException(new ProducerClosedException());
             }
             else if (outcome.Descriptor.Code == MessageOutcomes.Rejected.Descriptor.Code)
             {
@@ -85,10 +86,7 @@ namespace ActiveMQ.Artemis.Client
             OutcomeCallback callback,
             object state)
         {
-            if (_senderLink.IsDetaching() || _senderLink.IsClosed)
-            {
-                throw new ProducerClosedException("Producer detached.");
-            }
+            CheckState();
 
             try
             {
@@ -119,7 +117,7 @@ namespace ActiveMQ.Artemis.Client
             }
             catch (ObjectDisposedException e)
             {
-                throw new ProducerClosedException("Producer detached.", e);
+                throw new ProducerClosedException(e);
             }
             catch (Exception e)
             {
@@ -127,9 +125,36 @@ namespace ActiveMQ.Artemis.Client
             }
         }
 
+        private void CheckState()
+        {
+            if (_disposed)
+            {
+                throw new ObjectDisposedException(nameof(ProducerBase));
+            }
+            if (_senderLink.IsDetaching() || _senderLink.IsClosed)
+            {
+                throw new ProducerClosedException();
+            }
+        }
+
         public async ValueTask DisposeAsync()
         {
-            await _senderLink.CloseAsync().ConfigureAwait(false);
+            if (_disposed)
+            {
+                return;
+            }
+
+            if (!_senderLink.IsClosed)
+            {
+                await _senderLink.CloseAsync().ConfigureAwait(false);                
+            }
+
+            if (!_senderLink.Session.IsClosed)
+            {
+                await _senderLink.Session.CloseAsync().ConfigureAwait(false);
+            }
+
+            _disposed = true;
         }
 
         private static class Log

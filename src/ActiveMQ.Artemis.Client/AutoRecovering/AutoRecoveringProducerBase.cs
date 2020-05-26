@@ -11,6 +11,7 @@ namespace ActiveMQ.Artemis.Client.AutoRecovering
     {
         protected readonly ILogger Logger;
         private readonly AsyncManualResetEvent _manualResetEvent = new AsyncManualResetEvent(true);
+        private bool _closed;
         private Exception _failureCause;
 
         protected AutoRecoveringProducerBase(ILoggerFactory loggerFactory)
@@ -36,7 +37,9 @@ namespace ActiveMQ.Artemis.Client.AutoRecovering
 
         public async Task RecoverAsync(IConnection connection, CancellationToken cancellationToken)
         {
+            var underlyingResource = UnderlyingResource;
             await RecoverUnderlyingProducer(connection, cancellationToken).ConfigureAwait(false);
+            await DisposeResourceSafe(underlyingResource).ConfigureAwait(false);
             Log.ProducerRecovered(Logger);
         }
 
@@ -70,28 +73,56 @@ namespace ActiveMQ.Artemis.Client.AutoRecovering
         public event Closed Closed;
         public event RecoveryRequested RecoveryRequested;
         
-        public Task TerminateAsync(Exception exception)
+        public async Task TerminateAsync(Exception exception)
         {
+            _closed = true;
             _failureCause = exception;
             _manualResetEvent.Set();
-            return Task.CompletedTask;
+            await DisposeResourceSafe(UnderlyingResource).ConfigureAwait(false);
         }
 
         public async ValueTask DisposeAsync()
         {
-            await DisposeUnderlyingProducer().ConfigureAwait(false);
+            await DisposeResource(UnderlyingResource).ConfigureAwait(false);
             Closed?.Invoke(this);
         }
 
-        protected void CheckClosed()
+        private static async ValueTask DisposeResourceSafe(IAsyncDisposable disposable)
         {
-            if (_failureCause != null)
+            try
             {
-                throw new ProducerClosedException("Producer was closed due to an unrecoverable error.", _failureCause);
+                await DisposeResource(disposable).ConfigureAwait(false);
+            }
+            catch (Exception)
+            {
+                // ignored
             }
         }
 
-        protected abstract ValueTask DisposeUnderlyingProducer();
+        private static async ValueTask DisposeResource(IAsyncDisposable disposable)
+        {
+            if (disposable != null)
+            {
+                await disposable.DisposeAsync().ConfigureAwait(false);
+            }
+        }
+
+        protected void CheckState()
+        {
+            if (_closed)
+            {
+                if (_failureCause != null)
+                {
+                    throw new ProducerClosedException(_failureCause);
+                }
+                else
+                {
+                    throw new ProducerClosedException();
+                }
+            }
+        }
+
+        protected abstract IAsyncDisposable UnderlyingResource { get; }
         protected abstract Task RecoverUnderlyingProducer(IConnection connection, CancellationToken cancellationToken);
 
         protected static class Log

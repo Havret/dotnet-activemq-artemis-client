@@ -19,6 +19,7 @@ namespace ActiveMQ.Artemis.Client
         private readonly ILoggerFactory _loggerFactory;
         private readonly TransactionsManager _transactionsManager;
         private bool _closed;
+        private bool _disposed;
         private Error _error;
 
         public Connection(ILoggerFactory loggerFactory, Endpoint endpoint, Amqp.Connection connection, Func<IMessageIdPolicy> messageIdPolicyFactory)
@@ -36,6 +37,8 @@ namespace ActiveMQ.Artemis.Client
 
         public async Task<ITopologyManager> CreateTopologyManager(CancellationToken cancellationToken = default)
         {
+            CheckState();
+            
             try
             {
                 var session = await CreateSession(cancellationToken).ConfigureAwait(false);
@@ -51,6 +54,8 @@ namespace ActiveMQ.Artemis.Client
 
         public async Task<IConsumer> CreateConsumerAsync(ConsumerConfiguration configuration, CancellationToken cancellationToken)
         {
+            CheckState();
+
             var session = await CreateSession(cancellationToken).ConfigureAwait(false);
             var consumerBuilder = new ConsumerBuilder(_loggerFactory, _transactionsManager, session);
             return await consumerBuilder.CreateAsync(configuration, cancellationToken).ConfigureAwait(false);
@@ -58,6 +63,8 @@ namespace ActiveMQ.Artemis.Client
 
         public async Task<IProducer> CreateProducerAsync(ProducerConfiguration configuration, CancellationToken cancellationToken)
         {
+            CheckState();
+
             var session = await CreateSession(cancellationToken).ConfigureAwait(false);
             var producerBuilder = new ProducerBuilder(_loggerFactory, _transactionsManager, session, _messageIdPolicyFactory);
             return await producerBuilder.CreateAsync(configuration, cancellationToken).ConfigureAwait(false);
@@ -65,6 +72,8 @@ namespace ActiveMQ.Artemis.Client
 
         public async Task<IAnonymousProducer> CreateAnonymousProducer(AnonymousProducerConfiguration configuration, CancellationToken cancellationToken)
         {
+            CheckState();
+
             var session = await CreateSession(cancellationToken).ConfigureAwait(false);
             var producerBuilder = new AnonymousProducerBuilder(_loggerFactory, _transactionsManager, session);
             return await producerBuilder.CreateAsync(configuration, cancellationToken).ConfigureAwait(false);
@@ -83,12 +92,30 @@ namespace ActiveMQ.Artemis.Client
             return sessionBuilder.CreateAsync(cancellationToken);
         }
 
+        private void CheckState()
+        {
+            if (_disposed)
+            {
+                throw new ObjectDisposedException(nameof(Connection));
+            }
+
+            if (_closed)
+            {
+                throw new ConnectionClosedException(_error?.Description ?? "The Connection was closed.", _error?.Condition);
+            }
+        }
+
         public async ValueTask DisposeAsync()
         {
+            if (_disposed)
+                return;
+
             if (!_closed)
             {
                 await _connection.CloseAsync().ConfigureAwait(false);
             }
+
+            _disposed = true;
 
             _connection.Closed -= OnConnectionClosed;
         }
