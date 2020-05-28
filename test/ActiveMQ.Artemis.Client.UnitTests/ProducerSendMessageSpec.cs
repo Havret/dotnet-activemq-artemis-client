@@ -36,7 +36,7 @@ namespace ActiveMQ.Artemis.Client.UnitTests
             using var host = CreateOpenedContainerHost(endpoint, testHandler);
 
             await using var connection = await CreateConnection(endpoint);
-            var producer = await connection.CreateProducerAsync("a1", AddressRoutingType.Anycast);
+            var producer = await connection.CreateProducerAsync("a1", RoutingType.Anycast);
 
             await producer.SendAsync(new Message("foo"));
 
@@ -65,7 +65,7 @@ namespace ActiveMQ.Artemis.Client.UnitTests
             using var host = CreateOpenedContainerHost(endpoint, testHandler);
 
             await using var connection = await CreateConnection(endpoint);
-            var producer = await connection.CreateProducerAsync("a1", AddressRoutingType.Anycast);
+            var producer = await connection.CreateProducerAsync("a1", RoutingType.Anycast);
 
             producer.Send(new Message("foo"));
 
@@ -86,7 +86,7 @@ namespace ActiveMQ.Artemis.Client.UnitTests
             messageProcessor.SetHandler(context => true);
 
             await using var connection = await CreateConnection(endpoint);
-            var producer = await connection.CreateProducerAsync("a1", AddressRoutingType.Anycast);
+            var producer = await connection.CreateProducerAsync("a1", RoutingType.Anycast);
 
             var cts = new CancellationTokenSource();
             cts.CancelAfter(TimeSpan.FromMilliseconds(50));
@@ -94,7 +94,7 @@ namespace ActiveMQ.Artemis.Client.UnitTests
         }
 
         [Theory, MemberData(nameof(RoutingTypesData))]
-        public async Task Should_sent_message_using_specified_RoutingType(AddressRoutingType routingType, object routingAnnotation)
+        public async Task Should_sent_message_using_specified_RoutingType(RoutingType routingType, object routingAnnotation)
         {
             var endpoint = GetUniqueEndpoint();
 
@@ -110,14 +110,31 @@ namespace ActiveMQ.Artemis.Client.UnitTests
 
             Assert.Equal(routingAnnotation, receivedMsg.MessageAnnotations[SymbolUtils.RoutingType]);
         }
+        
+        [Fact]
+        public async Task Should_sent_message_without_RoutingType()
+        {
+            var endpoint = GetUniqueEndpoint();
+
+            using var host = CreateOpenedContainerHost(endpoint);
+            var messageProcessor = host.CreateMessageProcessor("a1");
+
+            await using var connection = await CreateConnection(endpoint);
+            var producer = await connection.CreateProducerAsync("a1");
+
+            await producer.SendAsync(new Message("foo"));
+
+            var receivedMsg = messageProcessor.Dequeue(Timeout);
+
+            Assert.Null(receivedMsg.MessageAnnotations[SymbolUtils.RoutingType]);
+        }
 
         public static IEnumerable<object[]> RoutingTypesData()
         {
             return new[]
             {
-                new object[] { AddressRoutingType.Multicast, (byte) 0 },
-                new object[] { AddressRoutingType.Anycast, (byte) 1 },
-                new object[] { AddressRoutingType.Both, null },
+                new object[] { RoutingType.Multicast, (byte) 0 },
+                new object[] { RoutingType.Anycast, (byte) 1 },
             };
         }
     }

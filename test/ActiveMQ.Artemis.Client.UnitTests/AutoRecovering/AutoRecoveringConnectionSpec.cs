@@ -95,8 +95,8 @@ namespace ActiveMQ.Artemis.Client.UnitTests.AutoRecovering
             var host1 = CreateOpenedContainerHost(endpoint, testHandler);
 
             var connection = await CreateConnection(endpoint);
-            await connection.CreateProducerAsync("a1", AddressRoutingType.Anycast);
-            await connection.CreateProducerAsync("a2", AddressRoutingType.Anycast);
+            await connection.CreateProducerAsync("a1", RoutingType.Anycast);
+            await connection.CreateProducerAsync("a2", RoutingType.Anycast);
 
             Assert.True(producersAttached.Wait(Timeout));
             producersAttached.Reset();
@@ -128,7 +128,7 @@ namespace ActiveMQ.Artemis.Client.UnitTests.AutoRecovering
             var host1 = CreateOpenedContainerHost(endpoint, testHandler);
 
             var connection = await CreateConnection(endpoint);
-            var producer = await connection.CreateProducerAsync("a1", AddressRoutingType.Both);
+            var producer = await connection.CreateProducerAsync("a1");
 
             Assert.True(producerAttached.WaitOne(Timeout));
             await producer.DisposeAsync();
@@ -159,8 +159,8 @@ namespace ActiveMQ.Artemis.Client.UnitTests.AutoRecovering
             var host1 = CreateOpenedContainerHost(endpoint, testHandler);
 
             var connection = await CreateConnection(endpoint);
-            await connection.CreateConsumerAsync("a1", QueueRoutingType.Anycast);
-            await connection.CreateConsumerAsync("a1", QueueRoutingType.Anycast);
+            await connection.CreateConsumerAsync("a1", RoutingType.Anycast);
+            await connection.CreateConsumerAsync("a1", RoutingType.Anycast);
 
             Assert.True(consumersAttached.Wait(Timeout));
             consumersAttached.Reset();
@@ -192,7 +192,7 @@ namespace ActiveMQ.Artemis.Client.UnitTests.AutoRecovering
             var host1 = CreateOpenedContainerHost(endpoint, testHandler);
 
             var connection = await CreateConnection(endpoint);
-            var consumer = await connection.CreateConsumerAsync("a1", QueueRoutingType.Anycast);
+            var consumer = await connection.CreateConsumerAsync("a1", RoutingType.Anycast);
 
             Assert.True(consumerAttached.WaitOne(Timeout));
             await consumer.DisposeAsync();

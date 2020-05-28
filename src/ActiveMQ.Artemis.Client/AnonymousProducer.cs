@@ -14,7 +14,7 @@ namespace ActiveMQ.Artemis.Client
         {
         }
 
-        public Task SendAsync(string address, AddressRoutingType routingType, Message message, Transaction transaction, CancellationToken cancellationToken)
+        public Task SendAsync(string address, RoutingType? routingType, Message message, Transaction transaction, CancellationToken cancellationToken)
         {
             CheckAddress(address);
             CheckMessage(message);
@@ -22,7 +22,7 @@ namespace ActiveMQ.Artemis.Client
             return SendInternalAsync(address, routingType, message, transaction, cancellationToken);
         }
 
-        public void Send(string address, AddressRoutingType routingType, Message message, CancellationToken cancellationToken)
+        public void Send(string address, RoutingType? routingType, Message message, CancellationToken cancellationToken)
         {
             CheckAddress(address);
             CheckMessage(message);

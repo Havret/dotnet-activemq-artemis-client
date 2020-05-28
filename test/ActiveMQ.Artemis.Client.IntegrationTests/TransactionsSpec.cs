@@ -18,8 +18,8 @@ namespace ActiveMQ.Artemis.Client.IntegrationTests
         {
             await using var connection = await CreateConnection();
             var address = Guid.NewGuid().ToString();
-            await using var producer = await connection.CreateProducerAsync(address, AddressRoutingType.Anycast);
-            await using var consumer = await connection.CreateConsumerAsync(address, QueueRoutingType.Anycast);
+            await using var producer = await connection.CreateProducerAsync(address, RoutingType.Anycast);
+            await using var consumer = await connection.CreateConsumerAsync(address, RoutingType.Anycast);
 
             await using var transaction = new Transaction();
             await producer.SendAsync(new Message("foo1"), transaction);
@@ -43,8 +43,8 @@ namespace ActiveMQ.Artemis.Client.IntegrationTests
         {
             await using var connection = await CreateConnection();
             var address = Guid.NewGuid().ToString();
-            await using var producer = await connection.CreateProducerAsync(address, AddressRoutingType.Anycast);
-            await using var consumer = await connection.CreateConsumerAsync(address, QueueRoutingType.Anycast);
+            await using var producer = await connection.CreateProducerAsync(address, RoutingType.Anycast);
+            await using var consumer = await connection.CreateConsumerAsync(address, RoutingType.Anycast);
 
             await using var transaction = new Transaction();
             await producer.SendAsync(new Message("foo1"), transaction);
@@ -60,8 +60,8 @@ namespace ActiveMQ.Artemis.Client.IntegrationTests
         {
             await using var connection = await CreateConnection();
             var address = Guid.NewGuid().ToString();
-            await using var producer = await connection.CreateProducerAsync(address, AddressRoutingType.Anycast);
-            await using var consumer = await connection.CreateConsumerAsync(address, QueueRoutingType.Anycast);
+            await using var producer = await connection.CreateProducerAsync(address, RoutingType.Anycast);
+            await using var consumer = await connection.CreateConsumerAsync(address, RoutingType.Anycast);
 
             await using var transaction1 = new Transaction();
             await using var transaction2 = new Transaction();
@@ -86,8 +86,8 @@ namespace ActiveMQ.Artemis.Client.IntegrationTests
         {
             await using var connection = await CreateConnection();
             var address = Guid.NewGuid().ToString();
-            await using var producer = await connection.CreateProducerAsync(address, AddressRoutingType.Anycast);
-            await using var consumer = await connection.CreateConsumerAsync(address, QueueRoutingType.Anycast);
+            await using var producer = await connection.CreateProducerAsync(address, RoutingType.Anycast);
+            await using var consumer = await connection.CreateConsumerAsync(address, RoutingType.Anycast);
 
             await using var transaction1 = new Transaction();
             await using var transaction2 = new Transaction();
@@ -114,9 +114,9 @@ namespace ActiveMQ.Artemis.Client.IntegrationTests
         {
             await using var connection = await CreateConnection();
             var address = Guid.NewGuid().ToString();
-            await using var producer1 = await connection.CreateProducerAsync(address, AddressRoutingType.Anycast);
-            await using var producer2 = await connection.CreateProducerAsync(address, AddressRoutingType.Anycast);
-            await using var consumer = await connection.CreateConsumerAsync(address, QueueRoutingType.Anycast);
+            await using var producer1 = await connection.CreateProducerAsync(address, RoutingType.Anycast);
+            await using var producer2 = await connection.CreateProducerAsync(address, RoutingType.Anycast);
+            await using var consumer = await connection.CreateConsumerAsync(address, RoutingType.Anycast);
 
             await using var transaction1 = new Transaction();
             await using var transaction2 = new Transaction();
@@ -141,9 +141,9 @@ namespace ActiveMQ.Artemis.Client.IntegrationTests
         {
             await using var connection = await CreateConnection();
             var address = Guid.NewGuid().ToString();
-            await using var producer1 = await connection.CreateProducerAsync(address, AddressRoutingType.Anycast);
-            await using var producer2 = await connection.CreateProducerAsync(address, AddressRoutingType.Anycast);
-            await using var consumer = await connection.CreateConsumerAsync(address, QueueRoutingType.Anycast);
+            await using var producer1 = await connection.CreateProducerAsync(address, RoutingType.Anycast);
+            await using var producer2 = await connection.CreateProducerAsync(address, RoutingType.Anycast);
+            await using var consumer = await connection.CreateConsumerAsync(address, RoutingType.Anycast);
 
             var transaction1 = new Transaction();
             var transaction2 = new Transaction();
@@ -171,10 +171,10 @@ namespace ActiveMQ.Artemis.Client.IntegrationTests
             await using var connection = await CreateConnection();
             var address1 = Guid.NewGuid().ToString();
             var address2 = Guid.NewGuid().ToString();
-            await using var producer1 = await connection.CreateProducerAsync(address1, AddressRoutingType.Anycast);
-            await using var producer2 = await connection.CreateProducerAsync(address2, AddressRoutingType.Anycast);
-            await using var consumer1 = await connection.CreateConsumerAsync(address1, QueueRoutingType.Anycast);
-            await using var consumer2 = await connection.CreateConsumerAsync(address2, QueueRoutingType.Anycast);
+            await using var producer1 = await connection.CreateProducerAsync(address1, RoutingType.Anycast);
+            await using var producer2 = await connection.CreateProducerAsync(address2, RoutingType.Anycast);
+            await using var consumer1 = await connection.CreateConsumerAsync(address1, RoutingType.Anycast);
+            await using var consumer2 = await connection.CreateConsumerAsync(address2, RoutingType.Anycast);
 
             await using var transaction = new Transaction();
             await producer1.SendAsync(new Message("foo1"), transaction);
@@ -200,8 +200,8 @@ namespace ActiveMQ.Artemis.Client.IntegrationTests
         {
             await using var connection = await CreateConnection();
             var address = Guid.NewGuid().ToString();
-            await using var producer = await connection.CreateProducerAsync(address, AddressRoutingType.Anycast);
-            await using var consumer = await connection.CreateConsumerAsync(address, QueueRoutingType.Anycast);
+            await using var producer = await connection.CreateProducerAsync(address, RoutingType.Anycast);
+            await using var consumer = await connection.CreateConsumerAsync(address, RoutingType.Anycast);
 
             await producer.SendAsync(new Message("foo1"));
             await producer.SendAsync(new Message("foo2"));
@@ -226,8 +226,8 @@ namespace ActiveMQ.Artemis.Client.IntegrationTests
         {
             await using var connection = await CreateConnection();
             var address = Guid.NewGuid().ToString();
-            await using var producer = await connection.CreateProducerAsync(address, AddressRoutingType.Anycast);
-            await using var consumer = await connection.CreateConsumerAsync(address, QueueRoutingType.Anycast);
+            await using var producer = await connection.CreateProducerAsync(address, RoutingType.Anycast);
+            await using var consumer = await connection.CreateConsumerAsync(address, RoutingType.Anycast);
 
             await producer.SendAsync(new Message("foo1"));
             await producer.SendAsync(new Message("foo2"));
@@ -249,10 +249,10 @@ namespace ActiveMQ.Artemis.Client.IntegrationTests
             await using var connection = await CreateConnection();
             var address1 = Guid.NewGuid().ToString();
             var address2 = Guid.NewGuid().ToString();
-            await using var producer1 = await connection.CreateProducerAsync(address1, AddressRoutingType.Anycast);
-            await using var producer2 = await connection.CreateProducerAsync(address2, AddressRoutingType.Anycast);
-            await using var consumer1 = await connection.CreateConsumerAsync(address1, QueueRoutingType.Anycast);
-            await using var consumer2 = await connection.CreateConsumerAsync(address2, QueueRoutingType.Anycast);
+            await using var producer1 = await connection.CreateProducerAsync(address1, RoutingType.Anycast);
+            await using var producer2 = await connection.CreateProducerAsync(address2, RoutingType.Anycast);
+            await using var consumer1 = await connection.CreateConsumerAsync(address1, RoutingType.Anycast);
+            await using var consumer2 = await connection.CreateConsumerAsync(address2, RoutingType.Anycast);
 
             await producer1.SendAsync(new Message("foo1"));
             var msg1 = await consumer1.ReceiveAsync(CancellationToken);
@@ -275,7 +275,7 @@ namespace ActiveMQ.Artemis.Client.IntegrationTests
         {
             await using var connection = await CreateConnection();
             var address = Guid.NewGuid().ToString();
-            await using var producer = await connection.CreateProducerAsync(address, AddressRoutingType.Anycast);
+            await using var producer = await connection.CreateProducerAsync(address, RoutingType.Anycast);
 
             await using var transaction = new Transaction();
             await producer.SendAsync(new Message("foo1"), transaction);
@@ -290,7 +290,7 @@ namespace ActiveMQ.Artemis.Client.IntegrationTests
         {
             await using var connection = await CreateConnection();
             var address = Guid.NewGuid().ToString();
-            await using var producer = await connection.CreateProducerAsync(address, AddressRoutingType.Anycast);
+            await using var producer = await connection.CreateProducerAsync(address, RoutingType.Anycast);
 
             await using var transaction = new Transaction();
             await producer.SendAsync(new Message("foo1"), transaction);
@@ -305,7 +305,7 @@ namespace ActiveMQ.Artemis.Client.IntegrationTests
         {
             await using var connection = await CreateConnection();
             var address = Guid.NewGuid().ToString();
-            await using var producer = await connection.CreateProducerAsync(address, AddressRoutingType.Anycast);
+            await using var producer = await connection.CreateProducerAsync(address, RoutingType.Anycast);
 
             await using var transaction = new Transaction();
             await producer.SendAsync(new Message("foo1"), transaction);
@@ -320,7 +320,7 @@ namespace ActiveMQ.Artemis.Client.IntegrationTests
         {
             await using var connection = await CreateConnection();
             var address = Guid.NewGuid().ToString();
-            await using var producer = await connection.CreateProducerAsync(address, AddressRoutingType.Anycast);
+            await using var producer = await connection.CreateProducerAsync(address, RoutingType.Anycast);
 
             await using var transaction = new Transaction();
             await producer.SendAsync(new Message("foo1"), transaction);
@@ -335,8 +335,8 @@ namespace ActiveMQ.Artemis.Client.IntegrationTests
         {
             await using var connection = await CreateConnection();
             var address = Guid.NewGuid().ToString();
-            await using var producer = await connection.CreateProducerAsync(address, AddressRoutingType.Anycast);
-            await using var consumer = await connection.CreateConsumerAsync(address, QueueRoutingType.Anycast);
+            await using var producer = await connection.CreateProducerAsync(address, RoutingType.Anycast);
+            await using var consumer = await connection.CreateConsumerAsync(address, RoutingType.Anycast);
 
             var transaction = new Transaction();
             await producer.SendAsync(new Message("foo1"), transaction);
@@ -350,7 +350,7 @@ namespace ActiveMQ.Artemis.Client.IntegrationTests
         {
             await using var connection = await CreateConnection();
             var address = Guid.NewGuid().ToString();
-            await using var producer = await connection.CreateProducerAsync(address, AddressRoutingType.Anycast);
+            await using var producer = await connection.CreateProducerAsync(address, RoutingType.Anycast);
 
             var transaction = new Transaction();
             await producer.SendAsync(new Message("foo1"), transaction);
@@ -363,7 +363,7 @@ namespace ActiveMQ.Artemis.Client.IntegrationTests
         {
             await using var connection = await CreateConnection();
             var address = Guid.NewGuid().ToString();
-            await using var producer = await connection.CreateProducerAsync(address, AddressRoutingType.Anycast);
+            await using var producer = await connection.CreateProducerAsync(address, RoutingType.Anycast);
 
             var transaction = new Transaction();
             await producer.SendAsync(new Message("foo1"), transaction);
@@ -376,8 +376,8 @@ namespace ActiveMQ.Artemis.Client.IntegrationTests
         {
             await using var connection = await CreateConnection();
             var address = Guid.NewGuid().ToString();
-            await using var producer = await connection.CreateProducerAsync(address, AddressRoutingType.Anycast);
-            await using var consumer = await connection.CreateConsumerAsync(address, QueueRoutingType.Anycast);
+            await using var producer = await connection.CreateProducerAsync(address, RoutingType.Anycast);
+            await using var consumer = await connection.CreateConsumerAsync(address, RoutingType.Anycast);
 
             await producer.SendAsync(new Message("foo1"));
             await producer.SendAsync(new Message("foo2"));
@@ -397,8 +397,8 @@ namespace ActiveMQ.Artemis.Client.IntegrationTests
         {
             await using var connection = await CreateConnection();
             var address = Guid.NewGuid().ToString();
-            await using var producer = await connection.CreateProducerAsync(address, AddressRoutingType.Anycast);
-            await using var consumer = await connection.CreateConsumerAsync(address, QueueRoutingType.Anycast);
+            await using var producer = await connection.CreateProducerAsync(address, RoutingType.Anycast);
+            await using var consumer = await connection.CreateConsumerAsync(address, RoutingType.Anycast);
 
             await producer.SendAsync(new Message("foo1"));
 
@@ -419,12 +419,12 @@ namespace ActiveMQ.Artemis.Client.IntegrationTests
             var address1 = Guid.NewGuid().ToString();
             var address2 = Guid.NewGuid().ToString();
             await using var producer = await connection.CreateAnonymousProducer();
-            await using var consumer1 = await connection.CreateConsumerAsync(address1, QueueRoutingType.Anycast);
-            await using var consumer2 = await connection.CreateConsumerAsync(address2, QueueRoutingType.Anycast);
+            await using var consumer1 = await connection.CreateConsumerAsync(address1, RoutingType.Anycast);
+            await using var consumer2 = await connection.CreateConsumerAsync(address2, RoutingType.Anycast);
 
             var transaction = new Transaction();
-            await producer.SendAsync(address1, AddressRoutingType.Anycast, new Message("foo1"), transaction);
-            await producer.SendAsync(address2, AddressRoutingType.Anycast, new Message("foo2"), transaction);
+            await producer.SendAsync(address1, RoutingType.Anycast, new Message("foo1"), transaction);
+            await producer.SendAsync(address2, RoutingType.Anycast, new Message("foo2"), transaction);
             
             await Task.WhenAll(new Task[]
             {
@@ -446,8 +446,8 @@ namespace ActiveMQ.Artemis.Client.IntegrationTests
         {
             await using var connection = await CreateConnection();
             var address = Guid.NewGuid().ToString();
-            await using var producer = await connection.CreateProducerAsync(address, AddressRoutingType.Anycast);
-            await using var consumer = await connection.CreateConsumerAsync(address, QueueRoutingType.Anycast);
+            await using var producer = await connection.CreateProducerAsync(address, RoutingType.Anycast);
+            await using var consumer = await connection.CreateConsumerAsync(address, RoutingType.Anycast);
 
             var transaction = new Transaction();
             await producer.SendAsync(new Message("foo1"), transaction);

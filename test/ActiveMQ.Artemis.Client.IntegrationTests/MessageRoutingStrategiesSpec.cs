@@ -15,8 +15,8 @@ namespace ActiveMQ.Artemis.Client.IntegrationTests
         {
             await using var connection = await CreateConnection();
             var address = nameof(Should_send_and_consume_message_using_AnycastRouting);
-            await using var producer = await connection.CreateProducerAsync(address, AddressRoutingType.Anycast);
-            await using var consumer = await connection.CreateConsumerAsync(address, QueueRoutingType.Anycast);
+            await using var producer = await connection.CreateProducerAsync(address, RoutingType.Anycast);
+            await using var consumer = await connection.CreateConsumerAsync(address, RoutingType.Anycast);
 
             await producer.SendAsync(new Message("foo"));
             var msg = await consumer.ReceiveAsync();
@@ -29,9 +29,9 @@ namespace ActiveMQ.Artemis.Client.IntegrationTests
         {
             await using var connection = await CreateConnection();
             var address = nameof(Should_send_and_consume_messages_using_MulticastRouting);
-            await using var producer = await connection.CreateProducerAsync(address, AddressRoutingType.Multicast);
-            await using var consumer1 = await connection.CreateConsumerAsync(address, QueueRoutingType.Multicast);
-            await using var consumer2 = await connection.CreateConsumerAsync(address, QueueRoutingType.Multicast);
+            await using var producer = await connection.CreateProducerAsync(address, RoutingType.Multicast);
+            await using var consumer1 = await connection.CreateConsumerAsync(address, RoutingType.Multicast);
+            await using var consumer2 = await connection.CreateConsumerAsync(address, RoutingType.Multicast);
 
             await producer.SendAsync(new Message("foo"));
             var msg1 = await consumer1.ReceiveAsync();

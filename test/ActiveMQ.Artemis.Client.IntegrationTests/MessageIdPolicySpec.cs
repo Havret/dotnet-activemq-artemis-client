@@ -20,10 +20,10 @@ namespace ActiveMQ.Artemis.Client.IntegrationTests
             await using var producer = await connection.CreateProducerAsync(new ProducerConfiguration
             {
                 Address = address,
-                RoutingType = AddressRoutingType.Anycast,
+                RoutingType = RoutingType.Anycast,
                 MessageIdPolicy = MessageIdPolicyFactory.DisableMessageIdPolicy()
             });
-            await using var consumer = await connection.CreateConsumerAsync(address, QueueRoutingType.Anycast);
+            await using var consumer = await connection.CreateConsumerAsync(address, RoutingType.Anycast);
 
             await producer.SendAsync(new Message("foo"));
 
@@ -40,10 +40,10 @@ namespace ActiveMQ.Artemis.Client.IntegrationTests
             await using var producer = await connection.CreateProducerAsync(new ProducerConfiguration
             {
                 Address = address,
-                RoutingType = AddressRoutingType.Anycast,
+                RoutingType = RoutingType.Anycast,
                 MessageIdPolicy = MessageIdPolicyFactory.GuidMessageIdPolicy()
             });
-            await using var consumer = await connection.CreateConsumerAsync(address, QueueRoutingType.Anycast);
+            await using var consumer = await connection.CreateConsumerAsync(address, RoutingType.Anycast);
 
             await producer.SendAsync(new Message("foo"));
 
@@ -60,10 +60,10 @@ namespace ActiveMQ.Artemis.Client.IntegrationTests
             await using var producer = await connection.CreateProducerAsync(new ProducerConfiguration
             {
                 Address = address,
-                RoutingType = AddressRoutingType.Anycast,
+                RoutingType = RoutingType.Anycast,
                 MessageIdPolicy = MessageIdPolicyFactory.StringGuidMessageIdPolicy()
             });
-            await using var consumer = await connection.CreateConsumerAsync(address, QueueRoutingType.Anycast);
+            await using var consumer = await connection.CreateConsumerAsync(address, RoutingType.Anycast);
 
             await producer.SendAsync(new Message("foo"));
 
@@ -81,10 +81,10 @@ namespace ActiveMQ.Artemis.Client.IntegrationTests
             await using var producer = await connection.CreateProducerAsync(new ProducerConfiguration
             {
                 Address = address,
-                RoutingType = AddressRoutingType.Anycast,
+                RoutingType = RoutingType.Anycast,
                 MessageIdPolicy = MessageIdPolicyFactory.StringGuidMessageIdPolicy()
             });
-            await using var consumer = await connection.CreateConsumerAsync(address, QueueRoutingType.Anycast);
+            await using var consumer = await connection.CreateConsumerAsync(address, RoutingType.Anycast);
 
             var message = new Message("foo");
             message.SetMessageId(ulong.MaxValue);

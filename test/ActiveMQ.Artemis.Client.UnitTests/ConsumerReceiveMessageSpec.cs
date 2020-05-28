@@ -20,7 +20,7 @@ namespace ActiveMQ.Artemis.Client.UnitTests
 
             var messageSource = host.CreateMessageSource("a1");
             await using var connection = await CreateConnection(endpoint);
-            var consumer = await connection.CreateConsumerAsync("a1", QueueRoutingType.Anycast);
+            var consumer = await connection.CreateConsumerAsync("a1", RoutingType.Anycast);
 
             messageSource.Enqueue(new Message("foo"));
             var message = await consumer.ReceiveAsync();
@@ -37,7 +37,7 @@ namespace ActiveMQ.Artemis.Client.UnitTests
 
             host.CreateMessageSource("a1");
             await using var connection = await CreateConnection(endpoint);
-            var consumer = await connection.CreateConsumerAsync("a1", QueueRoutingType.Anycast);
+            var consumer = await connection.CreateConsumerAsync("a1", RoutingType.Anycast);
 
             var cts = new CancellationTokenSource();
             cts.CancelAfter(TimeSpan.FromMilliseconds(50));

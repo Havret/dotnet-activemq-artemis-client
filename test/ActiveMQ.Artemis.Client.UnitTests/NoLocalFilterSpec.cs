@@ -20,7 +20,7 @@ namespace ActiveMQ.Artemis.Client.UnitTests
             await Assert.ThrowsAsync<ArgumentException>(async () => await connection.CreateConsumerAsync(new ConsumerConfiguration
             {
                 Address = "a1",
-                RoutingType = QueueRoutingType.Anycast,
+                RoutingType = RoutingType.Anycast,
                 NoLocalFilter = true
             }));
         }

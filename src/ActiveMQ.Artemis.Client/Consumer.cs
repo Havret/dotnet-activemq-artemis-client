@@ -16,6 +16,7 @@ namespace ActiveMQ.Artemis.Client
         private readonly ILogger<Consumer> _logger;
         private readonly ReceiverLink _receiverLink;
         private readonly TransactionsManager _transactionsManager;
+        private readonly ConsumerConfiguration _configuration;
         private readonly ChannelReader<Message> _reader;
         private readonly ChannelWriter<Message> _writer;
 
@@ -24,6 +25,7 @@ namespace ActiveMQ.Artemis.Client
             _logger = loggerFactory.CreateLogger<Consumer>();
             _receiverLink = receiverLink;
             _transactionsManager = transactionsManager;
+            _configuration = configuration;
             var channel = Channel.CreateBounded<Message>(configuration.Credit);
             _reader = channel.Reader;
             _writer = channel.Writer;
@@ -78,9 +80,18 @@ namespace ActiveMQ.Artemis.Client
         public async ValueTask DisposeAsync()
         {
             _writer.TryComplete();
-            if (!_receiverLink.IsClosed)
+            if (_receiverLink.IsClosed)
             {
-                await _receiverLink.CloseAsync().ConfigureAwait(false);
+                return;
+            }
+
+            if (_configuration.Durable)
+            {
+                await _receiverLink.DetachAsync().ConfigureAwait(false);    
+            }
+            else
+            {
+                await _receiverLink.CloseAsync().ConfigureAwait(false);    
             }
         }
 

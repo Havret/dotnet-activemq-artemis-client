@@ -1,9 +1,8 @@
 ﻿namespace ActiveMQ.Artemis.Client
 {
-    public enum AddressRoutingType
+    public enum RoutingType
     {
         Anycast,
-        Multicast,
-        Both
+        Multicast
     }
 }

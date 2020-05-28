@@ -19,7 +19,7 @@ namespace ActiveMQ.Artemis.Client.UnitTests
             using var host = CreateOpenedContainerHost();
             var messageProcessor = host.CreateMessageProcessor("a1");
             await using var connection = await CreateConnection(host.Endpoint);
-            var producer = await connection.CreateProducerAsync("a1", AddressRoutingType.Anycast);
+            var producer = await connection.CreateProducerAsync("a1", RoutingType.Anycast);
 
             var message = new Message("text");
             message.ApplicationProperties["charKey"] = 'c';
@@ -139,7 +139,7 @@ namespace ActiveMQ.Artemis.Client.UnitTests
             using var host = CreateOpenedContainerHost();
             var messageProcessor = host.CreateMessageProcessor("a1");
             await using var connection = await CreateConnection(host.Endpoint);
-            await using var producer = await connection.CreateProducerAsync("a1", AddressRoutingType.Anycast);
+            await using var producer = await connection.CreateProducerAsync("a1", RoutingType.Anycast);
 
             var message = new Message(payload);
             await producer.SendAsync(message);
@@ -155,7 +155,7 @@ namespace ActiveMQ.Artemis.Client.UnitTests
             using var host = CreateOpenedContainerHost();
             var messageProcessor = host.CreateMessageProcessor("a1");
             await using var connection = await CreateConnection(host.Endpoint);
-            await using var producer = await connection.CreateProducerAsync("a1", AddressRoutingType.Anycast);
+            await using var producer = await connection.CreateProducerAsync("a1", RoutingType.Anycast);
 
             await producer.SendAsync(new Message("foo"));
 
@@ -170,7 +170,7 @@ namespace ActiveMQ.Artemis.Client.UnitTests
             using var host = CreateOpenedContainerHost();
             var messageProcessor = host.CreateMessageProcessor("a1");
             await using var connection = await CreateConnection(host.Endpoint);
-            await using var producer = await connection.CreateProducerAsync("a1", AddressRoutingType.Anycast);
+            await using var producer = await connection.CreateProducerAsync("a1", RoutingType.Anycast);
 
             var message = new Message("foo")
             {
@@ -189,7 +189,7 @@ namespace ActiveMQ.Artemis.Client.UnitTests
             using var host = CreateOpenedContainerHost();
             var messageProcessor = host.CreateMessageProcessor("a1");
             await using var connection = await CreateConnection(host.Endpoint);
-            await using var producer = await connection.CreateProducerAsync("a1", AddressRoutingType.Anycast);
+            await using var producer = await connection.CreateProducerAsync("a1", RoutingType.Anycast);
 
             await producer.SendAsync(new Message("foo"));
 
@@ -204,7 +204,7 @@ namespace ActiveMQ.Artemis.Client.UnitTests
             using var host = CreateOpenedContainerHost();
             var messageProcessor = host.CreateMessageProcessor("a1");
             await using var connection = await CreateConnection(host.Endpoint);
-            await using var producer = await connection.CreateProducerAsync("a1", AddressRoutingType.Anycast);
+            await using var producer = await connection.CreateProducerAsync("a1", RoutingType.Anycast);
 
             var message = new Message("foo")
             {
@@ -223,7 +223,7 @@ namespace ActiveMQ.Artemis.Client.UnitTests
             using var host = CreateOpenedContainerHost();
             var messageProcessor = host.CreateMessageProcessor("a1");
             await using var connection = await CreateConnection(host.Endpoint);
-            await using var producer = await connection.CreateProducerAsync("a1", AddressRoutingType.Anycast);
+            await using var producer = await connection.CreateProducerAsync("a1", RoutingType.Anycast);
 
             await producer.SendAsync(new Message("foo"));
 
@@ -238,7 +238,7 @@ namespace ActiveMQ.Artemis.Client.UnitTests
             using var host = CreateOpenedContainerHost();
             var messageProcessor = host.CreateMessageProcessor("a1");
             await using var connection = await CreateConnection(host.Endpoint);
-            await using var producer = await connection.CreateProducerAsync("a1", AddressRoutingType.Anycast);
+            await using var producer = await connection.CreateProducerAsync("a1", RoutingType.Anycast);
 
             var message = new Message("foo")
             {
@@ -257,7 +257,7 @@ namespace ActiveMQ.Artemis.Client.UnitTests
             using var host = CreateOpenedContainerHost();
             var messageProcessor = host.CreateMessageProcessor("a1");
             await using var connection = await CreateConnection(host.Endpoint);
-            await using var producer = await connection.CreateProducerAsync("a1", AddressRoutingType.Anycast);
+            await using var producer = await connection.CreateProducerAsync("a1", RoutingType.Anycast);
 
             var message = new Message("foo")
             {
@@ -276,7 +276,7 @@ namespace ActiveMQ.Artemis.Client.UnitTests
             using var host = CreateOpenedContainerHost();
             var messageProcessor = host.CreateMessageProcessor("a1");
             await using var connection = await CreateConnection(host.Endpoint);
-            await using var producer = await connection.CreateProducerAsync("a1", AddressRoutingType.Anycast);
+            await using var producer = await connection.CreateProducerAsync("a1", RoutingType.Anycast);
 
             var scheduledDeliveryTime = DateTime.UtcNow.AddHours(1).DropTicsPrecision();
             var message = new Message("foo")
@@ -296,7 +296,7 @@ namespace ActiveMQ.Artemis.Client.UnitTests
             using var host = CreateOpenedContainerHost();
             var messageProcessor = host.CreateMessageProcessor("a1");
             await using var connection = await CreateConnection(host.Endpoint);
-            await using var producer = await connection.CreateProducerAsync("a1", AddressRoutingType.Anycast);
+            await using var producer = await connection.CreateProducerAsync("a1", RoutingType.Anycast);
 
             var message = new Message("foo")
             {
@@ -315,7 +315,7 @@ namespace ActiveMQ.Artemis.Client.UnitTests
             using var host = CreateOpenedContainerHost();
             var messageProcessor = host.CreateMessageProcessor("a1");
             await using var connection = await CreateConnection(host.Endpoint);
-            await using var producer = await connection.CreateProducerAsync("a1", AddressRoutingType.Anycast);
+            await using var producer = await connection.CreateProducerAsync("a1", RoutingType.Anycast);
         
             var scheduledDeliveryDelay = TimeSpan.FromHours(1);
             var message = new Message("foo")

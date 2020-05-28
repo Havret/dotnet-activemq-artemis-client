@@ -17,16 +17,16 @@ namespace ActiveMQ.Artemis.Client.IntegrationTests
         {
             var address = nameof(Should_accept_only_messages_sent_using_different_connection);
             await using var connection1 = await CreateConnection();
-            await using var producer1 = await connection1.CreateProducerAsync(address, AddressRoutingType.Multicast);
+            await using var producer1 = await connection1.CreateProducerAsync(address, RoutingType.Multicast);
             await using var consumer = await connection1.CreateConsumerAsync(new ConsumerConfiguration
             {
                 Address = address,
-                RoutingType = QueueRoutingType.Multicast,
+                RoutingType = RoutingType.Multicast,
                 NoLocalFilter = true
             });
 
             await using var connection2 = await CreateConnection();
-            await using var producer2 = await connection2.CreateProducerAsync(address, AddressRoutingType.Multicast);
+            await using var producer2 = await connection2.CreateProducerAsync(address, RoutingType.Multicast);
 
             await producer1.SendAsync(new Message("connection1"));
             await producer2.SendAsync(new Message("connection2"));

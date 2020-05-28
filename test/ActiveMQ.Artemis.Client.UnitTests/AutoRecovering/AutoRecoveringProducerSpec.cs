@@ -53,7 +53,7 @@ namespace ActiveMQ.Artemis.Client.UnitTests.AutoRecovering
             var host1 = CreateOpenedContainerHost(endpoint);
 
             var connection = await CreateConnection(endpoint);
-            var producer = await connection.CreateProducerAsync("a1", AddressRoutingType.Anycast);
+            var producer = await connection.CreateProducerAsync("a1", RoutingType.Anycast);
 
             await DisposeHostAndWaitUntilConnectionNotified(host1, connection);
 
@@ -84,7 +84,7 @@ namespace ActiveMQ.Artemis.Client.UnitTests.AutoRecovering
 
             await using var connection = await connectionFactory.CreateAsync(endpoint);
 
-            var producer = await connection.CreateProducerAsync("a1", AddressRoutingType.Anycast);
+            var producer = await connection.CreateProducerAsync("a1", RoutingType.Anycast);
 
             await DisposeHostAndWaitUntilConnectionNotified(host1, connection);
 
@@ -104,7 +104,7 @@ namespace ActiveMQ.Artemis.Client.UnitTests.AutoRecovering
 
             await using var connection = await connectionFactory.CreateAsync(endpoint);
 
-            var producer = await connection.CreateProducerAsync("a1", AddressRoutingType.Anycast);
+            var producer = await connection.CreateProducerAsync("a1", RoutingType.Anycast);
 
             await DisposeHostAndWaitUntilConnectionNotified(host1, connection);
 
@@ -123,7 +123,7 @@ namespace ActiveMQ.Artemis.Client.UnitTests.AutoRecovering
             var connection = await CreateConnection(endpoint);
             connection.ConnectionClosed += (_, args) => connectionClosed.Set();
             
-            var producer = await connection.CreateProducerAsync("a1", AddressRoutingType.Anycast);
+            var producer = await connection.CreateProducerAsync("a1", RoutingType.Anycast);
 
             host1.Dispose();
             
@@ -164,7 +164,7 @@ namespace ActiveMQ.Artemis.Client.UnitTests.AutoRecovering
             var host1 = CreateOpenedContainerHost(endpoint, testHandler);
 
             var connection = await CreateConnection(endpoint);
-            var producer = await connection.CreateProducerAsync("a1", AddressRoutingType.Anycast);
+            var producer = await connection.CreateProducerAsync("a1", RoutingType.Anycast);
             Assert.NotNull(producer);
 
             Assert.True(producerAttached.WaitOne(Timeout), "Producer failed to attach within specified timeout.");
