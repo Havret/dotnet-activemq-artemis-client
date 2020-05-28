@@ -20,7 +20,7 @@ Default message durability settings may be overridden via producer configuration
 var producer = await connection.CreateProducerAsync(new ProducerConfiguration
 {
     Address = "a1",
-    RoutingType = AddressRoutingType.Anycast,
+    RoutingType = RoutingType.Anycast,
     MessageDurabilityMode = DurabilityMode.Nondurable
 });
 ```

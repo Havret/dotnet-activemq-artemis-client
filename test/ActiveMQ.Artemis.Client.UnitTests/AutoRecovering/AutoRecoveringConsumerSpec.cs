@@ -40,7 +40,7 @@ namespace ActiveMQ.Artemis.Client.UnitTests.AutoRecovering
             var host1 = CreateOpenedContainerHost(endpoint);
 
             var connection = await CreateConnection(endpoint);
-            var consumer = await connection.CreateConsumerAsync("a1", QueueRoutingType.Anycast);
+            var consumer = await connection.CreateConsumerAsync("a1", RoutingType.Anycast);
             
             var cts = new CancellationTokenSource(Timeout);
             var receiveTask = consumer.ReceiveAsync(cts.Token);
@@ -106,7 +106,7 @@ namespace ActiveMQ.Artemis.Client.UnitTests.AutoRecovering
 
             await using var connection = await connectionFactory.CreateAsync(endpoint);
 
-            var consumer = await connection.CreateConsumerAsync("a1", QueueRoutingType.Anycast);
+            var consumer = await connection.CreateConsumerAsync("a1", RoutingType.Anycast);
 
             await DisposeHostAndWaitUntilConnectionNotified(host, connection);
 
@@ -126,7 +126,7 @@ namespace ActiveMQ.Artemis.Client.UnitTests.AutoRecovering
 
             await using var connection = await connectionFactory.CreateAsync(endpoint);
 
-            var consumer = await connection.CreateConsumerAsync("a1", QueueRoutingType.Anycast);
+            var consumer = await connection.CreateConsumerAsync("a1", RoutingType.Anycast);
             var cts = new CancellationTokenSource(TimeSpan.FromSeconds(20));
             var receiveTask = consumer.ReceiveAsync(cts.Token);
 
@@ -153,7 +153,7 @@ namespace ActiveMQ.Artemis.Client.UnitTests.AutoRecovering
             var host1 = CreateOpenedContainerHost(endpoint, testHandler);
 
             var connection = await CreateConnection(endpoint);
-            var consumer = await connection.CreateConsumerAsync("a1", QueueRoutingType.Anycast);
+            var consumer = await connection.CreateConsumerAsync("a1", RoutingType.Anycast);
 
             Assert.True(consumerAttached.WaitOne(Timeout));
             host1.Dispose();

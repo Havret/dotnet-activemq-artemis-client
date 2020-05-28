@@ -70,7 +70,7 @@ Connections, producers, and consumers are meant to be long-lived objects. The un
 The client uses `IProducer` and `IAnonymousProducer` interfaces for sending messages. To to create an instance of `IProducer` you need to specify an address name and a routing type to which messages will be sent.
 
 ```csharp
-var producer = await connection.CreateProducerAsync("a1", AddressRoutingType.Anycast);
+var producer = await connection.CreateProducerAsync("a1", RoutingType.Anycast);
 ```
 
 All messages sent using this producer will be automatically routed to address `a1` using `Anycast` routing type:
@@ -88,7 +88,7 @@ var anonymousProducer = await connection.CreateAnonymousProducer();
 Each time you want to send a message, you need to specify the address name and the routing type:
 
 ```csharp
-await anonymousProducer.SendAsync("a2", AddressRoutingType.Multicast, new Message("foo"));
+await anonymousProducer.SendAsync("a2", RoutingType.Multicast, new Message("foo"));
 ```
 
 ## Receiving messages
@@ -96,7 +96,7 @@ await anonymousProducer.SendAsync("a2", AddressRoutingType.Multicast, new Messag
 The client uses `IConsumer` interface for receiving messages. `IConsumer` can be created as follows:
 
 ```csharp
-var consumer = await connection.CreateConsumerAsync("a1", QueueRoutingType.Anycast);
+var consumer = await connection.CreateConsumerAsync("a1", RoutingType.Anycast);
 ```
 
 As soon as the subscription is set up, the messages will be delivered automatically as they arrive, and then buffered inside consumer object. The number of buffered messages can be controlled by `Consumer Credit` . In order to get a message, simply call `ReceiveAsync` on `IConsumer` .

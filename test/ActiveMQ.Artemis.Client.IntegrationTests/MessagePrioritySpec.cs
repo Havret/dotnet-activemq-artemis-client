@@ -15,14 +15,14 @@ namespace ActiveMQ.Artemis.Client.IntegrationTests
         {
             var address = nameof(Should_receive_messages_ordered_via_priority);
             await using var connection = await CreateConnection();
-            await using var producer = await connection.CreateProducerAsync(address, AddressRoutingType.Anycast);
+            await using var producer = await connection.CreateProducerAsync(address, RoutingType.Anycast);
 
             for (var i = 0; i <= 9; i++)
             {
                 await producer.SendAsync(new Message(i) { Priority = (byte) i });
             }
 
-            await using var consumer = await connection.CreateConsumerAsync(address, QueueRoutingType.Anycast);
+            await using var consumer = await connection.CreateConsumerAsync(address, RoutingType.Anycast);
 
             for (var i = 9; i >= 0; i--)
             {
@@ -37,7 +37,7 @@ namespace ActiveMQ.Artemis.Client.IntegrationTests
         {
             var address = nameof(Messages_without_priority_should_be_delivered_with_priority_4);
             await using var connection = await CreateConnection();
-            await using var producer = await connection.CreateProducerAsync(address, AddressRoutingType.Anycast);
+            await using var producer = await connection.CreateProducerAsync(address, RoutingType.Anycast);
 
             await producer.SendAsync(new Message("low_priority") { Priority = 0 });
             await producer.SendAsync(new Message("normal_priority") { Priority = 4 });
@@ -45,7 +45,7 @@ namespace ActiveMQ.Artemis.Client.IntegrationTests
             await producer.SendAsync(new Message("normal_priority") { Priority = 4 });
             await producer.SendAsync(new Message("high_priority") { Priority = 9 });
 
-            await using var consumer = await connection.CreateConsumerAsync(address, QueueRoutingType.Anycast);
+            await using var consumer = await connection.CreateConsumerAsync(address, RoutingType.Anycast);
 
             Assert.Equal("high_priority", (await consumer.ReceiveAsync()).GetBody<string>());
             Assert.Equal("normal_priority", (await consumer.ReceiveAsync()).GetBody<string>());
@@ -60,9 +60,9 @@ namespace ActiveMQ.Artemis.Client.IntegrationTests
             var address = nameof(Should_take_message_priority_from_producer_configuration);
             await using var connection = await CreateConnection();
             await using var producer = await connection.CreateAnonymousProducer(new AnonymousProducerConfiguration { MessagePriority = 9 });
-            await using var consumer = await connection.CreateConsumerAsync(address, QueueRoutingType.Anycast);
+            await using var consumer = await connection.CreateConsumerAsync(address, RoutingType.Anycast);
 
-            await producer.SendAsync(address, AddressRoutingType.Anycast, new Message("foo"));
+            await producer.SendAsync(address, RoutingType.Anycast, new Message("foo"));
 
             Assert.Equal((byte) 9, (await consumer.ReceiveAsync()).Priority);
         }

@@ -17,8 +17,8 @@ namespace ActiveMQ.Artemis.Client.IntegrationTests
         {
             await using var connection = await CreateConnection();
             var address = Guid.NewGuid().ToString();
-            await using var producer = await connection.CreateProducerAsync(address, AddressRoutingType.Anycast);
-            await using var consumer = await connection.CreateConsumerAsync(address, QueueRoutingType.Anycast);
+            await using var producer = await connection.CreateProducerAsync(address, RoutingType.Anycast);
+            await using var consumer = await connection.CreateConsumerAsync(address, RoutingType.Anycast);
 
             await producer.SendAsync(new Message("foo")
             {
@@ -35,8 +35,8 @@ namespace ActiveMQ.Artemis.Client.IntegrationTests
         {
             await using var connection = await CreateConnection();
             var address = nameof(Should_deliver_message_with_scheduled_delay);
-            await using var producer = await connection.CreateProducerAsync(address, AddressRoutingType.Anycast);
-            await using var consumer = await connection.CreateConsumerAsync(address, QueueRoutingType.Anycast);
+            await using var producer = await connection.CreateProducerAsync(address, RoutingType.Anycast);
+            await using var consumer = await connection.CreateConsumerAsync(address, RoutingType.Anycast);
 
             await producer.SendAsync(new Message("foo")
             {
@@ -53,8 +53,8 @@ namespace ActiveMQ.Artemis.Client.IntegrationTests
         {
             await using var connection = await CreateConnection();
             var address = nameof(Should_prefer_ScheduledDeliveryTime_over_ScheduledDeliveryDelay_when_both_set);
-            await using var producer = await connection.CreateProducerAsync(address, AddressRoutingType.Anycast);
-            await using var consumer = await connection.CreateConsumerAsync(address, QueueRoutingType.Anycast);
+            await using var producer = await connection.CreateProducerAsync(address, RoutingType.Anycast);
+            await using var consumer = await connection.CreateConsumerAsync(address, RoutingType.Anycast);
 
             await producer.SendAsync(new Message("foo")
             {

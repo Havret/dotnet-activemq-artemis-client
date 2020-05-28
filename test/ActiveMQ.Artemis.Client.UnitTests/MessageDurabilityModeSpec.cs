@@ -16,7 +16,7 @@ namespace ActiveMQ.Artemis.Client.UnitTests
             using var host = CreateOpenedContainerHost();
             var messageProcessor = host.CreateMessageProcessor("a1");
             await using var connection = await CreateConnection(host.Endpoint);
-            await using var producer = await connection.CreateProducerAsync("a1", AddressRoutingType.Anycast);
+            await using var producer = await connection.CreateProducerAsync("a1", RoutingType.Anycast);
 
             await producer.SendAsync(new Message("foo"));
 
@@ -31,7 +31,7 @@ namespace ActiveMQ.Artemis.Client.UnitTests
             using var host = CreateOpenedContainerHost();
             var messageProcessor = host.CreateMessageProcessor("a1");
             await using var connection = await CreateConnection(host.Endpoint);
-            await using var producer = await connection.CreateProducerAsync("a1", AddressRoutingType.Anycast);
+            await using var producer = await connection.CreateProducerAsync("a1", RoutingType.Anycast);
 
             // ReSharper disable once MethodHasAsyncOverload
             producer.Send(new Message("foo"));
@@ -47,7 +47,7 @@ namespace ActiveMQ.Artemis.Client.UnitTests
             using var host = CreateOpenedContainerHost();
             var messageProcessor = host.CreateMessageProcessor("a1");
             await using var connection = await CreateConnection(host.Endpoint);
-            await using var producer = await connection.CreateProducerAsync("a1", AddressRoutingType.Anycast);
+            await using var producer = await connection.CreateProducerAsync("a1", RoutingType.Anycast);
 
             await producer.SendAsync(new Message("foo") { DurabilityMode = DurabilityMode.Nondurable });
 
@@ -62,7 +62,7 @@ namespace ActiveMQ.Artemis.Client.UnitTests
             using var host = CreateOpenedContainerHost();
             var messageProcessor = host.CreateMessageProcessor("a1");
             await using var connection = await CreateConnection(host.Endpoint);
-            await using var producer = await connection.CreateProducerAsync("a1", AddressRoutingType.Anycast);
+            await using var producer = await connection.CreateProducerAsync("a1", RoutingType.Anycast);
 
             // ReSharper disable once MethodHasAsyncOverload
             producer.Send(new Message("foo") { DurabilityMode = DurabilityMode.Durable });
@@ -81,7 +81,7 @@ namespace ActiveMQ.Artemis.Client.UnitTests
             await using var producer = await connection.CreateProducerAsync(new ProducerConfiguration()
             {
                 Address = "a1",
-                RoutingType = AddressRoutingType.Anycast,
+                RoutingType = RoutingType.Anycast,
                 MessageDurabilityMode = DurabilityMode.Nondurable
             });
 
@@ -101,7 +101,7 @@ namespace ActiveMQ.Artemis.Client.UnitTests
             await using var producer = await connection.CreateProducerAsync(new ProducerConfiguration
             {
                 Address = "a1",
-                RoutingType = AddressRoutingType.Anycast,
+                RoutingType = RoutingType.Anycast,
                 MessageDurabilityMode = DurabilityMode.Durable
             });
 

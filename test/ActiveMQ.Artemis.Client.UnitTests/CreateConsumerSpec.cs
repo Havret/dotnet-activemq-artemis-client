@@ -18,7 +18,7 @@ namespace ActiveMQ.Artemis.Client.UnitTests
         public CreateConsumerSpec(ITestOutputHelper output) : base(output)
         {
         }
-        
+
         [Fact]
         public async Task Should_be_created_and_closed()
         {
@@ -41,7 +41,7 @@ namespace ActiveMQ.Artemis.Client.UnitTests
 
             using var host = CreateOpenedContainerHost(endpoint, testHandler);
             await using var connection = await CreateConnection(endpoint);
-            var consumer = await connection.CreateConsumerAsync("test-consumer", QueueRoutingType.Anycast);
+            var consumer = await connection.CreateConsumerAsync("test-consumer", RoutingType.Anycast);
             await consumer.DisposeAsync();
 
             Assert.True(consumerAttached.WaitOne(Timeout));
@@ -69,44 +69,15 @@ namespace ActiveMQ.Artemis.Client.UnitTests
             using var host = CreateOpenedContainerHost(endpoint, testHandler);
 
             await using var connection = await CreateConnection(endpoint);
-            await using var consumer = await connection.CreateConsumerAsync("test-consumer", QueueRoutingType.Anycast);
+            await using var consumer = await connection.CreateConsumerAsync("test-consumer", RoutingType.Anycast);
 
             Assert.True(consumerAttached.WaitOne(Timeout));
             Assert.IsType<Source>(attachFrame.Source);
             Assert.Equal("test-consumer", ((Source) attachFrame.Source).Address);
         }
 
-        [Fact]
-        public async Task Should_attach_to_anycast_address_when_no_RoutingType_specified()
-        {
-            var endpoint = GetUniqueEndpoint();
-            var consumerAttached = new ManualResetEvent(false);
-            Attach attachFrame = null;
-
-            var testHandler = new TestHandler(@event =>
-            {
-                switch (@event.Id)
-                {
-                    case EventId.LinkRemoteOpen when @event.Context is Attach attach:
-                        attachFrame = attach;
-                        consumerAttached.Set();
-                        break;
-                }
-            });
-
-            using var host = CreateOpenedContainerHost(endpoint, testHandler);
-
-            await using var connection = await CreateConnection(endpoint);
-            await using var consumer = await connection.CreateConsumerAsync("test-consumer", QueueRoutingType.Anycast);
-
-            Assert.True(consumerAttached.WaitOne(Timeout));
-            Assert.NotNull(attachFrame);
-            Assert.IsType<Source>(attachFrame.Source);
-            Assert.Contains(((Source) attachFrame.Source).Capabilities, symbol => RoutingCapabilities.Anycast.Equals(symbol));
-        }
-
         [Theory, MemberData(nameof(RoutingTypesData))]
-        public async Task Should_attach_to_address_with_specified_RoutingType(QueueRoutingType routingType, Symbol routingCapability)
+        public async Task Should_attach_to_address_with_specified_RoutingType(RoutingType routingType, Symbol routingCapability)
         {
             var endpoint = GetUniqueEndpoint();
             var consumerAttached = new ManualResetEvent(false);
@@ -138,8 +109,8 @@ namespace ActiveMQ.Artemis.Client.UnitTests
         {
             return new[]
             {
-                new object[] { QueueRoutingType.Anycast, RoutingCapabilities.Anycast },
-                new object[] { QueueRoutingType.Multicast, RoutingCapabilities.Multicast }
+                new object[] { RoutingType.Anycast, RoutingCapabilities.Anycast },
+                new object[] { RoutingType.Multicast, RoutingCapabilities.Multicast }
             };
         }
 
@@ -150,11 +121,11 @@ namespace ActiveMQ.Artemis.Client.UnitTests
             using var host = CreateOpenedContainerHost(endpoint);
 
             await using var connection = await CreateConnection(endpoint);
-            await Assert.ThrowsAsync<ArgumentOutOfRangeException>(() => connection.CreateConsumerAsync("test-consumer", (QueueRoutingType) 99));
+            await Assert.ThrowsAsync<ArgumentOutOfRangeException>(() => connection.CreateConsumerAsync("test-consumer", (RoutingType) 99));
         }
 
         [Fact]
-        public async Task Should_connect_to_a_custom_queue_on_specified_address_with_an_anycast_routing_type()
+        public async Task Should_connect_to_a_custom_queue_on_specified_address_without_routing_type()
         {
             var endpoint = GetUniqueEndpoint();
             var consumerAttached = new ManualResetEvent(false);
@@ -174,21 +145,22 @@ namespace ActiveMQ.Artemis.Client.UnitTests
             using var host = CreateOpenedContainerHost(endpoint, testHandler);
 
             await using var connection = await CreateConnection(endpoint);
-            await using var consumer = await connection.CreateConsumerAsync("test-consumer", QueueRoutingType.Anycast, "q1");
+            await using var consumer = await connection.CreateConsumerAsync("test-consumer", "q1");
 
             Assert.True(consumerAttached.WaitOne(Timeout));
             Assert.NotNull(attachFrame);
             Assert.IsType<Source>(attachFrame.Source);
             var sourceFrame = (Source) attachFrame.Source;
             Assert.Equal("test-consumer::q1", sourceFrame.Address);
-            Assert.Contains(sourceFrame.Capabilities, RoutingCapabilities.Anycast.Equals);
+            Assert.Equal("q1", attachFrame.LinkName);
+            Assert.Null(sourceFrame.Capabilities);
         }
 
         [Fact]
         public async Task Should_throw_exception_when_selected_queue_doesnt_exist()
         {
             var endpoint = GetUniqueEndpoint();
-            
+
             var testHandler = new TestHandler(@event =>
             {
                 switch (@event.Id)
@@ -211,13 +183,13 @@ namespace ActiveMQ.Artemis.Client.UnitTests
             host.Open();
 
             await using var connection = await CreateConnection(endpoint);
-            var exception = await Assert.ThrowsAsync<CreateConsumerException>(() => connection.CreateConsumerAsync("a1", QueueRoutingType.Anycast, "q1"));
+            var exception = await Assert.ThrowsAsync<CreateConsumerException>(() => connection.CreateConsumerAsync("a1", "q1"));
             Assert.Contains("Queue: 'q1' does not exist", (string) exception.Message);
             Assert.Equal(ErrorCode.NotFound, exception.ErrorCode);
         }
-        
+
         [Fact]
-        public async Task Should_cancel_CreateConsumerAsync_when_address_routing_type_and_queue_specified_but_attach_frame_not_received_on_time()
+        public async Task Should_cancel_CreateConsumerAsync_when_attach_frame_not_received_on_time()
         {
             var endpoint = GetUniqueEndpoint();
 
@@ -225,31 +197,7 @@ namespace ActiveMQ.Artemis.Client.UnitTests
 
             await using var connection = await CreateConnection(endpoint);
             var cancellationTokenSource = new CancellationTokenSource(ShortTimeout);
-            await Assert.ThrowsAnyAsync<OperationCanceledException>(async () => await connection.CreateConsumerAsync("a1", QueueRoutingType.Anycast, "q1", cancellationTokenSource.Token));
-        }
-
-        [Fact]
-        public async Task Should_cancel_CreateConsumerAsync_when_address_and_routing_type_specified_but_attach_frame_not_received_on_time()
-        {
-            var endpoint = GetUniqueEndpoint();
-
-            using var host = CreateContainerHostThatWillNeverSendAttachFrameBack(endpoint);
-
-            await using var connection = await CreateConnection(endpoint);
-            var cancellationTokenSource = new CancellationTokenSource(ShortTimeout);
-            await Assert.ThrowsAnyAsync<OperationCanceledException>(async() => await connection.CreateConsumerAsync("test-consumer", QueueRoutingType.Anycast, cancellationTokenSource.Token));
-        }
-        
-        [Fact]
-        public async Task Should_cancel_CreateConsumerAsync_when_address_specified_but_attach_frame_not_received_on_time()
-        {
-            var endpoint = GetUniqueEndpoint();
-
-            using var host = CreateContainerHostThatWillNeverSendAttachFrameBack(endpoint);
-
-            await using var connection = await CreateConnection(endpoint);
-            var cancellationTokenSource = new CancellationTokenSource(ShortTimeout);
-            await Assert.ThrowsAnyAsync<OperationCanceledException>(async() => await connection.CreateConsumerAsync("test-consumer", QueueRoutingType.Anycast, cancellationTokenSource.Token));
+            await Assert.ThrowsAnyAsync<OperationCanceledException>(async () => await connection.CreateConsumerAsync("a1", RoutingType.Multicast, "q1", cancellationTokenSource.Token));
         }
 
         [Fact]
@@ -269,9 +217,9 @@ namespace ActiveMQ.Artemis.Client.UnitTests
             using var host = CreateOpenedContainerHost(endpoint);
 
             await using var connection = await CreateConnection(endpoint);
-            await Assert.ThrowsAsync<ArgumentNullException>(() => connection.CreateConsumerAsync(null, QueueRoutingType.Anycast));
+            await Assert.ThrowsAsync<ArgumentNullException>(() => connection.CreateConsumerAsync(null, RoutingType.Anycast));
         }
-        
+
         [Fact]
         public async Task Throws_when_created_with_empty_address()
         {
@@ -279,7 +227,7 @@ namespace ActiveMQ.Artemis.Client.UnitTests
             using var host = CreateOpenedContainerHost(endpoint);
 
             await using var connection = await CreateConnection(endpoint);
-            await Assert.ThrowsAsync<ArgumentNullException>(() => connection.CreateConsumerAsync(string.Empty, QueueRoutingType.Anycast));
+            await Assert.ThrowsAsync<ArgumentNullException>(() => connection.CreateConsumerAsync(string.Empty, RoutingType.Anycast));
         }
 
         [Theory]
@@ -294,7 +242,7 @@ namespace ActiveMQ.Artemis.Client.UnitTests
             await Assert.ThrowsAsync<ArgumentOutOfRangeException>(() => connection.CreateConsumerAsync(new ConsumerConfiguration
             {
                 Address = "a1",
-                RoutingType = QueueRoutingType.Multicast,
+                RoutingType = RoutingType.Multicast,
                 Credit = credit
             }));
         }
@@ -311,9 +259,84 @@ namespace ActiveMQ.Artemis.Client.UnitTests
             await using var consumer = await connection.CreateConsumerAsync(new ConsumerConfiguration
             {
                 Address = "a1",
-                RoutingType = QueueRoutingType.Multicast,
+                RoutingType = RoutingType.Multicast,
                 Credit = credit
             });
+        }
+
+        [Fact]
+        public async Task Throws_when_created_with_queue_name_and_Anycast_routing_type()
+        {
+            var endpoint = GetUniqueEndpoint();
+            using var host = CreateOpenedContainerHost(endpoint);
+            await using var connection = await CreateConnection(endpoint);
+
+            await Assert.ThrowsAsync<ArgumentException>(() => connection.CreateConsumerAsync(new ConsumerConfiguration
+            {
+                Address = "a1",
+                Queue = "q1",
+                RoutingType = RoutingType.Anycast,
+            }));
+        }
+
+        [Fact]
+        public async Task Throws_on_attempt_to_attach_to_non_shared_non_durable_queue()
+        {
+            var endpoint = GetUniqueEndpoint();
+            using var host = CreateOpenedContainerHost(endpoint);
+            await using var connection = await CreateConnection(endpoint);
+
+            await Assert.ThrowsAsync<ArgumentException>(() => connection.CreateConsumerAsync(new ConsumerConfiguration
+            {
+                Address = "a1",
+                Queue = "q1",
+                RoutingType = RoutingType.Multicast,
+                Shared = false,
+                Durable = false
+            }));
+        }
+
+        [Fact]
+        public async Task Throws_when_created_with_intent_to_attach_to_pre_configured_queue_when_Durable_option_enabled()
+        {
+            var endpoint = GetUniqueEndpoint();
+            using var host = CreateOpenedContainerHost(endpoint);
+            await using var connection = await CreateConnection(endpoint);
+
+            await Assert.ThrowsAsync<ArgumentException>(() => connection.CreateConsumerAsync(new ConsumerConfiguration
+            {
+                Address = "a1",
+                Queue = "q1",
+                Durable = true
+            }));
+        }
+
+        [Fact]
+        public async Task Throws_when_created_with_intent_to_attach_to_pre_configured_queue_when_Shared_option_enabled()
+        {
+            var endpoint = GetUniqueEndpoint();
+            using var host = CreateOpenedContainerHost(endpoint);
+            await using var connection = await CreateConnection(endpoint);
+
+            await Assert.ThrowsAsync<ArgumentException>(() => connection.CreateConsumerAsync(new ConsumerConfiguration
+            {
+                Address = "a1",
+                Queue = "q1",
+                Shared = true
+            }));
+        }
+
+        [Fact]
+        public async Task Throws_when_created_with_intent_to_attach_to_pre_configured_queue_when_queue_name_not_provided()
+        {
+            var endpoint = GetUniqueEndpoint();
+            using var host = CreateOpenedContainerHost(endpoint);
+            await using var connection = await CreateConnection(endpoint);
+
+            await Assert.ThrowsAsync<ArgumentNullException>(() => connection.CreateConsumerAsync(new ConsumerConfiguration
+            {
+                Address = "a1",
+            }));
         }
     }
 }

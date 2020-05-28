@@ -18,17 +18,17 @@ namespace ActiveMQ.Artemis.Client.IntegrationTests
         {
             await using var connection = await CreateConnection();
             var address = nameof(Should_filter_messages_based_on_priority);
-            await using var producer = await connection.CreateProducerAsync(address, AddressRoutingType.Anycast);
+            await using var producer = await connection.CreateProducerAsync(address, RoutingType.Anycast);
             await using var highPriorityConsumer = await connection.CreateConsumerAsync(new ConsumerConfiguration
             {
                 Address = address,
-                RoutingType = QueueRoutingType.Anycast,
+                RoutingType = RoutingType.Anycast,
                 FilterExpression = "AMQPriority = 9"
             });
             await using var lowPriorityConsumer = await connection.CreateConsumerAsync(new ConsumerConfiguration
             {
                 Address = address,
-                RoutingType = QueueRoutingType.Anycast,
+                RoutingType = RoutingType.Anycast,
                 FilterExpression = "AMQPriority = 0"
             });
 
@@ -50,20 +50,20 @@ namespace ActiveMQ.Artemis.Client.IntegrationTests
         {
             await using var connection = await CreateConnection();
             var address = nameof(Should_filter_messages_based_on_message_expiration_time);
-            await using var producer = await connection.CreateProducerAsync(address, AddressRoutingType.Anycast);
+            await using var producer = await connection.CreateProducerAsync(address, RoutingType.Anycast);
 
             var messageExpiryTime = DateTimeOffset.UtcNow.AddMilliseconds(100_000).ToUnixTimeMilliseconds();
 
             await using var shortExpiryConsumer = await connection.CreateConsumerAsync(new ConsumerConfiguration
             {
                 Address = address,
-                RoutingType = QueueRoutingType.Anycast,
+                RoutingType = RoutingType.Anycast,
                 FilterExpression = $"AMQExpiration < {messageExpiryTime}"
             });
             await using var longExpiryConsumer = await connection.CreateConsumerAsync(new ConsumerConfiguration
             {
                 Address = address,
-                RoutingType = QueueRoutingType.Anycast,
+                RoutingType = RoutingType.Anycast,
                 FilterExpression = $"AMQExpiration > {messageExpiryTime}"
             });
 
@@ -85,18 +85,18 @@ namespace ActiveMQ.Artemis.Client.IntegrationTests
         {
             await using var connection = await CreateConnection();
             var address = nameof(Should_filter_messages_based_on_message_durability);
-            await using var producer = await connection.CreateProducerAsync(address, AddressRoutingType.Anycast);
+            await using var producer = await connection.CreateProducerAsync(address, RoutingType.Anycast);
 
             await using var durableMessageConsumer = await connection.CreateConsumerAsync(new ConsumerConfiguration
             {
                 Address = address,
-                RoutingType = QueueRoutingType.Anycast,
+                RoutingType = RoutingType.Anycast,
                 FilterExpression = "AMQDurable = 'DURABLE'"
             });
             await using var nondurableConsumer = await connection.CreateConsumerAsync(new ConsumerConfiguration
             {
                 Address = address,
-                RoutingType = QueueRoutingType.Anycast,
+                RoutingType = RoutingType.Anycast,
                 FilterExpression = "AMQDurable = 'NON_DURABLE'"
             });
 
@@ -118,7 +118,7 @@ namespace ActiveMQ.Artemis.Client.IntegrationTests
         {
             await using var connection = await CreateConnection();
             var address = nameof(Should_filter_messages_based_on_message_creation_time);
-            await using var producer = await connection.CreateProducerAsync(address, AddressRoutingType.Anycast);
+            await using var producer = await connection.CreateProducerAsync(address, RoutingType.Anycast);
 
             var dayAgo = DateTime.UtcNow.AddDays(-1).DropTicsPrecision();
             var now = DateTime.UtcNow.DropTicsPrecision();
@@ -126,13 +126,13 @@ namespace ActiveMQ.Artemis.Client.IntegrationTests
             await using var staleMessageConsumer = await connection.CreateConsumerAsync(new ConsumerConfiguration
             {
                 Address = address,
-                RoutingType = QueueRoutingType.Anycast,
+                RoutingType = RoutingType.Anycast,
                 FilterExpression = $"AMQTimestamp = {dayAgo.ToUnixTimeMilliseconds()}"
             });
             await using var freshMessageConsumer = await connection.CreateConsumerAsync(new ConsumerConfiguration
             {
                 Address = address,
-                RoutingType = QueueRoutingType.Anycast,
+                RoutingType = RoutingType.Anycast,
                 FilterExpression = $"AMQTimestamp = {now.ToUnixTimeMilliseconds()}"
             });
 
@@ -154,18 +154,18 @@ namespace ActiveMQ.Artemis.Client.IntegrationTests
         {
             await using var connection = await CreateConnection();
             var address = nameof(Should_filter_messages_based_on_application_property);
-            await using var producer = await connection.CreateProducerAsync(address, AddressRoutingType.Anycast);
+            await using var producer = await connection.CreateProducerAsync(address, RoutingType.Anycast);
 
             await using var redMessageConsumer = await connection.CreateConsumerAsync(new ConsumerConfiguration
             {
                 Address = address,
-                RoutingType = QueueRoutingType.Anycast,
+                RoutingType = RoutingType.Anycast,
                 FilterExpression = "color = 'red'"
             });
             await using var blueMessageConsumer = await connection.CreateConsumerAsync(new ConsumerConfiguration
             {
                 Address = address,
-                RoutingType = QueueRoutingType.Anycast,
+                RoutingType = RoutingType.Anycast,
                 FilterExpression = "color = 'blue'"
             });
 

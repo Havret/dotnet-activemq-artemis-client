@@ -32,7 +32,7 @@ namespace ActiveMQ.Artemis.Client
         private bool IsDetaching => _senderLink.LinkState >= LinkState.DetachPipe;
         private bool IsClosed => _senderLink.IsClosed;
 
-        protected async Task SendInternalAsync(string address, AddressRoutingType routingType, Message message, Transaction transaction, CancellationToken cancellationToken = default)
+        protected async Task SendInternalAsync(string address, RoutingType? routingType, Message message, Transaction transaction, CancellationToken cancellationToken = default)
         {
             cancellationToken.ThrowIfCancellationRequested();
 
@@ -72,14 +72,14 @@ namespace ActiveMQ.Artemis.Client
             }
         }
 
-        protected void SendInternal(string address, AddressRoutingType routingType, Message message)
+        protected void SendInternal(string address, RoutingType? routingType, Message message)
         {
             message.DurabilityMode ??= _configuration.MessageDurabilityMode ?? DurabilityMode.Nondurable;
             Send(address: address, routingType: routingType, message: message, deliveryState: null, callback: null, state: null);
         }
 
         private void Send(string address,
-            AddressRoutingType routingType,
+            RoutingType? routingType,
             Message message,
             DeliveryState deliveryState,
             OutcomeCallback callback,
@@ -104,7 +104,7 @@ namespace ActiveMQ.Artemis.Client
 
                 message.Priority ??= _configuration.MessagePriority;
                 message.Properties.To = address;
-                message.MessageAnnotations[SymbolUtils.RoutingType] = routingType.GetRoutingAnnotation();
+                message.MessageAnnotations[SymbolUtils.RoutingType] ??= routingType.GetRoutingAnnotation();
 
                 _senderLink.Send(message.InnerMessage, deliveryState, callback, state);
                 Log.MessageSent(_logger, message);

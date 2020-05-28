@@ -20,7 +20,7 @@ namespace ActiveMQ.Artemis.Client.UnitTests
             connectionFactory.MessageIdPolicyFactory = () => new TestMessageIdPolicy("ConnectionFactoryPolicyMessageId");
             
             await using var connection = await connectionFactory.CreateAsync(host.Endpoint);
-            await using var producer = await connection.CreateProducerAsync("a1", AddressRoutingType.Anycast);
+            await using var producer = await connection.CreateProducerAsync("a1", RoutingType.Anycast);
 
             var message = new Message("foo");
             await producer.SendAsync(message);
@@ -42,7 +42,7 @@ namespace ActiveMQ.Artemis.Client.UnitTests
             await using var producer = await connection.CreateProducerAsync(new ProducerConfiguration()
             {
                 Address = "a1",
-                RoutingType = AddressRoutingType.Anycast,
+                RoutingType = RoutingType.Anycast,
                 MessageIdPolicy = new TestMessageIdPolicy("ProducerConfigurationPolicyMessageId")
             });
 

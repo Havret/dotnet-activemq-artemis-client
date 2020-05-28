@@ -6,6 +6,7 @@ using ActiveMQ.Artemis.Client.MessageIdPolicy;
 using ActiveMQ.Artemis.Client.Transactions;
 using Amqp;
 using Amqp.Framing;
+using Amqp.Types;
 using Microsoft.Extensions.Logging;
 
 namespace ActiveMQ.Artemis.Client.Builders
@@ -35,11 +36,10 @@ namespace ActiveMQ.Artemis.Client.Builders
             cancellationToken.ThrowIfCancellationRequested();
             cancellationToken.Register(() => _tcs.TrySetCanceled());
 
-            var routingCapabilities = configuration.RoutingType.GetRoutingCapabilities();
             var target = new Target
             {
                 Address = configuration.Address,
-                Capabilities = routingCapabilities
+                Capabilities = GetCapabilities(configuration)
             };
             var senderLink = new SenderLink(_session, Guid.NewGuid().ToString(), target, OnAttached);
             senderLink.AddClosedCallback(OnClosed);
@@ -49,7 +49,14 @@ namespace ActiveMQ.Artemis.Client.Builders
             senderLink.Closed -= OnClosed;
             return producer;
         }
-        
+
+        private static Symbol[] GetCapabilities(ProducerConfiguration configuration)
+        {
+            return configuration.RoutingType.HasValue
+                ? new[] { configuration.RoutingType.Value.GetRoutingCapability() }
+                : null;
+        }
+
         private void OnAttached(ILink link, Attach attach)
         {
             if (attach.Source != null)
@@ -57,7 +64,7 @@ namespace ActiveMQ.Artemis.Client.Builders
                 _tcs.TrySetResult(true);
             }
         }
-        
+
         private void OnClosed(IAmqpObject sender, Error error)
         {
             if (error != null)

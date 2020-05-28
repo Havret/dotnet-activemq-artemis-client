@@ -17,11 +17,11 @@ namespace ActiveMQ.Artemis.Client.IntegrationTests
         {
             var address = nameof(Should_deliver_messages_with_the_same_GroupId_to_the_same_consumer);
             await using var connection = await CreateConnection();
-            await using var producer = await connection.CreateProducerAsync(address, AddressRoutingType.Anycast);
+            await using var producer = await connection.CreateProducerAsync(address, RoutingType.Anycast);
 
-            await using var consumer1 = await connection.CreateConsumerAsync(address, QueueRoutingType.Anycast);
-            await using var consumer2 = await connection.CreateConsumerAsync(address, QueueRoutingType.Anycast);
-            await using var consumer3 = await connection.CreateConsumerAsync(address, QueueRoutingType.Anycast);
+            await using var consumer1 = await connection.CreateConsumerAsync(address, RoutingType.Anycast);
+            await using var consumer2 = await connection.CreateConsumerAsync(address, RoutingType.Anycast);
+            await using var consumer3 = await connection.CreateConsumerAsync(address, RoutingType.Anycast);
 
             await SendMessagesToGroup(producer, "group1", 5);
             await SendMessagesToGroup(producer, "group2", 5);

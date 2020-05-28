@@ -12,7 +12,7 @@ Default message priority can be overridden on message producer level:
 var producer = await connection.CreateProducerAsync(new ProducerConfiguration
 {
     Address = "a1",
-    RoutingType = AddressRoutingType.Anycast,
+    RoutingType = RoutingType.Anycast,
     MessagePriority = 9
 });
 ```
