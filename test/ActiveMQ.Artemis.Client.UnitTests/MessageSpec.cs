@@ -328,5 +328,52 @@ namespace ActiveMQ.Artemis.Client.UnitTests
         
             Assert.Equal(scheduledDeliveryDelay, received.ScheduledDeliveryDelay);
         }
+
+        [Fact]
+        public async Task Should_send_message_with_CorrelationId()
+        {
+            using var host = CreateOpenedContainerHost();
+            var messageProcessor = host.CreateMessageProcessor("a1");
+            await using var connection = await CreateConnection(host.Endpoint);
+            await using var producer = await connection.CreateProducerAsync("a1", RoutingType.Anycast);
+            
+            var message = new Message("foo")
+            {
+                CorrelationId = "correlation"
+            };
+            await producer.SendAsync(message);
+
+            var received = messageProcessor.Dequeue(ShortTimeout);
+            
+            Assert.Equal("correlation", received.CorrelationId);
+        }
+
+        [Fact]
+        public Task Should_sent_message_with_string_CorrelationId() => ShouldSendMessageWithCorrelationId("correlationId");
+        
+        [Fact]
+        public Task Should_sent_message_with_Guid_CorrelationId() => ShouldSendMessageWithCorrelationId(Guid.NewGuid());
+        
+        [Fact]
+        public Task Should_sent_message_with_ulong_CorrelationId() => ShouldSendMessageWithCorrelationId(ulong.MaxValue);
+        
+        [Fact]
+        public Task Should_sent_message_with_bytes_CorrelationId() => ShouldSendMessageWithCorrelationId(Guid.NewGuid().ToByteArray());
+
+        private async Task ShouldSendMessageWithCorrelationId<T>(T correlationId)
+        {
+            using var host = CreateOpenedContainerHost();
+            var messageProcessor = host.CreateMessageProcessor("a1");
+            await using var connection = await CreateConnection(host.Endpoint);
+            await using var producer = await connection.CreateProducerAsync("a1", RoutingType.Anycast);
+            
+            var message = new Message("foo");
+            message.SetCorrelationId(correlationId);
+            await producer.SendAsync(message);
+
+            var received = messageProcessor.Dequeue(ShortTimeout);
+            
+            Assert.Equal(correlationId, received.GetCorrelationId<T>());
+        }
     }
 }

@@ -85,6 +85,27 @@ namespace ActiveMQ.Artemis.Client
             Properties.ObjectMessageId = messageId;
         }
 
+        public string CorrelationId
+        {
+            get => Properties.CorrelationId;
+            set => Properties.CorrelationId = value;
+        }
+        
+        public T GetCorrelationId<T>()
+        {
+            if (Properties.ObjectCorrelationId is T correlationId)
+            {
+                return correlationId;
+            }
+
+            return default;
+        }
+        
+        public void SetCorrelationId<T>(T correlationId)
+        {
+            Properties.ObjectCorrelationId = correlationId;
+        }
+
         public DurabilityMode? DurabilityMode
         {
             get => Header.Durable switch
