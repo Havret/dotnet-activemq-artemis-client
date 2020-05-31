@@ -2,13 +2,13 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using ActiveMQ.Artemis.Client.Exceptions;
+using ActiveMQ.Artemis.Client.InternalUtilities;
 using ActiveMQ.Artemis.Client.MessageIdPolicy;
 using ActiveMQ.Artemis.Client.Transactions;
 using Amqp;
 using Amqp.Framing;
 using Amqp.Transactions;
 using Microsoft.Extensions.Logging;
-using TaskExtensions = ActiveMQ.Artemis.Client.InternalUtilities.TaskExtensions;
 
 namespace ActiveMQ.Artemis.Client
 {
@@ -38,7 +38,7 @@ namespace ActiveMQ.Artemis.Client
 
             var txnId = await _transactionsManager.GetTxnIdAsync(transaction, cancellationToken).ConfigureAwait(false);
             var transactionalState = txnId != null ? new TransactionalState { TxnId = txnId } : null;
-            var tcs = TaskExtensions.CreateTaskCompletionSource<bool>(cancellationToken);
+            var tcs = TaskUtil.CreateTaskCompletionSource<bool>(cancellationToken);
             cancellationToken.Register(() => tcs.TrySetCanceled());
             message.DurabilityMode ??= _configuration.MessageDurabilityMode ?? DurabilityMode.Durable;
             Send(address, routingType, message, transactionalState, _onOutcome, tcs);

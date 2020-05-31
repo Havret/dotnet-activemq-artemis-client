@@ -162,6 +162,11 @@ namespace ActiveMQ.Artemis.Client.AutoRecovering
             }, ctx, cancellationToken);
         }
 
+        public Task<ITopologyManager> CreateTopologyManager(CancellationToken cancellationToken = default)
+        {
+            return _connection.CreateTopologyManager(cancellationToken);
+        }
+
         public async Task<IConsumer> CreateConsumerAsync(ConsumerConfiguration configuration, CancellationToken cancellationToken)
         {
             var autoRecoveringConsumer = new AutoRecoveringConsumer(_loggerFactory, configuration);
@@ -217,8 +222,8 @@ namespace ActiveMQ.Artemis.Client.AutoRecovering
 
         private async Task DisposeInnerConnection()
         {
-            await _connection.DisposeAsync().ConfigureAwait(false);
             _connection.ConnectionClosed -= OnConnectionClosed;
+            await _connection.DisposeAsync().ConfigureAwait(false);
         }
 
         private Endpoint GetCurrentEndpoint(Context context)
