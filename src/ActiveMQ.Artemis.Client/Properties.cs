@@ -74,6 +74,22 @@ namespace ActiveMQ.Artemis.Client
                     _innerProperties.ResetField(5);
             }
         }
+        
+        public object ObjectCorrelationId
+        {
+            get => _innerProperties.GetCorrelationId();
+            set
+            {
+                if (value is null)
+                {
+                    _innerProperties.ResetField(5);
+                }
+                else
+                {
+                    _innerProperties.SetCorrelationId(value);    
+                }
+            }
+        }
 
         public string ContentType
         {
