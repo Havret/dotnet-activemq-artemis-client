@@ -14,5 +14,19 @@
             get => _innerProperties.Map[key];
             set => _innerProperties.Map[key] = value;
         }
+
+        internal bool TryGetValue<T>(string key, out T value)
+        {
+            if (_innerProperties.Map.TryGetValue(key, out var objectValue) && objectValue is T typedValue)
+            {
+                value = typedValue;
+                return true;
+            }
+            else
+            {
+                value = default;
+                return false;
+            }
+        }
     }
 }

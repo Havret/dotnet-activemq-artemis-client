@@ -1,26 +1,34 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
-namespace ActiveMQ.Artemis.Client.TestUtils
+namespace ActiveMQ.Artemis.Client.InternalUtilities
 {
     public static class DisposeUtil
     {
-        public static async Task DisposeAll(params object[] disposables)
+        public static async ValueTask DisposeAll(params object[] disposables)
         {
+            var exceptions = new List<Exception>();
             foreach (var obj in disposables)
             {
                 try
                 {
                     await TryDispose(obj);
                 }
-                catch (Exception)
+                catch (Exception e)
                 {
-                    // ignore
+                    exceptions.Add(e);
                 }
+            }
+
+            if (exceptions.Any())
+            {
+                throw new AggregateException(exceptions);
             }
         }
 
-        private static async Task TryDispose(object obj)
+        private static async ValueTask TryDispose(object obj)
         {
             switch (obj)
             {

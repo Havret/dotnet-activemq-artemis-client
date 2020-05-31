@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 
 namespace ActiveMQ.Artemis.Client.InternalUtilities
 {
-    internal static class TaskExtensions
+    internal static class TaskUtil
     {
         public static TaskCompletionSource<T> CreateTaskCompletionSource<T>(CancellationToken cancellationToken)
         {

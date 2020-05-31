@@ -34,7 +34,7 @@ namespace ActiveMQ.Artemis.Client
                 }
                 else
                 {
-                    _innerProperties.SetMessageId(value);    
+                    _innerProperties.SetMessageId(value);
                 }
             }
         }
@@ -74,7 +74,7 @@ namespace ActiveMQ.Artemis.Client
                     _innerProperties.ResetField(5);
             }
         }
-        
+
         public object ObjectCorrelationId
         {
             get => _innerProperties.GetCorrelationId();
@@ -86,7 +86,7 @@ namespace ActiveMQ.Artemis.Client
                 }
                 else
                 {
-                    _innerProperties.SetCorrelationId(value);    
+                    _innerProperties.SetCorrelationId(value);
                 }
             }
         }
@@ -184,6 +184,18 @@ namespace ActiveMQ.Artemis.Client
                     _innerProperties.To = value;
                 else
                     _innerProperties.ResetField(2);
+            }
+        }
+
+        public string ReplyTo
+        {
+            get => _innerProperties.ReplyTo;
+            internal set
+            {
+                if (value != default)
+                    _innerProperties.ReplyTo = value;
+                else
+                    _innerProperties.ResetField(4);
             }
         }
     }

@@ -2,6 +2,8 @@
 using System.Threading;
 using System.Threading.Tasks;
 using ActiveMQ.Artemis.Client.Builders;
+using ActiveMQ.Artemis.Client.Exceptions;
+using ActiveMQ.Artemis.Client.Management;
 using ActiveMQ.Artemis.Client.MessageIdPolicy;
 using ActiveMQ.Artemis.Client.Transactions;
 using Amqp;
@@ -31,6 +33,21 @@ namespace ActiveMQ.Artemis.Client
 
         public Endpoint Endpoint { get; }
         public bool IsOpened => _connection.ConnectionState == ConnectionState.Opened;
+
+        public async Task<ITopologyManager> CreateTopologyManager(CancellationToken cancellationToken = default)
+        {
+            try
+            {
+                var session = await CreateSession(cancellationToken).ConfigureAwait(false);
+                var rpcClientBuilder = new RpcClientBuilder(session);
+                var rpcClient = await rpcClientBuilder.CreateAsync("activemq.management", cancellationToken).ConfigureAwait(false);
+                return new TopologyManager(rpcClient);
+            }
+            catch (Exception e)
+            {
+                throw new CreateTopologyManagerException("Failed to create TopologyManager.", e);
+            }
+        }
 
         public async Task<IConsumer> CreateConsumerAsync(ConsumerConfiguration configuration, CancellationToken cancellationToken)
         {
