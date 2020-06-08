@@ -25,19 +25,6 @@ namespace ActiveMQ.Artemis.Client
             return connection.CreateConsumerAsync(configuration, cancellationToken);
         }
 
-        public static Task<IConsumer> CreateConsumerAsync(this IConnection connection, string address, RoutingType routingType, string queue, CancellationToken cancellationToken = default)
-        {
-            var configuration = new ConsumerConfiguration
-            {
-                Address = address,
-                RoutingType = routingType,
-                Queue = queue,
-                Durable = routingType == RoutingType.Multicast,
-                Shared = routingType == RoutingType.Multicast,
-            };
-            return connection.CreateConsumerAsync(configuration, cancellationToken);
-        }
-        
         public static Task<IProducer> CreateProducerAsync(this IConnection connection, string address, CancellationToken cancellationToken = default)
         {
             var configuration = new ProducerConfiguration

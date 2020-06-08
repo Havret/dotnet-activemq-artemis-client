@@ -152,7 +152,6 @@ namespace ActiveMQ.Artemis.Client.UnitTests
             Assert.IsType<Source>(attachFrame.Source);
             var sourceFrame = (Source) attachFrame.Source;
             Assert.Equal("test-consumer::q1", sourceFrame.Address);
-            Assert.Equal("q1", attachFrame.LinkName);
             Assert.Null(sourceFrame.Capabilities);
         }
 
@@ -197,7 +196,7 @@ namespace ActiveMQ.Artemis.Client.UnitTests
 
             await using var connection = await CreateConnection(endpoint);
             var cancellationTokenSource = new CancellationTokenSource(ShortTimeout);
-            await Assert.ThrowsAnyAsync<OperationCanceledException>(async () => await connection.CreateConsumerAsync("a1", RoutingType.Multicast, "q1", cancellationTokenSource.Token));
+            await Assert.ThrowsAnyAsync<OperationCanceledException>(async () => await connection.CreateConsumerAsync("a1", "q1", cancellationTokenSource.Token));
         }
 
         [Fact]
@@ -264,8 +263,10 @@ namespace ActiveMQ.Artemis.Client.UnitTests
             });
         }
 
-        [Fact]
-        public async Task Throws_when_created_with_queue_name_and_Anycast_routing_type()
+        [Theory]
+        [InlineData(RoutingType.Anycast)]
+        [InlineData(RoutingType.Multicast)]
+        public async Task Throws_when_created_with_queue_name_and_routing_type(RoutingType routingType)
         {
             var endpoint = GetUniqueEndpoint();
             using var host = CreateOpenedContainerHost(endpoint);
@@ -275,59 +276,12 @@ namespace ActiveMQ.Artemis.Client.UnitTests
             {
                 Address = "a1",
                 Queue = "q1",
-                RoutingType = RoutingType.Anycast,
+                RoutingType = routingType,
             }));
         }
 
         [Fact]
-        public async Task Throws_on_attempt_to_attach_to_non_shared_non_durable_queue()
-        {
-            var endpoint = GetUniqueEndpoint();
-            using var host = CreateOpenedContainerHost(endpoint);
-            await using var connection = await CreateConnection(endpoint);
-
-            await Assert.ThrowsAsync<ArgumentException>(() => connection.CreateConsumerAsync(new ConsumerConfiguration
-            {
-                Address = "a1",
-                Queue = "q1",
-                RoutingType = RoutingType.Multicast,
-                Shared = false,
-                Durable = false
-            }));
-        }
-
-        [Fact]
-        public async Task Throws_when_created_with_intent_to_attach_to_pre_configured_queue_when_Durable_option_enabled()
-        {
-            var endpoint = GetUniqueEndpoint();
-            using var host = CreateOpenedContainerHost(endpoint);
-            await using var connection = await CreateConnection(endpoint);
-
-            await Assert.ThrowsAsync<ArgumentException>(() => connection.CreateConsumerAsync(new ConsumerConfiguration
-            {
-                Address = "a1",
-                Queue = "q1",
-                Durable = true
-            }));
-        }
-
-        [Fact]
-        public async Task Throws_when_created_with_intent_to_attach_to_pre_configured_queue_when_Shared_option_enabled()
-        {
-            var endpoint = GetUniqueEndpoint();
-            using var host = CreateOpenedContainerHost(endpoint);
-            await using var connection = await CreateConnection(endpoint);
-
-            await Assert.ThrowsAsync<ArgumentException>(() => connection.CreateConsumerAsync(new ConsumerConfiguration
-            {
-                Address = "a1",
-                Queue = "q1",
-                Shared = true
-            }));
-        }
-
-        [Fact]
-        public async Task Throws_when_created_with_intent_to_attach_to_pre_configured_queue_when_queue_name_not_provided()
+        public async Task Throws_when_queue_name_not_provided()
         {
             var endpoint = GetUniqueEndpoint();
             using var host = CreateOpenedContainerHost(endpoint);

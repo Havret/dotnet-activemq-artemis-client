@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using ActiveMQ.Artemis.Client.Exceptions;
@@ -14,9 +12,6 @@ namespace ActiveMQ.Artemis.Client.Builders
 {
     internal class ConsumerBuilder
     {
-        private static readonly Symbol _sharedCapability = new Symbol("shared");
-        private static readonly Symbol _globalCapability = new Symbol("global");
-
         private readonly ILoggerFactory _loggerFactory;
         private readonly TransactionsManager _transactionsManager;
         private readonly Session _session;
@@ -42,10 +37,9 @@ namespace ActiveMQ.Artemis.Client.Builders
                 Address = GetAddress(configuration),
                 Capabilities = GetCapabilities(configuration),
                 FilterSet = GetFilterSet(configuration.FilterExpression, configuration.NoLocalFilter),
-                Durable = (uint) GetTerminusDurability(configuration),
             };
 
-            var receiverLink = new ReceiverLink(_session, GetLinkName(configuration), source, OnAttached);
+            var receiverLink = new ReceiverLink(_session, Guid.NewGuid().ToString(), source, OnAttached);
             receiverLink.AddClosedCallback(OnClosed);
             await _tcs.Task.ConfigureAwait(false);
             receiverLink.Closed -= OnClosed;
@@ -57,75 +51,25 @@ namespace ActiveMQ.Artemis.Client.Builders
             if (configuration == null) throw new ArgumentNullException(nameof(configuration));
             if (string.IsNullOrWhiteSpace(configuration.Address)) throw new ArgumentNullException(nameof(configuration.Address), "The address cannot be empty.");
             if (configuration.Credit < 1) throw new ArgumentOutOfRangeException(nameof(configuration.Credit), "Credit should be >= 1.");
-            if (configuration.RoutingType == RoutingType.Anycast)
+            if (configuration.RoutingType == RoutingType.Anycast && configuration.NoLocalFilter)
             {
-                if (configuration.NoLocalFilter)
-                    throw new ArgumentException($"{nameof(ConsumerConfiguration.NoLocalFilter)} cannot be used with {RoutingType.Anycast.ToString()} routing type.",
-                        nameof(configuration.NoLocalFilter));
-                if (!string.IsNullOrEmpty(configuration.Queue))
-                    throw new ArgumentException($"Queue name cannot be explicitly set for {nameof(RoutingType.Anycast)} {nameof(RoutingType)}. " +
-                                                $"If you want to attach to pre-configured queue do not set any {nameof(RoutingType)}.", nameof(configuration.Queue));
+                throw new ArgumentException($"{nameof(ConsumerConfiguration.NoLocalFilter)} cannot be used with {RoutingType.Anycast.ToString()} routing type.",
+                    nameof(configuration.NoLocalFilter));
             }
-            if (configuration.RoutingType == RoutingType.Multicast)
+            if (configuration.RoutingType.HasValue && !string.IsNullOrEmpty(configuration.Queue))
             {
-                if (!configuration.Durable && !configuration.Shared && !string.IsNullOrWhiteSpace(configuration.Queue))
-                {
-                    throw new ArgumentException("Cannot explicitly set queue name for unshared, non-durable subscription.");
-                }
+                throw new ArgumentException($"Queue name cannot be explicitly set when {nameof(RoutingType)} provided. " +
+                                            $"If you want to attach to queue by name, do not set any {nameof(RoutingType)}.", nameof(configuration.Queue));
             }
-            if (!configuration.RoutingType.HasValue) 
+            if (!configuration.RoutingType.HasValue && string.IsNullOrWhiteSpace(configuration.Queue))
             {
-                if (configuration.Durable)
-                {
-                    throw new ArgumentException("Cannot explicitly select durable subscription on attempt to attach to pre-configured queue. " +
-                                                "Option would be overriden by broker configuration.", nameof(configuration.Durable));
-                }
-                if (configuration.Shared)
-                {
-                    throw new ArgumentException("Cannot explicitly select shared subscription on attempt to attach to pre-configured queue. " +
-                                                "Option would be overriden by broker configuration.", nameof(configuration.Shared));
-                }
-                if (string.IsNullOrWhiteSpace(configuration.Queue))
-                {
-                    throw new ArgumentNullException(nameof(configuration.Queue), "Cannot attach to pre-configured queue when queue name not provided.");
-                }
+                throw new ArgumentNullException(nameof(configuration.Queue), "Cannot attach to queue when queue name not provided.");
             }
-        }
-
-        private TerminusDurability GetTerminusDurability(ConsumerConfiguration configuration)
-        {
-            if (configuration.Durable)
-                return TerminusDurability.Configuration;
-            else
-                return TerminusDurability.None;
-        }
-
-        private static string GetLinkName(ConsumerConfiguration configuration)
-        {
-            if (configuration.Shared || !string.IsNullOrEmpty(configuration.Queue))
-            {
-                return configuration.Queue;
-            }
-
-            return Guid.NewGuid().ToString();
         }
 
         private static Symbol[] GetCapabilities(ConsumerConfiguration configuration)
         {
-            var capabilities = new List<Symbol>();
-
-            if (configuration.RoutingType.HasValue)
-            {
-                capabilities.Add(configuration.RoutingType.Value.GetRoutingCapability());
-            }
-
-            if (configuration.Shared)
-            {
-                capabilities.Add(_sharedCapability);
-                capabilities.Add(_globalCapability);
-            }
-
-            return capabilities.Any() ? capabilities.ToArray() : null;
+            return configuration.RoutingType.HasValue ? new[] { configuration.RoutingType.Value.GetRoutingCapability() } : null;
         }
 
         private static string GetAddress(ConsumerConfiguration configuration)
