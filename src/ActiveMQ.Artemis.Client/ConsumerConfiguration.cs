@@ -8,7 +8,5 @@
         public int Credit { get; set; } = 200;
         public string FilterExpression { get; set; }
         public bool NoLocalFilter { get; set; }
-        public bool Shared { get; set; }
-        public bool Durable { get; set; }
     }
 }
