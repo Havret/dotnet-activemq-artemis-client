@@ -22,30 +22,30 @@ namespace ActiveMQ.Artemis.Client.Management
             _rpcClient = rpcClient;
         }
 
-        public async Task<IReadOnlyList<string>> GetAddressNames(CancellationToken cancellationToken)
+        public async Task<IReadOnlyList<string>> GetAddressNamesAsync(CancellationToken cancellationToken)
         {
-            var response = await SendAsync("getAddressNames", EmptyRequest, cancellationToken);
+            var response = await SendAsync("getAddressNames", EmptyRequest, cancellationToken).ConfigureAwait(false);
             return JsonSerializer.Deserialize<string[][]>(response).First();
         }
 
-        public async Task<IReadOnlyList<string>> GetQueueNames(CancellationToken cancellationToken)
+        public async Task<IReadOnlyList<string>> GetQueueNamesAsync(CancellationToken cancellationToken)
         {
-            var response = await SendAsync("getQueueNames", EmptyRequest, cancellationToken);
+            var response = await SendAsync("getQueueNames", EmptyRequest, cancellationToken).ConfigureAwait(false);
             return JsonSerializer.Deserialize<string[][]>(response).First();
         }
 
-        public Task CreateAddress(string name, RoutingType routingType, CancellationToken cancellationToken)
+        public Task CreateAddressAsync(string name, RoutingType routingType, CancellationToken cancellationToken)
         {
-            return CreateAddress(name, new[] { routingType }, cancellationToken);
+            return CreateAddressAsync(name, new[] { routingType }, cancellationToken);
         }
 
-        public async Task CreateAddress(string name, IEnumerable<RoutingType> routingTypes, CancellationToken cancellationToken)
+        public Task CreateAddressAsync(string name, IEnumerable<RoutingType> routingTypes, CancellationToken cancellationToken)
         {
             var requestJson = RequestSerializer.CreateAddressToJson(name, routingTypes);
-            await SendAsync("createAddress", requestJson, cancellationToken);
+            return SendAsync("createAddress", requestJson, cancellationToken);
         }
 
-        public async Task CreateQueue(QueueConfiguration configuration, CancellationToken cancellationToken = default)
+        public async Task CreateQueueAsync(QueueConfiguration configuration, CancellationToken cancellationToken = default)
         {
             var serialize = await RequestSerializer.CreateQueueToJson(configuration).ConfigureAwait(false);
             await SendAsync("createQueue", serialize, cancellationToken).ConfigureAwait(false);
@@ -56,7 +56,7 @@ namespace ActiveMQ.Artemis.Client.Management
             var message = new Message(request);
             message.ApplicationProperties[ResourceName] = BrokerResourceName;
             message.ApplicationProperties[OperationName] = operation;
-            var response = await _rpcClient.SendAsync(message, cancellationToken);
+            var response = await _rpcClient.SendAsync(message, cancellationToken).ConfigureAwait(false);
 
             var payload = response.GetBody<string>();
             if (response.ApplicationProperties.TryGetValue<bool>(OperationSucceeded, out var operationSucceeded) && operationSucceeded)

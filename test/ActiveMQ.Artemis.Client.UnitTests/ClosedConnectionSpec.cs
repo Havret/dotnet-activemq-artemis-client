@@ -31,7 +31,7 @@ namespace ActiveMQ.Artemis.Client.UnitTests
             var connection = await CreateConnection(host.Endpoint);
             await connection.DisposeAsync();
 
-            await Assert.ThrowsAsync<ObjectDisposedException>(() => connection.CreateAnonymousProducer());
+            await Assert.ThrowsAsync<ObjectDisposedException>(() => connection.CreateAnonymousProducerAsync());
         }
 
         [Fact]
@@ -53,7 +53,7 @@ namespace ActiveMQ.Artemis.Client.UnitTests
             var connection = await CreateConnection(host.Endpoint);
             await connection.DisposeAsync();
 
-            await Assert.ThrowsAsync<ObjectDisposedException>(() => connection.CreateTopologyManager());
+            await Assert.ThrowsAsync<ObjectDisposedException>(() => connection.CreateTopologyManagerAsync());
         }
 
         [Fact]
@@ -73,7 +73,7 @@ namespace ActiveMQ.Artemis.Client.UnitTests
             var connection = await CreateConnectionWithoutAutomaticRecovery(host.Endpoint);
             await DisposeHostAndWaitUntilConnectionNotified(host, connection);
 
-            await Assert.ThrowsAsync<ConnectionClosedException>(() => connection.CreateAnonymousProducer());
+            await Assert.ThrowsAsync<ConnectionClosedException>(() => connection.CreateAnonymousProducerAsync());
         }
 
         [Fact]
@@ -93,7 +93,7 @@ namespace ActiveMQ.Artemis.Client.UnitTests
             var connection = await CreateConnectionWithoutAutomaticRecovery(host.Endpoint);
             await DisposeHostAndWaitUntilConnectionNotified(host, connection);
 
-            await Assert.ThrowsAsync<ConnectionClosedException>(() => connection.CreateTopologyManager());
+            await Assert.ThrowsAsync<ConnectionClosedException>(() => connection.CreateTopologyManagerAsync());
         }
     }
 }

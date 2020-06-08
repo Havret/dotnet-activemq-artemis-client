@@ -17,7 +17,7 @@ namespace ActiveMQ.Artemis.Client.IntegrationTests
         {
             await using var connection = await CreateConnection();
             var address = Guid.NewGuid().ToString();
-            await using var producer = await connection.CreateAnonymousProducer();
+            await using var producer = await connection.CreateAnonymousProducerAsync();
             var consumer1 = await connection.CreateConsumerAsync(address, RoutingType.Anycast);
 
             await producer.SendAsync(address, RoutingType.Anycast, new Message("foo"));
@@ -38,7 +38,7 @@ namespace ActiveMQ.Artemis.Client.IntegrationTests
         {
             await using var connection = await CreateConnection();
             var address = Guid.NewGuid().ToString();
-            await using var producer = await connection.CreateAnonymousProducer();
+            await using var producer = await connection.CreateAnonymousProducerAsync();
             var consumer = await connection.CreateConsumerAsync(address, RoutingType.Anycast);
 
             await producer.SendAsync(address, RoutingType.Anycast, new Message("foo"));
@@ -54,7 +54,7 @@ namespace ActiveMQ.Artemis.Client.IntegrationTests
         {
             await using var connection = await CreateConnection();
             var address = Guid.NewGuid().ToString();
-            await using var producer = await connection.CreateAnonymousProducer();
+            await using var producer = await connection.CreateAnonymousProducerAsync();
             var consumer1 = await connection.CreateConsumerAsync(address, RoutingType.Anycast);
 
             await producer.SendAsync(address, RoutingType.Anycast, new Message("foo"));

@@ -59,7 +59,7 @@ namespace ActiveMQ.Artemis.Client.IntegrationTests
         {
             var address = nameof(Should_take_message_priority_from_producer_configuration);
             await using var connection = await CreateConnection();
-            await using var producer = await connection.CreateAnonymousProducer(new AnonymousProducerConfiguration { MessagePriority = 9 });
+            await using var producer = await connection.CreateAnonymousProducerAsync(new AnonymousProducerConfiguration { MessagePriority = 9 });
             await using var consumer = await connection.CreateConsumerAsync(address, RoutingType.Anycast);
 
             await producer.SendAsync(address, RoutingType.Anycast, new Message("foo"));

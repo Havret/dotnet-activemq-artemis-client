@@ -418,7 +418,7 @@ namespace ActiveMQ.Artemis.Client.IntegrationTests
             await using var connection = await CreateConnection();
             var address1 = Guid.NewGuid().ToString();
             var address2 = Guid.NewGuid().ToString();
-            await using var producer = await connection.CreateAnonymousProducer();
+            await using var producer = await connection.CreateAnonymousProducerAsync();
             await using var consumer1 = await connection.CreateConsumerAsync(address1, RoutingType.Anycast);
             await using var consumer2 = await connection.CreateConsumerAsync(address2, RoutingType.Anycast);
 

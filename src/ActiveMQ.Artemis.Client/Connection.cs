@@ -35,7 +35,7 @@ namespace ActiveMQ.Artemis.Client
         public Endpoint Endpoint { get; }
         public bool IsOpened => _connection.ConnectionState == ConnectionState.Opened;
 
-        public async Task<ITopologyManager> CreateTopologyManager(CancellationToken cancellationToken = default)
+        public async Task<ITopologyManager> CreateTopologyManagerAsync(CancellationToken cancellationToken = default)
         {
             CheckState();
             
@@ -70,7 +70,7 @@ namespace ActiveMQ.Artemis.Client
             return await producerBuilder.CreateAsync(configuration, cancellationToken).ConfigureAwait(false);
         }
 
-        public async Task<IAnonymousProducer> CreateAnonymousProducer(AnonymousProducerConfiguration configuration, CancellationToken cancellationToken)
+        public async Task<IAnonymousProducer> CreateAnonymousProducerAsync(AnonymousProducerConfiguration configuration, CancellationToken cancellationToken)
         {
             CheckState();
 

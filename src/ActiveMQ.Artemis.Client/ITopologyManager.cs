@@ -7,10 +7,10 @@ namespace ActiveMQ.Artemis.Client
 {
     public interface ITopologyManager : IAsyncDisposable
     {
-        Task<IReadOnlyList<string>> GetAddressNames(CancellationToken cancellationToken = default);
-        Task<IReadOnlyList<string>> GetQueueNames(CancellationToken cancellationToken = default);
-        Task CreateAddress(string name, RoutingType routingType, CancellationToken cancellationToken = default);
-        Task CreateAddress(string name, IEnumerable<RoutingType> routingTypes, CancellationToken cancellationToken = default);
-        Task CreateQueue(QueueConfiguration configuration, CancellationToken cancellationToken = default);
+        Task<IReadOnlyList<string>> GetAddressNamesAsync(CancellationToken cancellationToken = default);
+        Task<IReadOnlyList<string>> GetQueueNamesAsync(CancellationToken cancellationToken = default);
+        Task CreateAddressAsync(string name, RoutingType routingType, CancellationToken cancellationToken = default);
+        Task CreateAddressAsync(string name, IEnumerable<RoutingType> routingTypes, CancellationToken cancellationToken = default);
+        Task CreateQueueAsync(QueueConfiguration configuration, CancellationToken cancellationToken = default);
     }
 }
