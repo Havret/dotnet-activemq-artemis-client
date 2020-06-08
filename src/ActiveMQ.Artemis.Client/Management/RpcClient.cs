@@ -31,7 +31,6 @@ namespace ActiveMQ.Artemis.Client.Management
                 if (_pendingRequests.TryGetValue(correlationId, out var tcs))
                 {
                     tcs.TrySetResult(message);
-                    receiver.Accept(msg);
                 }
             });
         }
@@ -47,7 +46,9 @@ namespace ActiveMQ.Artemis.Client.Management
             {
                 _pendingRequests.TryAdd(correlationId, tcs);
                 _senderLink.Send(message.InnerMessage, null, _onOutcome, tcs);
-                return await tcs.Task.ConfigureAwait(false);
+                var response = await tcs.Task.ConfigureAwait(false);
+                _receiverLink.Accept(response.InnerMessage);
+                return response;
             }
             finally
             {
