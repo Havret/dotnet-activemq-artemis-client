@@ -15,9 +15,9 @@ namespace ActiveMQ.Artemis.Client.IntegrationTests
         public async Task Should_get_address_names()
         {
             await using var connection = await CreateConnection();
-            await using var topologyManager = await connection.CreateTopologyManager();
+            await using var topologyManager = await connection.CreateTopologyManagerAsync();
 
-            var addressNames = await topologyManager.GetAddressNames();
+            var addressNames = await topologyManager.GetAddressNamesAsync();
             Assert.Contains("DLQ", addressNames);
         }
 
@@ -25,9 +25,9 @@ namespace ActiveMQ.Artemis.Client.IntegrationTests
         public async Task Should_get_queue_names()
         {
             await using var connection = await CreateConnection();
-            await using var topologyManager = await connection.CreateTopologyManager();
+            await using var topologyManager = await connection.CreateTopologyManagerAsync();
 
-            var queueNames = await topologyManager.GetQueueNames();
+            var queueNames = await topologyManager.GetQueueNamesAsync();
             Assert.Contains("DLQ", queueNames);
         }
 
@@ -38,12 +38,12 @@ namespace ActiveMQ.Artemis.Client.IntegrationTests
         public async Task Should_create_address(RoutingType[] routingTypes)
         {
             await using var connection = await CreateConnection();
-            await using var topologyManager = await connection.CreateTopologyManager();
+            await using var topologyManager = await connection.CreateTopologyManagerAsync();
 
             var address = Guid.NewGuid().ToString();
-            await topologyManager.CreateAddress(address, routingTypes, CancellationToken);
+            await topologyManager.CreateAddressAsync(address, routingTypes, CancellationToken);
 
-            var addressNames = await topologyManager.GetAddressNames(CancellationToken);
+            var addressNames = await topologyManager.GetAddressNamesAsync(CancellationToken);
             Assert.Contains(address, addressNames);
         }
 
@@ -51,12 +51,12 @@ namespace ActiveMQ.Artemis.Client.IntegrationTests
         public async Task Throws_when_address_already_exists()
         {
             await using var connection = await CreateConnection();
-            await using var topologyManager = await connection.CreateTopologyManager();
+            await using var topologyManager = await connection.CreateTopologyManagerAsync();
 
             var address = Guid.NewGuid().ToString();
-            await topologyManager.CreateAddress(address, RoutingType.Anycast, CancellationToken);
+            await topologyManager.CreateAddressAsync(address, RoutingType.Anycast, CancellationToken);
 
-            var exception = await Assert.ThrowsAsync<InvalidOperationException>(async () => await topologyManager.CreateAddress(address, RoutingType.Multicast, CancellationToken));
+            var exception = await Assert.ThrowsAsync<InvalidOperationException>(async () => await topologyManager.CreateAddressAsync(address, RoutingType.Multicast, CancellationToken));
             Assert.Contains("Address already exists", exception.Message);
         }
 
@@ -64,13 +64,13 @@ namespace ActiveMQ.Artemis.Client.IntegrationTests
         public async Task Should_create_queue()
         {
             await using var connection = await CreateConnection();
-            await using var topologyManager = await connection.CreateTopologyManager();
+            await using var topologyManager = await connection.CreateTopologyManagerAsync();
 
             var address = Guid.NewGuid().ToString();
-            await topologyManager.CreateAddress(address, RoutingType.Multicast, CancellationToken);
+            await topologyManager.CreateAddressAsync(address, RoutingType.Multicast, CancellationToken);
 
             var queueName = Guid.NewGuid().ToString();
-            await topologyManager.CreateQueue(new QueueConfiguration
+            await topologyManager.CreateQueueAsync(new QueueConfiguration
             {
                 Name = queueName,
                 RoutingType = RoutingType.Multicast,
@@ -89,12 +89,12 @@ namespace ActiveMQ.Artemis.Client.IntegrationTests
         public async Task Should_create_queue_and_address()
         {
             await using var connection = await CreateConnection();
-            await using var topologyManager = await connection.CreateTopologyManager();
+            await using var topologyManager = await connection.CreateTopologyManagerAsync();
 
             var address = Guid.NewGuid().ToString();
 
             var queueName = Guid.NewGuid().ToString();
-            await topologyManager.CreateQueue(new QueueConfiguration
+            await topologyManager.CreateQueueAsync(new QueueConfiguration
             {
                 Name = queueName,
                 RoutingType = RoutingType.Multicast,
@@ -107,7 +107,7 @@ namespace ActiveMQ.Artemis.Client.IntegrationTests
         public async Task Throws_when_queue_already_exists()
         {
             await using var connection = await CreateConnection();
-            await using var topologyManager = await connection.CreateTopologyManager();
+            await using var topologyManager = await connection.CreateTopologyManagerAsync();
 
             var queueConfiguration = new QueueConfiguration
             {
@@ -117,16 +117,16 @@ namespace ActiveMQ.Artemis.Client.IntegrationTests
                 AutoCreateAddress = true
             };
 
-            await topologyManager.CreateQueue(queueConfiguration, CancellationToken);
+            await topologyManager.CreateQueueAsync(queueConfiguration, CancellationToken);
             
-            await Assert.ThrowsAsync<InvalidOperationException>(async () => await topologyManager.CreateQueue(queueConfiguration, CancellationToken));
+            await Assert.ThrowsAsync<InvalidOperationException>(async () => await topologyManager.CreateQueueAsync(queueConfiguration, CancellationToken));
         }
 
         [Fact]
         public async Task Throws_when_address_does_not_exist_and_AutoCreateAddress_set_to_false()
         {
             await using var connection = await CreateConnection();
-            await using var topologyManager = await connection.CreateTopologyManager();
+            await using var topologyManager = await connection.CreateTopologyManagerAsync();
 
             var queueConfiguration = new QueueConfiguration
             {
@@ -136,7 +136,7 @@ namespace ActiveMQ.Artemis.Client.IntegrationTests
                 AutoCreateAddress = false
             };
             
-            await Assert.ThrowsAsync<InvalidOperationException>(async () => await topologyManager.CreateQueue(queueConfiguration, CancellationToken));
+            await Assert.ThrowsAsync<InvalidOperationException>(async () => await topologyManager.CreateQueueAsync(queueConfiguration, CancellationToken));
         }
     }
 }

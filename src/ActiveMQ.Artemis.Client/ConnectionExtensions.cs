@@ -57,10 +57,10 @@ namespace ActiveMQ.Artemis.Client
             return connection.CreateProducerAsync(configuration, cancellationToken);
         }
 
-        public static Task<IAnonymousProducer> CreateAnonymousProducer(this IConnection connection, CancellationToken cancellationToken = default)
+        public static Task<IAnonymousProducer> CreateAnonymousProducerAsync(this IConnection connection, CancellationToken cancellationToken = default)
         {
             var configuration = new AnonymousProducerConfiguration();
-            return connection.CreateAnonymousProducer(configuration, cancellationToken);
+            return connection.CreateAnonymousProducerAsync(configuration, cancellationToken);
         }
     }
 }

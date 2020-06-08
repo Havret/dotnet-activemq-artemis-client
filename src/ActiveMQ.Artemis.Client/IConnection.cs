@@ -11,10 +11,10 @@ namespace ActiveMQ.Artemis.Client
         /// </summary>
         Endpoint Endpoint { get; }
         bool IsOpened { get; }
-        Task<ITopologyManager> CreateTopologyManager(CancellationToken cancellationToken = default); 
+        Task<ITopologyManager> CreateTopologyManagerAsync(CancellationToken cancellationToken = default); 
         Task<IConsumer> CreateConsumerAsync(ConsumerConfiguration configuration, CancellationToken cancellationToken = default);
         Task<IProducer> CreateProducerAsync(ProducerConfiguration configuration, CancellationToken cancellationToken = default);
-        Task<IAnonymousProducer> CreateAnonymousProducer(AnonymousProducerConfiguration configuration, CancellationToken cancellationToken = default);
+        Task<IAnonymousProducer> CreateAnonymousProducerAsync(AnonymousProducerConfiguration configuration, CancellationToken cancellationToken = default);
         event EventHandler<ConnectionClosedEventArgs> ConnectionClosed;
         event EventHandler<ConnectionRecoveredEventArgs> ConnectionRecovered;
         event EventHandler<ConnectionRecoveryErrorEventArgs> ConnectionRecoveryError;

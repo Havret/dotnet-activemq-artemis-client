@@ -61,7 +61,7 @@ namespace ActiveMQ.Artemis.Client.AutoRecovering
 
         protected override async Task RecoverUnderlyingProducer(IConnection connection, CancellationToken cancellationToken)
         {
-            _producer = await connection.CreateAnonymousProducer(_configuration, cancellationToken).ConfigureAwait(false);
+            _producer = await connection.CreateAnonymousProducerAsync(_configuration, cancellationToken).ConfigureAwait(false);
         }
     }
 }

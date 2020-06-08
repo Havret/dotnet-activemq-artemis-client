@@ -162,9 +162,9 @@ namespace ActiveMQ.Artemis.Client.AutoRecovering
             }, ctx, cancellationToken);
         }
 
-        public Task<ITopologyManager> CreateTopologyManager(CancellationToken cancellationToken = default)
+        public Task<ITopologyManager> CreateTopologyManagerAsync(CancellationToken cancellationToken = default)
         {
-            return _connection.CreateTopologyManager(cancellationToken);
+            return _connection.CreateTopologyManagerAsync(cancellationToken);
         }
 
         public async Task<IConsumer> CreateConsumerAsync(ConsumerConfiguration configuration, CancellationToken cancellationToken)
@@ -181,7 +181,7 @@ namespace ActiveMQ.Artemis.Client.AutoRecovering
             return autoRecoveringProducer;
         }
 
-        public async Task<IAnonymousProducer> CreateAnonymousProducer(AnonymousProducerConfiguration configuration, CancellationToken cancellationToken = default)
+        public async Task<IAnonymousProducer> CreateAnonymousProducerAsync(AnonymousProducerConfiguration configuration, CancellationToken cancellationToken = default)
         {
             var autoRecoveringAnonymousProducer = new AutoRecoveringAnonymousProducer(_loggerFactory, configuration);
             await PrepareRecoverable(autoRecoveringAnonymousProducer, cancellationToken);

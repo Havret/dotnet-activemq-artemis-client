@@ -17,7 +17,7 @@ namespace ActiveMQ.Artemis.Client.IntegrationTests
         {
             await using var connection = await CreateConnection();
             var address = nameof(Should_be_set);
-            await using var producer = await connection.CreateAnonymousProducer();
+            await using var producer = await connection.CreateAnonymousProducerAsync();
             await using var consumer = await connection.CreateConsumerAsync(address, RoutingType.Anycast);
 
             var creationTime = DateTime.UtcNow.DropTicsPrecision();
@@ -32,7 +32,7 @@ namespace ActiveMQ.Artemis.Client.IntegrationTests
         {
             await using var connection = await CreateConnection();
             var address = nameof(Should_not_be_set);
-            await using var producer = await connection.CreateAnonymousProducer(new AnonymousProducerConfiguration { SetMessageCreationTime = false });
+            await using var producer = await connection.CreateAnonymousProducerAsync(new AnonymousProducerConfiguration { SetMessageCreationTime = false });
             await using var consumer = await connection.CreateConsumerAsync(address, RoutingType.Anycast);
 
             await producer.SendAsync(address, RoutingType.Anycast, new Message("foo"));

@@ -18,7 +18,7 @@ namespace ActiveMQ.Artemis.Client.UnitTests
             using var host = CreateOpenedContainerHost(endpoint);
             await using var connection = await CreateConnection(endpoint);
 
-            await Assert.ThrowsAsync<ArgumentNullException>(() => connection.CreateAnonymousProducer(null));
+            await Assert.ThrowsAsync<ArgumentNullException>(() => connection.CreateAnonymousProducerAsync(null));
         }
     }
 }
