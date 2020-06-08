@@ -93,35 +93,30 @@ namespace ActiveMQ.Artemis.Client.IntegrationTests
             var address = Guid.NewGuid().ToString();
             var queue1 = Guid.NewGuid().ToString();
             var queue2 = Guid.NewGuid().ToString();
+
+            var topologyManager = await connection1.CreateTopologyManagerAsync();
+            await topologyManager.CreateAddressAsync(address, RoutingType.Multicast);
+            await topologyManager.CreateQueueAsync(new QueueConfiguration
+            {
+                Address = address,
+                Name = queue1,
+                RoutingType = RoutingType.Multicast,
+                MaxConsumers = -1,
+                PurgeOnNoConsumers = true
+            });
+            await topologyManager.CreateQueueAsync(new QueueConfiguration
+            {
+                Address = address,
+                Name = queue2,
+                RoutingType = RoutingType.Multicast,
+                PurgeOnNoConsumers = true
+            });
+
             await using var producer = await connection1.CreateProducerAsync(address, RoutingType.Multicast);
-            var queue1Consumer1 = await connection1.CreateConsumerAsync(new ConsumerConfiguration
-            {
-                Address = address,
-                RoutingType = RoutingType.Multicast,
-                Queue = queue1,
-                Shared = true
-            });
-            var queue1Consumer2 = await connection2.CreateConsumerAsync(new ConsumerConfiguration
-            {
-                Address = address,
-                RoutingType = RoutingType.Multicast,
-                Queue = queue1,
-                Shared = true
-            });
-            var queue2Consumer1 = await connection1.CreateConsumerAsync(new ConsumerConfiguration
-            {
-                Address = address,
-                RoutingType = RoutingType.Multicast,
-                Queue = queue2,
-                Shared = true
-            });
-            var queue2Consumer2 = await connection2.CreateConsumerAsync(new ConsumerConfiguration
-            {
-                Address = address,
-                RoutingType = RoutingType.Multicast,
-                Queue = queue2,
-                Shared = true
-            });
+            var queue1Consumer1 = await connection1.CreateConsumerAsync(address, queue1);
+            var queue1Consumer2 = await connection1.CreateConsumerAsync(address, queue1);
+            var queue2Consumer1 = await connection1.CreateConsumerAsync(address, queue2);
+            var queue2Consumer2 = await connection1.CreateConsumerAsync(address, queue2);
 
             await producer.SendAsync(new Message("foo1"));
             await producer.SendAsync(new Message("foo2"));
@@ -137,34 +132,10 @@ namespace ActiveMQ.Artemis.Client.IntegrationTests
             await queue2Consumer1.DisposeAsync();
             await queue2Consumer2.DisposeAsync();
 
-            await using var newQueue1Consumer1 = await connection1.CreateConsumerAsync(new ConsumerConfiguration
-            {
-                Address = address,
-                RoutingType = RoutingType.Multicast,
-                Queue = queue1,
-                Shared = true
-            });
-            await using var newQueue1Consumer2 = await connection2.CreateConsumerAsync(new ConsumerConfiguration
-            {
-                Address = address,
-                RoutingType = RoutingType.Multicast,
-                Queue = queue1,
-                Shared = true
-            });
-            await using var newQueue2Consumer1 = await connection1.CreateConsumerAsync(new ConsumerConfiguration
-            {
-                Address = address,
-                RoutingType = RoutingType.Multicast,
-                Queue = queue2,
-                Shared = true
-            });
-            await using var newQueue2Consumer2 = await connection2.CreateConsumerAsync(new ConsumerConfiguration
-            {
-                Address = address,
-                RoutingType = RoutingType.Multicast,
-                Queue = queue2,
-                Shared = true
-            });
+            await using var newQueue1Consumer1 = await connection1.CreateConsumerAsync(address, queue1);
+            await using var newQueue1Consumer2 = await connection1.CreateConsumerAsync(address, queue1);
+            await using var newQueue2Consumer1 = await connection1.CreateConsumerAsync(address, queue2);
+            await using var newQueue2Consumer2 = await connection2.CreateConsumerAsync(address, queue2);
 
             await producer.SendAsync(new Message("foo3"));
             await producer.SendAsync(new Message("foo4"));
@@ -183,39 +154,31 @@ namespace ActiveMQ.Artemis.Client.IntegrationTests
             var address = Guid.NewGuid().ToString();
             var queue1 = Guid.NewGuid().ToString();
             var queue2 = Guid.NewGuid().ToString();
+
+            var topologyManager = await connection1.CreateTopologyManagerAsync();
+            await topologyManager.CreateAddressAsync(address, RoutingType.Multicast);
+            await topologyManager.CreateQueueAsync(new QueueConfiguration
+            {
+                Address = address,
+                Name = queue1,
+                RoutingType = RoutingType.Multicast,
+                MaxConsumers = -1,
+                Durable = true
+            });
+            await topologyManager.CreateQueueAsync(new QueueConfiguration
+            {
+                Address = address,
+                Name = queue2,
+                RoutingType = RoutingType.Multicast,
+                Durable = true
+            });
+
+
             await using var producer = await connection1.CreateProducerAsync(address, RoutingType.Multicast);
-            var queue1Consumer1 = await connection1.CreateConsumerAsync(new ConsumerConfiguration
-            {
-                Address = address,
-                RoutingType = RoutingType.Multicast,
-                Queue = queue1,
-                Shared = true,
-                Durable = true
-            });
-            var queue1Consumer2 = await connection2.CreateConsumerAsync(new ConsumerConfiguration
-            {
-                Address = address,
-                RoutingType = RoutingType.Multicast,
-                Queue = queue1,
-                Shared = true,
-                Durable = true
-            });
-            var queue2Consumer1 = await connection1.CreateConsumerAsync(new ConsumerConfiguration
-            {
-                Address = address,
-                RoutingType = RoutingType.Multicast,
-                Queue = queue2,
-                Shared = true,
-                Durable = true
-            });
-            var queue2Consumer2 = await connection2.CreateConsumerAsync(new ConsumerConfiguration
-            {
-                Address = address,
-                RoutingType = RoutingType.Multicast,
-                Queue = queue2,
-                Shared = true,
-                Durable = true
-            });
+            var queue1Consumer1 = await connection1.CreateConsumerAsync(address, queue1);
+            var queue1Consumer2 = await connection2.CreateConsumerAsync(address, queue1);
+            var queue2Consumer1 = await connection1.CreateConsumerAsync(address, queue2);
+            var queue2Consumer2 = await connection2.CreateConsumerAsync(address, queue2);
 
             await producer.SendAsync(new Message("foo1"));
             await producer.SendAsync(new Message("foo2"));
@@ -231,22 +194,8 @@ namespace ActiveMQ.Artemis.Client.IntegrationTests
             await queue2Consumer1.DisposeAsync();
             await queue2Consumer2.DisposeAsync();
 
-            await using var newQueue1Consumer = await connection1.CreateConsumerAsync(new ConsumerConfiguration
-            {
-                Address = address,
-                RoutingType = RoutingType.Multicast,
-                Queue = queue1,
-                Shared = true,
-                Durable = true
-            });
-            await using var newQueue2Consumer = await connection2.CreateConsumerAsync(new ConsumerConfiguration
-            {
-                Address = address,
-                RoutingType = RoutingType.Multicast,
-                Queue = queue2,
-                Shared = true,
-                Durable = true
-            });
+            await using var newQueue1Consumer = await connection1.CreateConsumerAsync(address, queue1);
+            await using var newQueue2Consumer = await connection2.CreateConsumerAsync(address, queue2);
 
             Assert.Equal("foo1", (await newQueue1Consumer.ReceiveAsync(CancellationToken)).GetBody<string>());
             Assert.Equal("foo2", (await newQueue1Consumer.ReceiveAsync(CancellationToken)).GetBody<string>());
@@ -260,15 +209,19 @@ namespace ActiveMQ.Artemis.Client.IntegrationTests
             await using var connection = await CreateConnection();
             var address = Guid.NewGuid().ToString();
             var queue = Guid.NewGuid().ToString();
-            await using var producer = await connection.CreateProducerAsync(address, RoutingType.Multicast);
-            var consumer = await connection.CreateConsumerAsync(new ConsumerConfiguration
+            var topologyManager = await connection.CreateTopologyManagerAsync();
+            await topologyManager.CreateAddressAsync(address, RoutingType.Multicast);
+            await topologyManager.CreateQueueAsync(new QueueConfiguration
             {
                 Address = address,
+                Name = queue,
                 RoutingType = RoutingType.Multicast,
-                Queue = queue,
-                Shared = false,
+                MaxConsumers = 1,
                 Durable = true
             });
+
+            await using var producer = await connection.CreateProducerAsync(address, RoutingType.Multicast);
+            var consumer = await connection.CreateConsumerAsync(address, queue);
 
             await producer.SendAsync(new Message("foo1"));
             await producer.SendAsync(new Message("foo2"));
@@ -279,14 +232,7 @@ namespace ActiveMQ.Artemis.Client.IntegrationTests
             // make sure that the queue is durable
             await consumer.DisposeAsync();
 
-            await using var newConsumer = await connection.CreateConsumerAsync(new ConsumerConfiguration
-            {
-                Address = address,
-                RoutingType = RoutingType.Multicast,
-                Queue = queue,
-                Shared = false,
-                Durable = true
-            });
+            await using var newConsumer = await connection.CreateConsumerAsync(address, queue);
 
             Assert.Equal("foo1", (await newConsumer.ReceiveAsync(CancellationToken)).GetBody<string>());
             Assert.Equal("foo2", (await newConsumer.ReceiveAsync(CancellationToken)).GetBody<string>());
@@ -298,76 +244,49 @@ namespace ActiveMQ.Artemis.Client.IntegrationTests
             await using var connection = await CreateConnection();
             var address = Guid.NewGuid().ToString();
             var queue = Guid.NewGuid().ToString();
-            await using var consumer = await connection.CreateConsumerAsync(new ConsumerConfiguration
+
+            var topologyManager = await connection.CreateTopologyManagerAsync();
+            await topologyManager.CreateAddressAsync(address, RoutingType.Multicast);
+            await topologyManager.CreateQueueAsync(new QueueConfiguration
             {
                 Address = address,
+                Name = queue,
                 RoutingType = RoutingType.Multicast,
-                Queue = queue,
-                Shared = false,
+                MaxConsumers = 1,
                 Durable = true
             });
 
-            await Assert.ThrowsAsync<CreateConsumerException>(async () => await connection.CreateConsumerAsync(new ConsumerConfiguration
-            {
-                Address = address,
-                RoutingType = RoutingType.Multicast,
-                Queue = queue,
-                Shared = false,
-                Durable = true
-            }));
-        }
+            await using var consumer = await connection.CreateConsumerAsync(address, queue);
 
-        [Fact]
-        public async Task Should_attach_to_preconfigured_anycast_queue()
-        {
-            await using var connection = await CreateConnection();
-            var address = "pre-configured-anycast-address";
-            var queue = "pre-configured-anycast-queue";
-
-            await using var consumer = await connection.CreateConsumerAsync(address,queue);
-
-            await using var producer = await connection.CreateProducerAsync(address, RoutingType.Anycast);
-            await producer.SendAsync(new Message("foo1"));
-            await producer.SendAsync(new Message("foo2"));
-
-            Assert.Equal("foo1", (await consumer.ReceiveAsync(CancellationToken)).GetBody<string>());
-            Assert.Equal("foo2", (await consumer.ReceiveAsync(CancellationToken)).GetBody<string>());
-        }
-        
-        [Fact]
-        public async Task Should_attach_to_preconfigured_multicast_queue()
-        {
-            await using var connection = await CreateConnection();
-            var address = "pre-configured-multicast-address";
-            var queue = "pre-configured-multicast-queue";
-
-            await using var consumer = await connection.CreateConsumerAsync(address,queue);
-
-            await using var producer = await connection.CreateProducerAsync(address, RoutingType.Multicast);
-            await producer.SendAsync(new Message("foo1"));
-            await producer.SendAsync(new Message("foo2"));
-
-            Assert.Equal("foo1", (await consumer.ReceiveAsync(CancellationToken)).GetBody<string>());
-            Assert.Equal("foo2", (await consumer.ReceiveAsync(CancellationToken)).GetBody<string>());
+            await Assert.ThrowsAsync<CreateConsumerException>(async () => await connection.CreateConsumerAsync(address, queue));
         }
 
         [Fact]
         public async Task Should_send_messages_to_anycast_or_multicast_queues_depending_on_producer_routing_type()
         {
             await using var connection = await CreateConnection();
-            var address = nameof(Should_send_messages_to_anycast_or_multicast_queues_depending_on_producer_routing_type);
-            var anycastQueue = $"{address}_anycast";
-            var multicastQueue = $"{address}_multicast";
-            await using var anycastConsumer = await connection.CreateConsumerAsync(new ConsumerConfiguration
+            var address = Guid.NewGuid().ToString();
+            var anycastQueue = Guid.NewGuid().ToString();
+            var multicastQueue = Guid.NewGuid().ToString();
+
+            var topologyManager = await connection.CreateTopologyManagerAsync();
+            await topologyManager.CreateAddressAsync(address, new[] { RoutingType.Anycast, RoutingType.Multicast });
+            await topologyManager.CreateQueueAsync(new QueueConfiguration
             {
                 Address = address,
-                Queue = anycastQueue,
+                Name = anycastQueue,
+                RoutingType = RoutingType.Anycast,
             });
-            await using var multicastConsumer = await connection.CreateConsumerAsync(new ConsumerConfiguration
+            await topologyManager.CreateQueueAsync(new QueueConfiguration
             {
                 Address = address,
-                Queue = multicastQueue,
+                Name = multicastQueue,
+                RoutingType = RoutingType.Multicast,
             });
+
+
+            await using var anycastConsumer = await connection.CreateConsumerAsync(address, anycastQueue);
+            await using var multicastConsumer = await connection.CreateConsumerAsync(address, multicastQueue);
 
             var anycastProducer = await connection.CreateProducerAsync(address, RoutingType.Anycast);
             var multicastProducer = await connection.CreateProducerAsync(address, RoutingType.Multicast);
@@ -376,7 +295,7 @@ namespace ActiveMQ.Artemis.Client.IntegrationTests
             anycastProducer.Send(new Message("anycast"));
             Assert.Equal("anycast", (await anycastConsumer.ReceiveAsync()).GetBody<string>());
             await Assert.ThrowsAsync<OperationCanceledException>(async () => await multicastConsumer.ReceiveAsync(new CancellationTokenSource(TimeSpan.FromMilliseconds(100)).Token));
-            
+
             multicastProducer.Send(new Message("multicast"));
             Assert.Equal("multicast", (await multicastConsumer.ReceiveAsync()).GetBody<string>());
             await Assert.ThrowsAsync<OperationCanceledException>(async () => await anycastConsumer.ReceiveAsync(new CancellationTokenSource(TimeSpan.FromMilliseconds(100)).Token));

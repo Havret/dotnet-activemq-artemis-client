@@ -10,31 +10,12 @@
 
     </address-settings>
     <addresses>
-      <address name="pre-configured-anycast-address">
+      <address name="test-address">
         <anycast>
-          <queue name="pre-configured-anycast-queue">
+          <queue name="test-queue">
             <durable>true</durable>
           </queue>
         </anycast>
-      </address>
-      <address name="pre-configured-multicast-address">
-        <multicast>
-          <queue name="pre-configured-multicast-queue">
-            <durable>true</durable>
-          </queue>
-        </multicast>
-      </address>
-      <address name="Should_send_messages_to_anycast_or_multicast_queues_depending_on_producer_routing_type">
-        <anycast>
-          <queue name="Should_send_messages_to_anycast_or_multicast_queues_depending_on_producer_routing_type_anycast">
-            <durable>true</durable>
-          </queue>
-        </anycast>
-        <multicast>
-          <queue name="Should_send_messages_to_anycast_or_multicast_queues_depending_on_producer_routing_type_multicast">
-            <durable>true</durable>
-          </queue>
-        </multicast>
       </address>
     </addresses>
   </core>
