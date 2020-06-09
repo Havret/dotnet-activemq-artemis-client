@@ -1,0 +1,24 @@
+name: Release to NuGet
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+      - name: Setup .NET Core
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: "3.1.100"
+      - name: Create NuGet Package
+        run: dotnet pack -c Release /p:Version=${{ github.event.release.tag_name }} /p:PackageReleaseNotes="See https://github.com/Havret/dotnet-activemq-artemis-client/releases/tag/${{ github.event.release.tag_name }}"
+      - name: Archive NuGet Package
+        uses: actions/upload-artifact@v1
+        with:
+          name: ActiveMQ.Artemis.Client
+          path: ./src/ActiveMQ.Artemis.Client/bin/Release/ActiveMQ.Artemis.Client.${{ github.event.release.tag_name }}.nupkg
+      - name: Publish NuGet Package
+        run: dotnet nuget push ./src/ActiveMQ.Artemis.Client/bin/Release/ActiveMQ.Artemis.Client.${{ github.event.release.tag_name }}.nupkg --api-key ${{ secrets.nuget_api_key }} --source https://api.nuget.org/v3/index.json --no-symbols true
