@@ -1,5 +1,7 @@
 # .NET Client for ActiveMQ Artemis
 
+![Build status](https://github.com/Havret/dotnet-activemq-artemis-client/workflows/Build/badge.svg)
+
 Unofficial [ActiveMQ Artemis](https://activemq.apache.org/components/artemis/) .NET Client for .NET Core and .NET Framework.
 
 Apache ActiveMQ Artemis is an open-source project to build a multi-protocol, embeddable, very high performance, clustered, asynchronous messaging system.
