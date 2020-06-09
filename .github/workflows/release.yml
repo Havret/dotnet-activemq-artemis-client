@@ -19,6 +19,6 @@ jobs:
         uses: actions/upload-artifact@v1
         with:
           name: ActiveMQ.Artemis.Client
-          path: ./src/ActiveMQ.Artemis.Client/bin/Release/ActiveMQ.Artemis.Client.${{ github.event.release.name }}.nupkg
+          path: ./src/ActiveMQ.Artemis.Client/bin/Release/Unofficial.ActiveMQ.Artemis.Client.${{ github.event.release.name }}.nupkg
       - name: Publish NuGet Package
-        run: dotnet nuget push ./src/ActiveMQ.Artemis.Client/bin/Release/ActiveMQ.Artemis.Client.${{ github.event.release.name }}.nupkg --api-key ${{ secrets.nuget_api_key }} --source https://api.nuget.org/v3/index.json --no-symbols true
+        run: dotnet nuget push ./src/ActiveMQ.Artemis.Client/bin/Release/Unofficial.ActiveMQ.Artemis.Client.${{ github.event.release.name }}.nupkg --api-key ${{ secrets.nuget_api_key }} --source https://api.nuget.org/v3/index.json --no-symbols true
