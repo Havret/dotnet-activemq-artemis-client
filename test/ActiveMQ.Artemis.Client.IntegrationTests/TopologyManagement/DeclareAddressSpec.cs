@@ -3,15 +3,14 @@ using System.Threading.Tasks;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace ActiveMQ.Artemis.Client.IntegrationTests
+namespace ActiveMQ.Artemis.Client.IntegrationTests.TopologyManagement
 {
     public class DeclareAddressSpec : ActiveMQNetIntegrationSpec
     {
         public DeclareAddressSpec(ITestOutputHelper output) : base(output)
         {
         }
-        
-        
+
         [Fact]
         public async Task Should_create_new_address_when_address_does_not_exist()
         {
