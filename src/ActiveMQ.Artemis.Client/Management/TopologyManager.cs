@@ -41,8 +41,32 @@ namespace ActiveMQ.Artemis.Client.Management
 
         public Task CreateAddressAsync(string name, IEnumerable<RoutingType> routingTypes, CancellationToken cancellationToken)
         {
-            var requestJson = RequestSerializer.CreateAddressToJson(name, routingTypes);
+            var requestJson = RequestSerializer.AddressInfoToJson(name, routingTypes);
             return SendAsync("createAddress", requestJson, cancellationToken);
+        }
+
+        public Task DeclareAddressAsync(string name, RoutingType routingType, CancellationToken cancellationToken)
+        {
+            return DeclareAddressAsync(name, new[] { routingType }, cancellationToken);
+        }
+
+        public async Task DeclareAddressAsync(string name, IEnumerable<RoutingType> routingTypes, CancellationToken cancellationToken = default)
+        {
+            var addresses = await GetAddressNamesAsync(cancellationToken);
+            if (addresses.Contains(name))
+            {
+                await UpdateAddressAsync(name, routingTypes, cancellationToken);
+            }
+            else
+            {
+                await CreateAddressAsync(name, routingTypes, cancellationToken);
+            }
+        }
+
+        private Task UpdateAddressAsync(string name, IEnumerable<RoutingType> routingTypes, CancellationToken cancellationToken)
+        {
+            var requestJson = RequestSerializer.AddressInfoToJson(name, routingTypes);
+            return SendAsync("updateAddress", requestJson, cancellationToken);
         }
 
         public async Task CreateQueueAsync(QueueConfiguration configuration, CancellationToken cancellationToken = default)

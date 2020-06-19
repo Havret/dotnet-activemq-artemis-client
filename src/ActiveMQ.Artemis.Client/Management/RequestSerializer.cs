@@ -9,7 +9,7 @@ namespace ActiveMQ.Artemis.Client.Management
 {
     internal static class RequestSerializer
     {
-        public static string CreateAddressToJson(string name, IEnumerable<RoutingType> routingTypes)
+        public static string AddressInfoToJson(string name, IEnumerable<RoutingType> routingTypes)
         {
             return JsonSerializer.Serialize(new[]
             {
