@@ -6,7 +6,7 @@ namespace PingPong
 {
     class Program
     {
-        static async Task Main(string[] args)
+        static async Task Main()
         {
             var endpoint = Endpoint.Create("localhost", 5672, "guest", "guest");
             await using var ping = await Ping.CreateAsync(endpoint);
