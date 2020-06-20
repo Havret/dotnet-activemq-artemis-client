@@ -20,7 +20,8 @@ namespace ActiveMQ.Artemis.Client.IntegrationTests.TopologyManagement
             var address = Guid.NewGuid().ToString();
             await topologyManager.DeclareAddressAsync(address, RoutingType.Multicast, CancellationToken);
 
-            await Assert.ThrowsAsync<InvalidOperationException>(async () => await topologyManager.CreateAddressAsync(address, RoutingType.Multicast, CancellationToken));
+            var addressNames = await topologyManager.GetAddressNamesAsync(CancellationToken);
+            Assert.Contains(address, addressNames);
         }
 
         [Fact]
