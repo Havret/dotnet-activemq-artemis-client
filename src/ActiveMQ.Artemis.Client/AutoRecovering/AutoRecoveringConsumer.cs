@@ -14,8 +14,8 @@ namespace ActiveMQ.Artemis.Client.AutoRecovering
         private readonly ConsumerConfiguration _configuration;
         private readonly AsyncManualResetEvent _manualResetEvent = new AsyncManualResetEvent(true);
         private bool _closed;
-        private Exception _failureCause;
-        private IConsumer _consumer;
+        private volatile Exception _failureCause;
+        private volatile IConsumer _consumer;
 
         public AutoRecoveringConsumer(ILoggerFactory loggerFactory, ConsumerConfiguration configuration)
         {

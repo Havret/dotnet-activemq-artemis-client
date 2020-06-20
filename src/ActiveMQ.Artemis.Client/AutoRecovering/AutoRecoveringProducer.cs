@@ -10,7 +10,7 @@ namespace ActiveMQ.Artemis.Client.AutoRecovering
     internal class AutoRecoveringProducer : AutoRecoveringProducerBase, IProducer
     {
         private readonly ProducerConfiguration _configuration;
-        private IProducer _producer;
+        private volatile IProducer _producer;
 
         public AutoRecoveringProducer(ILoggerFactory loggerFactory, ProducerConfiguration configuration) : base(loggerFactory)
         {
