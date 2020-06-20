@@ -11,6 +11,8 @@
     <RepositoryType>git</RepositoryType>
     <RepositoryUrl>https://github.com/Havret/dotnet-activemq-artemis-client</RepositoryUrl>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
     <Authors>Havret</Authors>
   </PropertyGroup>
 

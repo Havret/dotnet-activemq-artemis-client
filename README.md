@@ -1,6 +1,7 @@
 # .NET Client for ActiveMQ Artemis
 
 ![Build status](https://github.com/Havret/dotnet-activemq-artemis-client/workflows/Build/badge.svg)
+[![NuGet](https://img.shields.io/nuget/vpre/Unofficial.ActiveMQ.Artemis.Client.svg)](https://www.nuget.org/packages/Unofficial.ActiveMQ.Artemis.Client)
 
 Unofficial [ActiveMQ Artemis](https://activemq.apache.org/components/artemis/) .NET Client for .NET Core and .NET Framework.
 
@@ -31,7 +32,8 @@ The following table shows what features are currently supported.
 |NoLocal filter|✔|Allows your consumers to subscribe to messages sent by producers created by other connections.|
 |Consumer Credit|✔||
 |Auto-recovery|✔|3 built-in recovery policies `ConstantBackoff`, `LinearBackoff`, `ExponentialBackoff`, and the option to implement your own recovery policy via `IRecoveryPolicy` interface.|
-|Address Model|✔|Advanced routing strategies use FQQN, thus require queues to be pre-configured.|
+|Address Model|✔|Advanced routing strategies use FQQN, thus require queues to be pre-configured using `TopologyManager`.|
+|Topology Management|✔|`TopologyManager` supports: getting all address names, getting all queue names, address creation, queue creation, address declaration.|
 |Logging|✔|Uses [Microsoft.Extensions.Logging.Abstractions](https://www.nuget.org/packages/Microsoft.Extensions.Logging.Abstractions/).|
 |Queue Browser|❌||
 |Transactions|✔||
