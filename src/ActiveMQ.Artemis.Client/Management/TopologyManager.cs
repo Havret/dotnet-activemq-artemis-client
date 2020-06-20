@@ -52,14 +52,14 @@ namespace ActiveMQ.Artemis.Client.Management
 
         public async Task DeclareAddressAsync(string name, IEnumerable<RoutingType> routingTypes, CancellationToken cancellationToken = default)
         {
-            var addresses = await GetAddressNamesAsync(cancellationToken);
+            var addresses = await GetAddressNamesAsync(cancellationToken).ConfigureAwait(false);
             if (addresses.Contains(name))
             {
-                await UpdateAddressAsync(name, routingTypes, cancellationToken);
+                await UpdateAddressAsync(name, routingTypes, cancellationToken).ConfigureAwait(false);
             }
             else
             {
-                await CreateAddressAsync(name, routingTypes, cancellationToken);
+                await CreateAddressAsync(name, routingTypes, cancellationToken).ConfigureAwait(false);
             }
         }
 
