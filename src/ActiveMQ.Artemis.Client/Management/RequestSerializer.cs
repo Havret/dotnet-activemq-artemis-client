@@ -18,7 +18,7 @@ namespace ActiveMQ.Artemis.Client.Management
             });
         }
         
-        public static async ValueTask<string> CreateQueueToJson(QueueConfiguration configuration)
+        public static async ValueTask<string> QueueConfigurationToJson(QueueConfiguration configuration)
         {
             using var stream = new MemoryStream();
             await using (var writer = new Utf8JsonWriter(stream))
