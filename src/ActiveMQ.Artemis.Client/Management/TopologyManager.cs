@@ -71,8 +71,29 @@ namespace ActiveMQ.Artemis.Client.Management
 
         public async Task CreateQueueAsync(QueueConfiguration configuration, CancellationToken cancellationToken = default)
         {
-            var serialize = await RequestSerializer.CreateQueueToJson(configuration).ConfigureAwait(false);
-            await SendAsync("createQueue", serialize, cancellationToken).ConfigureAwait(false);
+            var serializedConfiguration = await RequestSerializer.QueueConfigurationToJson(configuration).ConfigureAwait(false);
+            await SendAsync("createQueue", serializedConfiguration, cancellationToken).ConfigureAwait(false);
+        }
+
+        public async Task DeclareQueueAsync(QueueConfiguration configuration, CancellationToken cancellationToken = default)
+        {
+            if (configuration == null) throw new ArgumentNullException(nameof(configuration));
+            
+            var queueNames = await GetQueueNamesAsync(cancellationToken).ConfigureAwait(false);
+            if (queueNames.Contains(configuration.Name))
+            {
+                await UpdateQueueAsync(configuration, cancellationToken).ConfigureAwait(false);
+            }
+            else
+            {
+                await CreateQueueAsync(configuration, cancellationToken).ConfigureAwait(false);
+            }
+        }
+
+        private async Task UpdateQueueAsync(QueueConfiguration configuration, CancellationToken cancellationToken)
+        {
+            var serializedConfiguration = await RequestSerializer.QueueConfigurationToJson(configuration).ConfigureAwait(false);
+            await SendAsync("updateQueue", serializedConfiguration, cancellationToken).ConfigureAwait(false);
         }
 
         public Task DeleteQueueAsync(string queueName, bool removeConsumers = false, bool autoDeleteAddress = false, CancellationToken cancellationToken = default)

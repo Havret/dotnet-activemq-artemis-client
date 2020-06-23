@@ -16,5 +16,6 @@ namespace ActiveMQ.Artemis.Client
         Task CreateQueueAsync(QueueConfiguration configuration, CancellationToken cancellationToken = default);
         Task DeleteQueueAsync(string queueName, bool removeConsumers = false, bool autoDeleteAddress = false, CancellationToken cancellationToken = default);
         Task DeleteAddressAsync(string addressName, bool force = false, CancellationToken cancellationToken = default);
+        Task DeclareQueueAsync(QueueConfiguration configuration, CancellationToken cancellationToken = default);
     }
 }
