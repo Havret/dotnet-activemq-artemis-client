@@ -81,6 +81,12 @@ namespace ActiveMQ.Artemis.Client.Management
             return SendAsync("destroyQueue", requestJson, cancellationToken);
         }
 
+        public Task DeleteAddressAsync(string addressName, bool force = false, CancellationToken cancellationToken = default)
+        {
+            var requestJson = JsonSerializer.Serialize(new object[] { addressName, force });
+            return SendAsync("deleteAddress", requestJson, cancellationToken);
+        }
+
         private async Task<string> SendAsync(string operation, string request, CancellationToken cancellationToken)
         {
             var message = new Message(request);
