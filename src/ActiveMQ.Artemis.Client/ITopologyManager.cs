@@ -14,6 +14,6 @@ namespace ActiveMQ.Artemis.Client
         Task DeclareAddressAsync(string name, RoutingType routingType, CancellationToken cancellationToken = default);
         Task DeclareAddressAsync(string name, IEnumerable<RoutingType> routingTypes, CancellationToken cancellationToken = default);
         Task CreateQueueAsync(QueueConfiguration configuration, CancellationToken cancellationToken = default);
-        Task DeleteQueue(string queueName, bool removeConsumers = false, bool autoDeleteAddress = false, CancellationToken cancellationToken = default);
+        Task DeleteQueueAsync(string queueName, bool removeConsumers = false, bool autoDeleteAddress = false, CancellationToken cancellationToken = default);
     }
 }
