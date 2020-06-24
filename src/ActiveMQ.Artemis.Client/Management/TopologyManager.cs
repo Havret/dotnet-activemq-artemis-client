@@ -75,7 +75,7 @@ namespace ActiveMQ.Artemis.Client.Management
             await SendAsync("createQueue", serialize, cancellationToken).ConfigureAwait(false);
         }
 
-        public Task DeleteQueue(string queueName, bool removeConsumers = false, bool autoDeleteAddress = false, CancellationToken cancellationToken = default)
+        public Task DeleteQueueAsync(string queueName, bool removeConsumers = false, bool autoDeleteAddress = false, CancellationToken cancellationToken = default)
         {
             var requestJson = JsonSerializer.Serialize(new object[] { queueName, removeConsumers, autoDeleteAddress });
             return SendAsync("destroyQueue", requestJson, cancellationToken);

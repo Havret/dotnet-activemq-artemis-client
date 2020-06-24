@@ -28,7 +28,7 @@ namespace ActiveMQ.Artemis.Client.IntegrationTests.TopologyManagement
                 AutoCreateAddress = true
             });
 
-            await topologyManager.DeleteQueue(queue, cancellationToken: CancellationToken);
+            await topologyManager.DeleteQueueAsync(queue, cancellationToken: CancellationToken);
 
             var queueNames = await topologyManager.GetQueueNamesAsync(CancellationToken);
             Assert.DoesNotContain(queue, queueNames);
@@ -42,7 +42,7 @@ namespace ActiveMQ.Artemis.Client.IntegrationTests.TopologyManagement
             
             var queue = Guid.NewGuid().ToString();
 
-            var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => topologyManager.DeleteQueue(queue, cancellationToken: CancellationToken));
+            var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => topologyManager.DeleteQueueAsync(queue, cancellationToken: CancellationToken));
             Assert.Contains($"AMQ229017: Queue {queue} does not exist", exception.Message);
         }
 
@@ -62,7 +62,7 @@ namespace ActiveMQ.Artemis.Client.IntegrationTests.TopologyManagement
                 AutoCreateAddress = true
             });
 
-            await topologyManager.DeleteQueue(queue, autoDeleteAddress: true, cancellationToken: CancellationToken);
+            await topologyManager.DeleteQueueAsync(queue, autoDeleteAddress: true, cancellationToken: CancellationToken);
 
             var queueNames = await topologyManager.GetQueueNamesAsync(CancellationToken);
             Assert.DoesNotContain(queue, queueNames);
@@ -87,7 +87,7 @@ namespace ActiveMQ.Artemis.Client.IntegrationTests.TopologyManagement
                 Name = queue,
             }, CancellationToken);
 
-            await topologyManager.DeleteQueue(queue, autoDeleteAddress: true, cancellationToken: CancellationToken);
+            await topologyManager.DeleteQueueAsync(queue, autoDeleteAddress: true, cancellationToken: CancellationToken);
 
             var queueNames = await topologyManager.GetQueueNamesAsync(CancellationToken);
             Assert.DoesNotContain(queue, queueNames);
@@ -115,7 +115,7 @@ namespace ActiveMQ.Artemis.Client.IntegrationTests.TopologyManagement
 
             var consumer = await connection.CreateConsumerAsync(address, queue, CancellationToken);
 
-            await topologyManager.DeleteQueue(queue, removeConsumers: true, cancellationToken: CancellationToken);
+            await topologyManager.DeleteQueueAsync(queue, removeConsumers: true, cancellationToken: CancellationToken);
 
             var queueNames = await topologyManager.GetQueueNamesAsync(CancellationToken);
             Assert.DoesNotContain(queue, queueNames);
