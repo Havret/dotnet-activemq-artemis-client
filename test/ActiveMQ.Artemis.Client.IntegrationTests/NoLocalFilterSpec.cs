@@ -15,7 +15,7 @@ namespace ActiveMQ.Artemis.Client.IntegrationTests
         [Fact]
         public async Task Should_accept_only_messages_sent_using_different_connection()
         {
-            var address = nameof(Should_accept_only_messages_sent_using_different_connection);
+            var address = Guid.NewGuid().ToString();
             await using var connection1 = await CreateConnection();
             await using var producer1 = await connection1.CreateProducerAsync(address, RoutingType.Multicast);
             await using var consumer = await connection1.CreateConsumerAsync(new ConsumerConfiguration

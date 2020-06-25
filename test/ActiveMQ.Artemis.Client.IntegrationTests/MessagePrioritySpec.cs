@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -13,7 +14,7 @@ namespace ActiveMQ.Artemis.Client.IntegrationTests
         [Fact]
         public async Task Should_receive_messages_ordered_via_priority()
         {
-            var address = nameof(Should_receive_messages_ordered_via_priority);
+            var address = Guid.NewGuid().ToString();
             await using var connection = await CreateConnection();
             await using var producer = await connection.CreateProducerAsync(address, RoutingType.Anycast);
 
@@ -35,7 +36,7 @@ namespace ActiveMQ.Artemis.Client.IntegrationTests
         [Fact]
         public async Task Messages_without_priority_should_be_delivered_with_priority_4()
         {
-            var address = nameof(Messages_without_priority_should_be_delivered_with_priority_4);
+            var address = Guid.NewGuid().ToString();
             await using var connection = await CreateConnection();
             await using var producer = await connection.CreateProducerAsync(address, RoutingType.Anycast);
 
@@ -57,7 +58,7 @@ namespace ActiveMQ.Artemis.Client.IntegrationTests
         [Fact]
         public async Task Should_take_message_priority_from_producer_configuration()
         {
-            var address = nameof(Should_take_message_priority_from_producer_configuration);
+            var address = Guid.NewGuid().ToString();
             await using var connection = await CreateConnection();
             await using var producer = await connection.CreateAnonymousProducerAsync(new AnonymousProducerConfiguration { MessagePriority = 9 });
             await using var consumer = await connection.CreateConsumerAsync(address, RoutingType.Anycast);

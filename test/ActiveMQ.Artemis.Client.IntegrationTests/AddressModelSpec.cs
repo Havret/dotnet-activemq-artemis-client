@@ -132,9 +132,9 @@ namespace ActiveMQ.Artemis.Client.IntegrationTests
             await queue2Consumer1.DisposeAsync();
             await queue2Consumer2.DisposeAsync();
 
-            await using var newQueue1Consumer1 = await connection1.CreateConsumerAsync(address, queue1);
-            await using var newQueue1Consumer2 = await connection1.CreateConsumerAsync(address, queue1);
-            await using var newQueue2Consumer1 = await connection1.CreateConsumerAsync(address, queue2);
+            await using var newQueue1Consumer1 = await connection2.CreateConsumerAsync(address, queue1);
+            await using var newQueue1Consumer2 = await connection2.CreateConsumerAsync(address, queue1);
+            await using var newQueue2Consumer1 = await connection2.CreateConsumerAsync(address, queue2);
             await using var newQueue2Consumer2 = await connection2.CreateConsumerAsync(address, queue2);
 
             await producer.SendAsync(new Message("foo3"));

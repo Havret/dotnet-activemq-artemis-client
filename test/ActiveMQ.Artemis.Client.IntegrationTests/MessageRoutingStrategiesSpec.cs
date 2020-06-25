@@ -1,3 +1,4 @@
+using System;
 using System.Threading.Tasks;
 using Xunit;
 using Xunit.Abstractions;
@@ -14,7 +15,7 @@ namespace ActiveMQ.Artemis.Client.IntegrationTests
         public async Task Should_send_and_consume_message_using_AnycastRouting()
         {
             await using var connection = await CreateConnection();
-            var address = nameof(Should_send_and_consume_message_using_AnycastRouting);
+            var address = Guid.NewGuid().ToString();
             await using var producer = await connection.CreateProducerAsync(address, RoutingType.Anycast);
             await using var consumer = await connection.CreateConsumerAsync(address, RoutingType.Anycast);
 
@@ -28,7 +29,7 @@ namespace ActiveMQ.Artemis.Client.IntegrationTests
         public async Task Should_send_and_consume_messages_using_MulticastRouting()
         {
             await using var connection = await CreateConnection();
-            var address = nameof(Should_send_and_consume_messages_using_MulticastRouting);
+            var address = Guid.NewGuid().ToString();
             await using var producer = await connection.CreateProducerAsync(address, RoutingType.Multicast);
             await using var consumer1 = await connection.CreateConsumerAsync(address, RoutingType.Multicast);
             await using var consumer2 = await connection.CreateConsumerAsync(address, RoutingType.Multicast);
