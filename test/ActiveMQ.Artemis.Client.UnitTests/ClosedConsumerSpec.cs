@@ -45,12 +45,9 @@ namespace ActiveMQ.Artemis.Client.UnitTests
         public async Task Throws_on_attempt_to_receive_message_when_connection_disposed()
         {
             using var host = CreateOpenedContainerHost();
-            var messageSource = host.CreateMessageSource("a1");
-
+            
             var connection = await CreateConnection(host.Endpoint);
             await using var consumer = await connection.CreateConsumerAsync("a1", RoutingType.Anycast);
-
-            messageSource.Enqueue(new Message("foo"));
 
             await connection.DisposeAsync();
 
