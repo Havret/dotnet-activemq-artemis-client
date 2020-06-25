@@ -44,6 +44,11 @@ To receive a message you have to create a message consumer:
 var consumer = await connection.CreateConsumerAsync("a1", RoutingType.Anycast);
 var message = await consumer.ReceiveAsync();
 ```
+
+## Documentation
+
+Detailed documentation is available on [the project website](https://havret.github.io/dotnet-activemq-artemis-client/).
+
 ## Features
 
 The following table shows what features are currently supported.
