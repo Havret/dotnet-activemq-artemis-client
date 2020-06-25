@@ -9,6 +9,41 @@ Apache ActiveMQ Artemis is an open-source project to build a multi-protocol, emb
 
 This lightweight .NET client library built on top of [AmqpNetLite](http://azure.github.io/amqpnetlite/) tries to fully leverage Apache ActiveMQ Artemis capabilities.
 
+## Quickstart
+
+Add ActiveMQ.Artemis.Client NuGet package to your project using dotnet CLI:
+
+```
+dotnet add package Unofficial.ActiveMQ.Artemis.Client
+```
+
+The API interfaces and classes are defined in the `ActiveMQ.Artemis.Client` namespace:
+
+```
+using ActiveMQ.Artemis.Client;
+```
+
+Before any message can be sent or received, a connection to the broker endpoint has to be opened. Create a connection using `ConnectionFactory` object.
+
+```
+var connectionFactory = new ConnectionFactory();
+var endpoint = Endpoint.Create("localhost", 5672, "guest", "guest");
+var connection = await connectionFactory.CreateAsync(endpoint);
+```
+
+In order to send a message you will need a message producer:
+
+```
+var producer = await connection.CreateProducerAsync("a1", RoutingType.Anycast);
+await producer.SendAsync(new Message("foo"));
+```
+
+To receive a message you have to create a message consumer:
+
+```
+var consumer = await connection.CreateConsumerAsync("a1", RoutingType.Anycast);
+var message = await consumer.ReceiveAsync();
+```
 ## Features
 
 The following table shows what features are currently supported.
