@@ -34,7 +34,7 @@ namespace ActiveMQ.Artemis.Client.IntegrationTests
         public async Task Should_deliver_message_with_scheduled_delay()
         {
             await using var connection = await CreateConnection();
-            var address = nameof(Should_deliver_message_with_scheduled_delay);
+            var address = Guid.NewGuid().ToString();
             await using var producer = await connection.CreateProducerAsync(address, RoutingType.Anycast);
             await using var consumer = await connection.CreateConsumerAsync(address, RoutingType.Anycast);
 
@@ -52,7 +52,7 @@ namespace ActiveMQ.Artemis.Client.IntegrationTests
         public async Task Should_prefer_ScheduledDeliveryTime_over_ScheduledDeliveryDelay_when_both_set()
         {
             await using var connection = await CreateConnection();
-            var address = nameof(Should_prefer_ScheduledDeliveryTime_over_ScheduledDeliveryDelay_when_both_set);
+            var address = Guid.NewGuid().ToString();
             await using var producer = await connection.CreateProducerAsync(address, RoutingType.Anycast);
             await using var consumer = await connection.CreateConsumerAsync(address, RoutingType.Anycast);
 
@@ -62,7 +62,7 @@ namespace ActiveMQ.Artemis.Client.IntegrationTests
                 ScheduledDeliveryDelay = TimeSpan.FromMilliseconds(400)
             });
             
-            await Assert.ThrowsAsync<OperationCanceledException>(async () => await consumer.ReceiveAsync(new CancellationTokenSource(TimeSpan.FromMilliseconds(600)).Token));
+            await Assert.ThrowsAsync<OperationCanceledException>(async () => await consumer.ReceiveAsync(new CancellationTokenSource(TimeSpan.FromMilliseconds(500)).Token));
 
             var msg = await consumer.ReceiveAsync();
             Assert.Equal("foo", msg.GetBody<string>());

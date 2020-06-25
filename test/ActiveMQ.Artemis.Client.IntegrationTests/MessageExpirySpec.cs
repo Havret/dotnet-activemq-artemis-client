@@ -15,7 +15,7 @@ namespace ActiveMQ.Artemis.Client.IntegrationTests
         public async Task Should_deliver_expired_message_to_expiry_queue()
         {
             await using var connection = await CreateConnection();
-            var address = nameof(Should_deliver_expired_message_to_expiry_queue);
+            var address = Guid.NewGuid().ToString();
             await using var producer = await connection.CreateProducerAsync(address, RoutingType.Anycast);
             await using var expiryQueueConsumer = await connection.CreateConsumerAsync("ExpiryQueue", RoutingType.Anycast);
 

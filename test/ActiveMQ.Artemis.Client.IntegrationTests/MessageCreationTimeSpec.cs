@@ -16,7 +16,7 @@ namespace ActiveMQ.Artemis.Client.IntegrationTests
         public async Task Should_be_set()
         {
             await using var connection = await CreateConnection();
-            var address = nameof(Should_be_set);
+            var address = Guid.NewGuid().ToString();
             await using var producer = await connection.CreateAnonymousProducerAsync();
             await using var consumer = await connection.CreateConsumerAsync(address, RoutingType.Anycast);
 
@@ -31,7 +31,7 @@ namespace ActiveMQ.Artemis.Client.IntegrationTests
         public async Task Should_not_be_set()
         {
             await using var connection = await CreateConnection();
-            var address = nameof(Should_not_be_set);
+            var address = Guid.NewGuid().ToString();
             await using var producer = await connection.CreateAnonymousProducerAsync(new AnonymousProducerConfiguration { SetMessageCreationTime = false });
             await using var consumer = await connection.CreateConsumerAsync(address, RoutingType.Anycast);
 

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Xunit;
@@ -15,7 +16,7 @@ namespace ActiveMQ.Artemis.Client.IntegrationTests
         [Fact]
         public async Task Should_deliver_messages_with_the_same_GroupId_to_the_same_consumer()
         {
-            var address = nameof(Should_deliver_messages_with_the_same_GroupId_to_the_same_consumer);
+            var address = Guid.NewGuid().ToString();
             await using var connection = await CreateConnection();
             await using var producer = await connection.CreateProducerAsync(address, RoutingType.Anycast);
 

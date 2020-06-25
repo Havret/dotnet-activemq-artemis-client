@@ -16,7 +16,7 @@ namespace ActiveMQ.Artemis.Client.IntegrationTests
         public async Task Should_create_Consumer_with_custom_credit()
         {
             await using var connection = await CreateConnection();
-            var address = nameof(Should_create_Consumer_with_custom_credit);
+            var address = Guid.NewGuid().ToString();
             await using var producer = await connection.CreateProducerAsync(address, RoutingType.Multicast);
             await using var consumer = await connection.CreateConsumerAsync(new ConsumerConfiguration
             {

@@ -17,7 +17,7 @@ namespace ActiveMQ.Artemis.Client.IntegrationTests
         public async Task Should_filter_messages_based_on_priority()
         {
             await using var connection = await CreateConnection();
-            var address = nameof(Should_filter_messages_based_on_priority);
+            var address = Guid.NewGuid().ToString();
             await using var producer = await connection.CreateProducerAsync(address, RoutingType.Anycast);
             await using var highPriorityConsumer = await connection.CreateConsumerAsync(new ConsumerConfiguration
             {
@@ -49,7 +49,7 @@ namespace ActiveMQ.Artemis.Client.IntegrationTests
         public async Task Should_filter_messages_based_on_message_expiration_time()
         {
             await using var connection = await CreateConnection();
-            var address = nameof(Should_filter_messages_based_on_message_expiration_time);
+            var address = Guid.NewGuid().ToString();
             await using var producer = await connection.CreateProducerAsync(address, RoutingType.Anycast);
 
             var messageExpiryTime = DateTimeOffset.UtcNow.AddMilliseconds(100_000).ToUnixTimeMilliseconds();
@@ -84,7 +84,7 @@ namespace ActiveMQ.Artemis.Client.IntegrationTests
         public async Task Should_filter_messages_based_on_message_durability()
         {
             await using var connection = await CreateConnection();
-            var address = nameof(Should_filter_messages_based_on_message_durability);
+            var address = Guid.NewGuid().ToString();
             await using var producer = await connection.CreateProducerAsync(address, RoutingType.Anycast);
 
             await using var durableMessageConsumer = await connection.CreateConsumerAsync(new ConsumerConfiguration
@@ -117,7 +117,7 @@ namespace ActiveMQ.Artemis.Client.IntegrationTests
         public async Task Should_filter_messages_based_on_message_creation_time()
         {
             await using var connection = await CreateConnection();
-            var address = nameof(Should_filter_messages_based_on_message_creation_time);
+            var address = Guid.NewGuid().ToString();
             await using var producer = await connection.CreateProducerAsync(address, RoutingType.Anycast);
 
             var dayAgo = DateTime.UtcNow.AddDays(-1).DropTicsPrecision();
@@ -153,7 +153,7 @@ namespace ActiveMQ.Artemis.Client.IntegrationTests
         public async Task Should_filter_messages_based_on_application_property()
         {
             await using var connection = await CreateConnection();
-            var address = nameof(Should_filter_messages_based_on_application_property);
+            var address = Guid.NewGuid().ToString();
             await using var producer = await connection.CreateProducerAsync(address, RoutingType.Anycast);
 
             await using var redMessageConsumer = await connection.CreateConsumerAsync(new ConsumerConfiguration
