@@ -5,8 +5,10 @@ using ActiveMQ.Artemis.Client.AutoRecovering.RecoveryPolicy;
 using ActiveMQ.Artemis.Client.Exceptions;
 using ActiveMQ.Artemis.Client.InternalUtilities;
 using ActiveMQ.Artemis.Client.UnitTests.Utils;
+using Amqp;
 using Amqp.Framing;
 using Amqp.Handler;
+using Amqp.Listener;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -132,7 +134,31 @@ namespace ActiveMQ.Artemis.Client.UnitTests.AutoRecovering
 
             await DisposeHostAndWaitUntilConnectionNotified(host, connection);
 
-            await Assert.ThrowsAsync<ConsumerClosedException>(async() => await receiveTask);
+            await Assert.ThrowsAsync<ConsumerClosedException>(async () => await receiveTask);
+        }
+
+        [Fact]
+        public async Task Throws_on_receive_when_resource_deleted()
+        {
+            var host = CreateOpenedContainerHost();
+            var linkProcessor = host.CreateTestLinkProcessor();
+
+            ListenerLink listenerLink = null;
+            linkProcessor.SetHandler(context =>
+            {
+                listenerLink = context.Link;
+                return false;
+            });
+
+            await using var connection = await CreateConnection(host.Endpoint);
+
+            var consumer = await connection.CreateConsumerAsync("a1", RoutingType.Anycast);
+
+            var receiveTask = consumer.ReceiveAsync(CancellationToken);
+
+            await Assert.ThrowsAsync<AmqpException>(() => listenerLink.CloseAsync(Timeout, new Error(ErrorCode.ResourceDeleted) { Description = "Queue was deleted: a1" }));
+
+            await Assert.ThrowsAsync<ConsumerClosedException>(async () => await receiveTask);
         }
 
         private async Task<(IConsumer consumer, MessageSource messageSource, TestContainerHost host, IConnection connection)> CreateReattachedConsumer()

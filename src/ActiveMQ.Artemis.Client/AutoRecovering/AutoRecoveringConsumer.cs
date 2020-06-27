@@ -3,6 +3,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using ActiveMQ.Artemis.Client.Exceptions;
 using ActiveMQ.Artemis.Client.Transactions;
+using Amqp;
 using Microsoft.Extensions.Logging;
 using Nito.AsyncEx;
 
@@ -33,7 +34,7 @@ namespace ActiveMQ.Artemis.Client.AutoRecovering
                 {
                     return await _consumer.ReceiveAsync(cancellationToken).ConfigureAwait(false);
                 }
-                catch (ConsumerClosedException)
+                catch (ConsumerClosedException exception) when (IsRecoverable(exception))
                 {
                     CheckState();
 
@@ -44,6 +45,15 @@ namespace ActiveMQ.Artemis.Client.AutoRecovering
                     await _manualResetEvent.WaitAsync(cancellationToken).ConfigureAwait(false);
                 }
             }
+        }
+
+        private static bool IsRecoverable(ConsumerClosedException exception)
+        {
+            return exception.ErrorCode switch
+            {
+                ErrorCode.ResourceDeleted => false,
+                _ => true
+            };
         }
 
         public ValueTask AcceptAsync(Message message, Transaction transaction, CancellationToken cancellationToken = default)
