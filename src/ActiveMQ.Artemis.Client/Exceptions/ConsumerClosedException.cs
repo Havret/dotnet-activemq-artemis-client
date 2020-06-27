@@ -15,5 +15,9 @@ namespace ActiveMQ.Artemis.Client.Exceptions
         public ConsumerClosedException() : base("The Consumer was closed.")
         {
         }
+
+        public ConsumerClosedException(string message, string errorCode) : base(message ?? "The Consumer was closed.", errorCode)
+        {
+        }
     }
 }

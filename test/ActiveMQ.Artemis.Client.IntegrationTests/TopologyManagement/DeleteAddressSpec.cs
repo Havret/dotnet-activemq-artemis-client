@@ -42,8 +42,7 @@ namespace ActiveMQ.Artemis.Client.IntegrationTests.TopologyManagement
         [Fact]
         public async Task Should_remove_all_queues_and_consumers_when_address_deleted_with_force_flag()
         {
-            // TODO: Should be changed to CreateConnection when https://github.com/Havret/dotnet-activemq-artemis-client/issues/185 fixed 
-            await using var connection = await CreateConnectionWithoutAutomaticRecovery();
+            await using var connection = await CreateConnection();
             await using var topologyManager = await connection.CreateTopologyManagerAsync();
 
             var address = Guid.NewGuid().ToString();

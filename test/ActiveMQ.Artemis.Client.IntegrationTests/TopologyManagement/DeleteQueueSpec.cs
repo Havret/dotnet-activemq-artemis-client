@@ -99,8 +99,7 @@ namespace ActiveMQ.Artemis.Client.IntegrationTests.TopologyManagement
         [Fact]
         public async Task Should_delete_queue_and_remove_consumers()
         {
-            // TODO: Should be changed to CreateConnection when https://github.com/Havret/dotnet-activemq-artemis-client/issues/185 fixed 
-            await using var connection = await CreateConnectionWithoutAutomaticRecovery();
+            await using var connection = await CreateConnection();
             await using var topologyManager = await connection.CreateTopologyManagerAsync();
 
             var address = Guid.NewGuid().ToString();

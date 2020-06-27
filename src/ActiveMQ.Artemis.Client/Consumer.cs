@@ -40,6 +40,7 @@ namespace ActiveMQ.Artemis.Client
                     Log.FailedToBufferMessage(_logger, message);
                 }
             });
+            _receiverLink.Closed += OnClosed;
         }
 
         public async ValueTask<Message> ReceiveAsync(CancellationToken cancellationToken = default)
@@ -50,6 +51,10 @@ namespace ActiveMQ.Artemis.Client
             {
                 Log.ReceivingMessage(_logger);
                 return await _reader.ReadAsync(cancellationToken).ConfigureAwait(false);
+            }
+            catch (ChannelClosedException e) when (e.InnerException is ConsumerClosedException)
+            {
+                throw e.InnerException;
             }
             catch (ChannelClosedException e)
             {
@@ -86,8 +91,19 @@ namespace ActiveMQ.Artemis.Client
             
             if (_receiverLink.IsDetaching() || _receiverLink.IsClosed)
             {
-                throw new ConsumerClosedException();
+                throw GetConsumerClosedException(_receiverLink.Error);
             }
+        }
+        
+        private void OnClosed(IAmqpObject sender, Error error)
+        {
+            var consumerClosedException = GetConsumerClosedException(error);
+            _writer.TryComplete(consumerClosedException);
+        }
+
+        private static ConsumerClosedException GetConsumerClosedException(Error error)
+        {
+            return new ConsumerClosedException(error?.Description, error?.Condition);
         }
 
         public async ValueTask DisposeAsync()
@@ -100,6 +116,7 @@ namespace ActiveMQ.Artemis.Client
 
             if (!_receiverLink.IsClosed)
             {
+                _receiverLink.Closed -= OnClosed;
                 await _receiverLink.CloseAsync().ConfigureAwait(false);
             }
 
