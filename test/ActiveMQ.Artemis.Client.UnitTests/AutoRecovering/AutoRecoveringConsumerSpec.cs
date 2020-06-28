@@ -38,18 +38,18 @@ namespace ActiveMQ.Artemis.Client.UnitTests.AutoRecovering
         [Fact]
         public async Task Should_be_able_to_receive_message_when_connection_restored_after_receive_called()
         {
-            var endpoint = GetUniqueEndpoint();
-            var host1 = CreateOpenedContainerHost(endpoint);
+            var host1 = CreateOpenedContainerHost();
+            var host2 = CreateContainerHost();
 
-            var connection = await CreateConnection(endpoint);
+            var connection = await CreateConnection(new[] { host1.Endpoint, host2.Endpoint });
             var consumer = await connection.CreateConsumerAsync("a1", RoutingType.Anycast);
             
             var cts = new CancellationTokenSource(Timeout);
             var receiveTask = consumer.ReceiveAsync(cts.Token);
 
+            host2.Open();
             host1.Dispose();
 
-            var host2 = CreateOpenedContainerHost(endpoint);
             var messageSource = host2.CreateMessageSource("a1");
             messageSource.Enqueue(new Message("foo"));
 
