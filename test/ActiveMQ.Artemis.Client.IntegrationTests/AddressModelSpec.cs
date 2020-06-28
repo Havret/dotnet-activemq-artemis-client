@@ -132,6 +132,9 @@ namespace ActiveMQ.Artemis.Client.IntegrationTests
             await queue2Consumer1.DisposeAsync();
             await queue2Consumer2.DisposeAsync();
 
+            // give broker time to clean up the resources
+            await Task.Delay(100);
+
             await using var newQueue1Consumer1 = await connection2.CreateConsumerAsync(address, queue1);
             await using var newQueue1Consumer2 = await connection2.CreateConsumerAsync(address, queue1);
             await using var newQueue2Consumer1 = await connection2.CreateConsumerAsync(address, queue2);
