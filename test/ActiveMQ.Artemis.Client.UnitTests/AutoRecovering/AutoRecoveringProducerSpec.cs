@@ -146,6 +146,70 @@ namespace ActiveMQ.Artemis.Client.UnitTests.AutoRecovering
             await DisposeUtil.DisposeAll(connection, host2);
         }
 
+        [Fact]
+        public async Task Should_recreate_producers_on_connection_recovery()
+        {
+            var endpoint = GetUniqueEndpoint();
+            var producersAttached = new CountdownEvent(2);
+            var testHandler = new TestHandler(@event =>
+            {
+                switch (@event.Id)
+                {
+                    case EventId.LinkRemoteOpen when @event.Context is Attach attach && attach.Role:
+                        producersAttached.Signal();
+                        break;
+                }
+            });
+
+            var host1 = CreateOpenedContainerHost(endpoint, testHandler);
+
+            var connection = await CreateConnection(endpoint);
+            await connection.CreateProducerAsync("a1", RoutingType.Anycast);
+            await connection.CreateProducerAsync("a2", RoutingType.Anycast);
+
+            Assert.True(producersAttached.Wait(Timeout));
+            producersAttached.Reset();
+
+            host1.Dispose();
+
+            var host2 = CreateOpenedContainerHost(endpoint, testHandler);
+
+            Assert.True(producersAttached.Wait(Timeout));
+
+            await DisposeUtil.DisposeAll(connection, host2);
+        }
+
+        [Fact]
+        public async Task Should_not_recreate_disposed_producers()
+        {
+            var endpoint = GetUniqueEndpoint();
+            var producerAttached = new ManualResetEvent(false);
+            var testHandler = new TestHandler(@event =>
+            {
+                switch (@event.Id)
+                {
+                    case EventId.LinkRemoteOpen when @event.Context is Attach attach && attach.Role:
+                        producerAttached.Set();
+                        break;
+                }
+            });
+
+            var host1 = CreateOpenedContainerHost(endpoint, testHandler);
+
+            var connection = await CreateConnection(endpoint);
+            var producer = await connection.CreateProducerAsync("a1");
+
+            Assert.True(producerAttached.WaitOne(Timeout));
+            await producer.DisposeAsync();
+
+            producerAttached.Reset();
+            host1.Dispose();
+
+            using var host2 = CreateOpenedContainerHost(endpoint, testHandler);
+
+            Assert.False(producerAttached.WaitOne(ShortTimeout));
+        }
+
         private async Task<(IProducer producer, MessageProcessor messageProcessor, TestContainerHost host, IConnection connection)> CreateReattachedProducer()
         {
             var endpoint = GetUniqueEndpoint();

@@ -223,6 +223,77 @@ namespace ActiveMQ.Artemis.Client.UnitTests.AutoRecovering
             Assert.Null(listenerLink3);
         }
 
+        [Fact]
+        public async Task Should_recreate_consumers_on_connection_recovery()
+        {
+            var endpoint = GetUniqueEndpoint();
+            var consumersAttached = new CountdownEvent(2);
+            var testHandler = new TestHandler(@event =>
+            {
+                switch (@event.Id)
+                {
+                    case EventId.LinkRemoteOpen when @event.Context is Attach attach && !attach.Role:
+                        consumersAttached.Signal();
+                        break;
+                }
+            });
+
+            var host1 = CreateOpenedContainerHost(endpoint, testHandler);
+
+            var connection = await CreateConnection(endpoint);
+            await connection.CreateConsumerAsync("a1", RoutingType.Anycast);
+            await connection.CreateConsumerAsync("a1", RoutingType.Anycast);
+
+            Assert.True(consumersAttached.Wait(Timeout));
+            consumersAttached.Reset();
+
+            host1.Dispose();
+
+            var host2 = CreateOpenedContainerHost(endpoint, testHandler);
+
+            Assert.True(consumersAttached.Wait(Timeout));
+
+            await DisposeUtil.DisposeAll(connection, host2);
+        }
+
+        [Fact]
+        public async Task Should_not_recreate_disposed_consumers()
+        {
+            var endpoint = GetUniqueEndpoint();
+            var consumerAttached = new ManualResetEvent(false);
+            var connectionRecovered = new ManualResetEvent(false);
+            var testHandler = new TestHandler(@event =>
+            {
+                switch (@event.Id)
+                {
+                    case EventId.LinkRemoteOpen when @event.Context is Attach attach && !attach.Role:
+                        consumerAttached.Set();
+                        break;
+                }
+            });
+
+            var host1 = CreateOpenedContainerHost(endpoint, testHandler);
+
+            var connection = await CreateConnection(endpoint);
+            connection.ConnectionRecovered += (sender, args) => connectionRecovered.Set();
+            var consumer = await connection.CreateConsumerAsync("a1", RoutingType.Anycast);
+
+            Assert.True(consumerAttached.WaitOne(Timeout));
+            await consumer.DisposeAsync();
+
+            consumerAttached.Reset();
+
+            await DisposeHostAndWaitUntilConnectionNotified(host1, connection);
+
+            var host2 = CreateOpenedContainerHost(endpoint, testHandler);
+
+            Assert.True(connectionRecovered.WaitOne(Timeout));
+
+            Assert.False(consumerAttached.WaitOne(ShortTimeout));
+
+            await DisposeUtil.DisposeAll(connection, host2);
+        }
+
         private async Task<(IConsumer consumer, MessageSource messageSource, TestContainerHost host, IConnection connection)> CreateReattachedConsumer()
         {
             var endpoint = GetUniqueEndpoint();
