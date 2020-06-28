@@ -34,6 +34,7 @@ namespace ActiveMQ.Artemis.Client.Management
                 writer.WriteNumber("group-buckets", configuration.GroupBuckets);
                 writer.WriteBoolean("purge-on-no-consumers", configuration.PurgeOnNoConsumers);
                 writer.WriteBoolean("auto-create-address", configuration.AutoCreateAddress);
+                writer.WriteString("filter-string", configuration.FilterExpression ?? string.Empty);
                 writer.WriteEndObject();
             }
 

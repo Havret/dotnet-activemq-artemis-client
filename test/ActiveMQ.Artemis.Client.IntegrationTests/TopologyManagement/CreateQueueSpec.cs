@@ -89,5 +89,31 @@ namespace ActiveMQ.Artemis.Client.IntegrationTests.TopologyManagement
 
             await Assert.ThrowsAsync<InvalidOperationException>(async () => await topologyManager.CreateQueueAsync(queueConfiguration, CancellationToken));
         }
+
+        [Fact]
+        public async Task Should_create_queue_with_filter_expression()
+        {
+            await using var connection = await CreateConnection();
+            await using var topologyManager = await connection.CreateTopologyManagerAsync();
+
+            var address = Guid.NewGuid().ToString();
+            var queue = Guid.NewGuid().ToString();
+            await topologyManager.CreateQueueAsync(new QueueConfiguration
+            {
+                Address = address,
+                RoutingType = RoutingType.Multicast,
+                Name = queue,
+                AutoCreateAddress = true,
+                FilterExpression = "AMQPriority = 9"
+            }, CancellationToken);
+
+            var consumer = await connection.CreateConsumerAsync(address, queue, CancellationToken);
+            var producer = await connection.CreateProducerAsync(address, RoutingType.Multicast);
+
+            await producer.SendAsync(new Message("foo1") { Priority = 4 });
+            await producer.SendAsync(new Message("foo2") { Priority = 9 });
+            
+            Assert.Equal("foo2", (await consumer.ReceiveAsync(CancellationToken)).GetBody<string>());
+        }
     }
 }

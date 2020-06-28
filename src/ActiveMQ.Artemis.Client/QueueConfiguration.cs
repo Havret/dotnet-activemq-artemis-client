@@ -12,5 +12,6 @@
         public int GroupBuckets { get; set; } = -1;
         public bool PurgeOnNoConsumers { get; set; }
         public bool AutoCreateAddress { get; set; }
+        public string FilterExpression { get; set; }
     }
 }
