@@ -82,17 +82,29 @@ namespace ActiveMQ.Artemis.Client.UnitTests
             return host;
         }
 
-        protected static Task DisposeHostAndWaitUntilConnectionNotified(TestContainerHost host, IConnection connection)
+        protected static async Task DisposeHostAndWaitUntilConnectionNotified(TestContainerHost host, IConnection connection)
         {
             var tcs = new TaskCompletionSource<bool>();
-            var cts = new CancellationTokenSource(Timeout);
+            using var cts = new CancellationTokenSource(Timeout);
             cts.Token.Register(() => tcs.TrySetCanceled());
             connection.ConnectionClosed += (sender, args) =>
             {
                 tcs.TrySetResult(true);
             };
             host.Dispose();
-            return tcs.Task;
+            await tcs.Task;
+        }
+
+        protected static async Task WaitUntilConnectionRecovered(IConnection connection)
+        {
+            var tcs = new TaskCompletionSource<bool>();
+            using var cts = new CancellationTokenSource(Timeout);
+            cts.Token.Register(() => tcs.TrySetCanceled());
+            connection.ConnectionRecovered += (sender, args) =>
+            {
+                tcs.TrySetResult(true);
+            };
+            await tcs.Task;
         }
 
         protected static TimeSpan Timeout

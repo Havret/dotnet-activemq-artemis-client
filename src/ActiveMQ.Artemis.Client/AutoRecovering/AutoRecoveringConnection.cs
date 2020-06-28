@@ -95,8 +95,16 @@ namespace ActiveMQ.Artemis.Client.AutoRecovering
 
                             foreach (var recoverable in _recoverables.Values)
                             {
-                                await recoverable.RecoverAsync(_connection, _recoveryCancellationToken.Token).ConfigureAwait(false);
-                                recoverable.Resume();
+                                try
+                                {
+                                    await recoverable.RecoverAsync(_connection, _recoveryCancellationToken.Token).ConfigureAwait(false);
+                                    recoverable.Resume();
+                                }
+                                catch (Exception e)
+                                {
+                                    _recoverables.Remove(recoverable);
+                                    await recoverable.TerminateAsync(e).ConfigureAwait(false);
+                                }
                             }
 
                             _connection.ConnectionClosed += OnConnectionClosed;
