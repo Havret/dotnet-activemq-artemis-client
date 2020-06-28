@@ -155,8 +155,15 @@ namespace ActiveMQ.Artemis.Client.UnitTests.AutoRecovering
             var consumer = await connection.CreateConsumerAsync("a1", RoutingType.Anycast);
 
             var receiveTask = consumer.ReceiveAsync(CancellationToken);
-
-            await Assert.ThrowsAsync<AmqpException>(() => listenerLink.CloseAsync(Timeout, new Error(ErrorCode.ResourceDeleted) { Description = "Queue was deleted: a1" }));
+            
+            try
+            {
+                await listenerLink.CloseAsync(Timeout, new Error(ErrorCode.ResourceDeleted) { Description = "Queue was deleted: a1" });
+            }
+            catch (Exception)
+            {
+                // ignored
+            }
 
             await Assert.ThrowsAsync<ConsumerClosedException>(async () => await receiveTask);
         }
@@ -181,7 +188,14 @@ namespace ActiveMQ.Artemis.Client.UnitTests.AutoRecovering
 
             var receiveTask = consumer.ReceiveAsync(CancellationToken);
 
-            await Assert.ThrowsAsync<AmqpException>(() => listenerLink1.CloseAsync(Timeout, new Error(ErrorCode.ResourceDeleted) { Description = "Queue was deleted: a1" }));
+            try
+            {
+                await listenerLink1.CloseAsync(Timeout, new Error(ErrorCode.ResourceDeleted) { Description = "Queue was deleted: a1" });
+            }
+            catch (Exception)
+            {
+                // ignored
+            }
 
             await Assert.ThrowsAsync<ConsumerClosedException>(async () => await receiveTask);
 
