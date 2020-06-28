@@ -161,6 +161,68 @@ namespace ActiveMQ.Artemis.Client.UnitTests.AutoRecovering
             await Assert.ThrowsAsync<ConsumerClosedException>(async () => await receiveTask);
         }
 
+        [Fact]
+        public async Task Should_not_recreate_consumer_when_resource_deleted()
+        {
+            var host1 = CreateOpenedContainerHost();
+            var host2 = CreateContainerHost();
+            var host3 = CreateContainerHost();
+            
+            ListenerLink listenerLink1 = null;
+            host1.CreateTestLinkProcessor().SetHandler(context =>
+            {
+                listenerLink1 = context.Link;
+                return false;
+            });
+
+            await using var connection = await CreateConnection(new[] { host1.Endpoint, host2.Endpoint, host3.Endpoint });
+
+            var consumer = await connection.CreateConsumerAsync("a1", RoutingType.Anycast);
+
+            var receiveTask = consumer.ReceiveAsync(CancellationToken);
+
+            await Assert.ThrowsAsync<AmqpException>(() => listenerLink1.CloseAsync(Timeout, new Error(ErrorCode.ResourceDeleted) { Description = "Queue was deleted: a1" }));
+
+            await Assert.ThrowsAsync<ConsumerClosedException>(async () => await receiveTask);
+
+            await DisposeHostAndWaitUntilConnectionNotified(host1, connection);
+
+            var waitUntilConnectionRecoveredTask = WaitUntilConnectionRecovered(connection);
+
+            host2.CreateTestLinkProcessor().SetHandler(context =>
+            {
+                context.Complete(new Error(ErrorCode.NotFound) { Description = "Queue: 'a1' does not exist" });
+                return true;
+            });
+            host2.Open();
+
+            // wait until the connection recovered
+            await waitUntilConnectionRecoveredTask;
+            
+            // make sure that the consumer remains closed
+            await Assert.ThrowsAsync<ConsumerClosedException>(async () => await consumer.ReceiveAsync(CancellationToken));
+
+            // perform again auto-recovery cycle, to make sure that
+            // no further attempts to recover the consumer will be made
+            await DisposeHostAndWaitUntilConnectionNotified(host2, connection);
+            
+            waitUntilConnectionRecoveredTask = WaitUntilConnectionRecovered(connection);
+            
+            ListenerLink listenerLink3 = null;
+            host3.CreateTestLinkProcessor().SetHandler(context =>
+            {
+                listenerLink3 = context.Link;
+                return false;
+            });
+            host3.Open();
+            
+            // wait until the connection recovered
+            await waitUntilConnectionRecoveredTask;
+            
+            // make sure that no listener link was created on the final host
+            Assert.Null(listenerLink3);
+        }
+
         private async Task<(IConsumer consumer, MessageSource messageSource, TestContainerHost host, IConnection connection)> CreateReattachedConsumer()
         {
             var endpoint = GetUniqueEndpoint();
