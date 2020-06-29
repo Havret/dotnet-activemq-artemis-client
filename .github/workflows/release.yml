@@ -14,7 +14,7 @@ jobs:
         with:
           dotnet-version: "3.1.100"
       - name: Create NuGet Package
-        run: dotnet pack -c Release /p:Version=${{ github.event.release.name }} /p:PackageReleaseNotes="See https://github.com/Havret/dotnet-activemq-artemis-client/releases/tag/${{ github.event.release.tag_name }}" --commitsha ${{ github.sha }}
+        run: dotnet pack -c Release /p:Version=${{ github.event.release.name }} /p:PackageReleaseNotes="See https://github.com/Havret/dotnet-activemq-artemis-client/releases/tag/${{ github.event.release.tag_name }}"
       - name: Archive NuGet Package
         uses: actions/upload-artifact@v1
         with:
