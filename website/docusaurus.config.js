@@ -18,7 +18,17 @@ module.exports = {
           to: 'docs/getting-started',
           activeBasePath: 'docs',
           label: 'Docs',
-          position: 'left',
+          position: 'right',
+        },
+        {
+          to: 'https://github.com/Havret/dotnet-activemq-artemis-client',
+          label: 'GitHub',
+          position: 'right',
+        },
+        {
+          to: 'https://www.nuget.org/packages/Unofficial.ActiveMQ.Artemis.Client',
+          label: 'Download',
+          position: 'right',
         }
       ],
     },
