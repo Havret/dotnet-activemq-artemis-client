@@ -122,8 +122,8 @@ namespace ActiveMQ.Artemis.Client.Management
             }
             else
             {
-                var error = JsonSerializer.Deserialize<string[]>(payload);
-                throw new InvalidOperationException(error.First());
+                var error = string.IsNullOrWhiteSpace(payload) ? null : JsonSerializer.Deserialize<string[]>(payload).FirstOrDefault();
+                throw new InvalidOperationException(error);
             }
         }
 
