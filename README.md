@@ -9,6 +9,10 @@ Apache ActiveMQ Artemis is an open-source project to build a multi-protocol, emb
 
 This lightweight .NET client library built on top of [AmqpNetLite](http://azure.github.io/amqpnetlite/) tries to fully leverage Apache ActiveMQ Artemis capabilities.
 
+## Compatibility
+
+The library is tested against **ActiveMQ Artemis 2.13.0**. Most of the features should work with older versions of the broker, but **Topology Management** uses API surface that was introduced in **ActiveMQ Artemis 2.12.0** and will be fully operational after the release of the incoming **ActiveMQ Artemis 2.14.0** (see [known issues](#known-issues)).
+
 ## Quickstart
 
 Add ActiveMQ.Artemis.Client NuGet package to your project using dotnet CLI:
