@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace ActiveMQ.Artemis.Client.InternalUtilities
 {
-    public static class DisposeUtil
+    internal static class DisposeUtil
     {
         public static async ValueTask DisposeAll(params object[] disposables)
         {
