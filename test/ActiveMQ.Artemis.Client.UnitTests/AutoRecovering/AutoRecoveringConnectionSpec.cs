@@ -4,7 +4,6 @@ using System.Threading.Tasks;
 using ActiveMQ.Artemis.Client.AutoRecovering.RecoveryPolicy;
 using ActiveMQ.Artemis.Client.InternalUtilities;
 using ActiveMQ.Artemis.Client.UnitTests.Utils;
-using Amqp.Framing;
 using Amqp.Handler;
 using Xunit;
 using Xunit.Abstractions;
