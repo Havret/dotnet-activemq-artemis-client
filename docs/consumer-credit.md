@@ -11,7 +11,7 @@ A consumer can control the flow of messages from a broker by allocating *credit*
 **ActiveMQ Artemis Client** allows you to specify message credit via consumer configuration. By default, each new consumer is created with a message credit set to 200. This can be easily changed as follows:
 
 ```csharp
-await using var consumerWithCustomCredit = await connection.CreateConsumerAsync(new ConsumerConfiguration
+var consumer = await connection.CreateConsumerAsync(new ConsumerConfiguration
 {
     Address = address,
     RoutingType = RoutingType.Multicast,
