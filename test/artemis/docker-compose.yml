@@ -2,7 +2,7 @@ version: "3"
 services:
   activemq-artemis:
     container_name: activemq-artemis
-    image: vromero/activemq-artemis:2.13-latest
+    image: vromero/activemq-artemis:2.14-latest
     environment:
       - ARTEMIS_USERNAME=guest
       - ARTEMIS_PASSWORD=guest
