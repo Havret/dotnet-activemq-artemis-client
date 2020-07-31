@@ -46,16 +46,14 @@ namespace ActiveMQ.Artemis.Client.IntegrationTests.TopologyManagement
             {
                 Name = queue,
                 Address = address,
-                RoutingType = RoutingType.Multicast,
-                FilterExpression = "AMQPriority > 0" // TODO: Remove when Artemis 2.14.0 released
+                RoutingType = RoutingType.Multicast
             }, CancellationToken);
             await topologyManager.DeclareQueueAsync(new QueueConfiguration
             {
                 Name = queue,
                 Address = address,
                 RoutingType = RoutingType.Multicast,
-                MaxConsumers = 1,
-                FilterExpression = "AMQPriority > 0" // TODO: Remove when Artemis 2.14.0 released
+                MaxConsumers = 1
             }, CancellationToken);
 
             // make sure that queue was updated and we can attach only 1 consumer 
