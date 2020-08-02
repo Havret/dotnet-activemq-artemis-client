@@ -11,7 +11,7 @@ This lightweight .NET client library built on top of [AmqpNetLite](http://azure.
 
 ## Compatibility
 
-The library is tested against **ActiveMQ Artemis 2.13.0**. Most of the features should work with older versions of the broker, but **Topology Management** uses API surface that was introduced in **ActiveMQ Artemis 2.12.0** and will be fully operational after the release of the incoming **ActiveMQ Artemis 2.14.0** (see [known issues](#known-issues)).
+The library is tested against **ActiveMQ Artemis 2.14.0**. Most of the features should work with older versions of the broker, but **Topology Management** uses API surface that was introduced in **ActiveMQ Artemis 2.14.0**.
 
 ## Quickstart
 
