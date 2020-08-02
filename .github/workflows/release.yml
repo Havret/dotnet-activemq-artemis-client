@@ -35,6 +35,7 @@ jobs:
           upload_url: ${{ github.event.release.upload_url }}
           asset_path: ./src/ActiveMQ.Artemis.Client/bin/Release/Unofficial.ActiveMQ.Artemis.Client.${{ github.event.release.name }}.nupkg
           asset_name: Unofficial.ActiveMQ.Artemis.Client.${{ github.event.release.name }}.nupkg
+          asset_content_type: application/zip
       - name: NuGet Package With Symbols
         uses: actions/upload-release-asset@v1
         env:
@@ -43,3 +44,4 @@ jobs:
           upload_url: ${{ github.event.release.upload_url }}
           asset_path: ./src/ActiveMQ.Artemis.Client/bin/Release/Unofficial.ActiveMQ.Artemis.Client.${{ github.event.release.name }}.snupkg
           asset_name: Unofficial.ActiveMQ.Artemis.Client.${{ github.event.release.name }}.snupkg
+          asset_content_type: application/zip
