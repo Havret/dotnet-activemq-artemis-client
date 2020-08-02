@@ -86,3 +86,7 @@ The following table shows what features are currently supported.
 |Queue Browser|❌||
 |Transactions|✔||
 |Consumer Priority|❌||
+
+## License
+
+This project uses [MIT licence](https://github.com/Havret/dotnet-activemq-artemis-client/blob/master/LICENSE). Long story short - you are more than welcome to use it anywhere you like, completely free of charge and without oppressive obligations.
