@@ -53,10 +53,6 @@ var message = await consumer.ReceiveAsync();
 
 Detailed documentation is available on [the project website](https://havret.github.io/dotnet-activemq-artemis-client/).
 
-## Known issues
-
-- Because of a bug in ActiveMQ Artemis 2.13.0 queue declaration doesn't work properly for queues created without FilterExpression. The queue actually gets updated (if necessary), but the exception is being thrown from `ITopologyManager.DeclareQueueAsync`.
-
 ## Features
 
 The following table shows what features are currently supported.
