@@ -106,6 +106,15 @@ namespace ActiveMQ.Artemis.Client
             Properties.ObjectCorrelationId = correlationId;
         }
 
+        /// <summary>
+        /// The subject of the message. A common field for summary information about the message content and purpose.
+        /// </summary>
+        public string Subject
+        {
+            get => Properties.Subject;
+            set => Properties.Subject = value;
+        }
+
         public DurabilityMode? DurabilityMode
         {
             get => Header.Durable switch
