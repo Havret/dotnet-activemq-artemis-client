@@ -115,6 +115,15 @@ namespace ActiveMQ.Artemis.Client
             set => Properties.Subject = value;
         }
 
+        /// <summary>
+        /// The address of the node to send replies to.
+        /// </summary>
+        public string ReplyTo
+        {
+            get => Properties.ReplyTo;
+            set => Properties.ReplyTo = value;
+        }
+
         public DurabilityMode? DurabilityMode
         {
             get => Header.Durable switch
