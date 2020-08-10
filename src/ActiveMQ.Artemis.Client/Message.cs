@@ -124,6 +124,16 @@ namespace ActiveMQ.Artemis.Client
             set => Properties.ReplyTo = value;
         }
 
+        /// <summary>
+        /// The identity of the user responsible for producing the message.
+        /// The client sets this value, and it MAY be authenticated by intermediaries.
+        /// </summary>
+        public byte[] UserId
+        {
+            get => Properties.UserId;
+            set => Properties.UserId = value;
+        }
+
         public DurabilityMode? DurabilityMode
         {
             get => Header.Durable switch
