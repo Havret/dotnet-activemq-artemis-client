@@ -134,6 +134,13 @@ namespace ActiveMQ.Artemis.Client
             set => Properties.UserId = value;
         }
 
+        /// <summary>
+        /// The number of unsuccessful previous attempts to deliver this message.
+        /// If this value is non-zero it can be taken as an indication that the delivery might be a duplicate.
+        /// On first delivery, the value is zero.
+        /// </summary>
+        public uint DeliveryCount => Header.DeliveryCount;
+
         public DurabilityMode? DurabilityMode
         {
             get => Header.Durable switch
