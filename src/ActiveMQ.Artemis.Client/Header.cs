@@ -44,5 +44,7 @@
                     _innerHeader.ResetField(2);
             }            
         }
+        
+        public uint DeliveryCount => _innerHeader.HasField(4) ? _innerHeader.DeliveryCount : default;
     }
 }
