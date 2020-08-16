@@ -150,6 +150,12 @@ namespace ActiveMQ.Artemis.Client
         /// </summary>
         public uint DeliveryCount => Header.DeliveryCount;
 
+        /// <summary>
+        /// If this value is true, then this message has not been acquired by any other link.
+        /// If this value is false, then this message MAY have previously been acquired by another link or links.
+        /// </summary>
+        public bool FirstAcquirer => Header.FirstAcquirer;
+
         public DurabilityMode? DurabilityMode
         {
             get => Header.Durable switch
