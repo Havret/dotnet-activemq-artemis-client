@@ -190,15 +190,15 @@ namespace ActiveMQ.Artemis.Client.IntegrationTests
             Assert.Equal("foo2", (await queue1Consumer2.ReceiveAsync(CancellationToken)).GetBody<string>());
             Assert.Equal("foo1", (await queue2Consumer1.ReceiveAsync(CancellationToken)).GetBody<string>());
             Assert.Equal("foo2", (await queue2Consumer2.ReceiveAsync(CancellationToken)).GetBody<string>());
+            
+            await using var newQueue1Consumer = await connection1.CreateConsumerAsync(address, queue1);
+            await using var newQueue2Consumer = await connection2.CreateConsumerAsync(address, queue2);
 
             // make sure that the queues are durable
             await queue1Consumer1.DisposeAsync();
             await queue1Consumer2.DisposeAsync();
             await queue2Consumer1.DisposeAsync();
             await queue2Consumer2.DisposeAsync();
-
-            await using var newQueue1Consumer = await connection1.CreateConsumerAsync(address, queue1);
-            await using var newQueue2Consumer = await connection2.CreateConsumerAsync(address, queue2);
 
             Assert.Equal("foo1", (await newQueue1Consumer.ReceiveAsync(CancellationToken)).GetBody<string>());
             Assert.Equal("foo2", (await newQueue1Consumer.ReceiveAsync(CancellationToken)).GetBody<string>());
