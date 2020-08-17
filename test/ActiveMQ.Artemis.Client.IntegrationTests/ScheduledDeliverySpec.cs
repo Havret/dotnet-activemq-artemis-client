@@ -42,10 +42,10 @@ namespace ActiveMQ.Artemis.Client.IntegrationTests
             {
                 ScheduledDeliveryDelay = TimeSpan.FromMilliseconds(400)
             });
-            await Assert.ThrowsAsync<OperationCanceledException>(async () => await consumer.ReceiveAsync(new CancellationTokenSource(TimeSpan.FromMilliseconds(200)).Token));
 
             var msg = await consumer.ReceiveAsync();
-            Assert.Equal("foo", msg.GetBody<string>());
+            var delay = DateTime.UtcNow - msg.CreationTime;
+            Assert.True(delay > msg.ScheduledDeliveryDelay);
         }
 
         [Fact]
