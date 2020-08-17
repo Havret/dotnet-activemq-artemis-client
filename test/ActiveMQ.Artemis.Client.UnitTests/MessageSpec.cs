@@ -81,6 +81,95 @@ namespace ActiveMQ.Artemis.Client.UnitTests
                 },
             }, resetMsg.ApplicationProperties["MapKey"]);
         }
+        
+        [Fact]
+        public async Task Should_return_false_when_application_property_not_specified_for_given_key()
+        {
+            using var host = CreateOpenedContainerHost();
+            var messageProcessor = host.CreateMessageProcessor("a1");
+            await using var connection = await CreateConnection(host.Endpoint);
+            await using var producer = await connection.CreateProducerAsync("a1", RoutingType.Anycast);
+            
+            var message = new Message("foo");
+            await producer.SendAsync(message);
+
+            var received = messageProcessor.Dequeue(ShortTimeout);
+
+            Assert.False(received.ApplicationProperties.ContainsKey("key"));
+        }
+        
+        [Fact]
+        public async Task Should_return_true_when_application_property_specified_for_given_key()
+        {
+            using var host = CreateOpenedContainerHost();
+            var messageProcessor = host.CreateMessageProcessor("a1");
+            await using var connection = await CreateConnection(host.Endpoint);
+            await using var producer = await connection.CreateProducerAsync("a1", RoutingType.Anycast);
+
+            var message = new Message("foo")
+            {
+                ApplicationProperties = { ["key"] = "value" }
+            };
+            await producer.SendAsync(message);
+
+            var received = messageProcessor.Dequeue(ShortTimeout);
+
+            Assert.True(received.ApplicationProperties.ContainsKey("key"));
+        }
+
+        [Fact]
+        public async Task Should_not_get_value_when_application_property_not_specified_for_given_key()
+        {
+            using var host = CreateOpenedContainerHost();
+            var messageProcessor = host.CreateMessageProcessor("a1");
+            await using var connection = await CreateConnection(host.Endpoint);
+            await using var producer = await connection.CreateProducerAsync("a1", RoutingType.Anycast);
+            
+            var message = new Message("foo");
+            await producer.SendAsync(message);
+
+            var received = messageProcessor.Dequeue(ShortTimeout);
+            Assert.False(received.ApplicationProperties.TryGetValue("key", out string value));
+            Assert.Null(value);
+        }
+        
+        [Fact]
+        public async Task Should_not_get_value_when_application_property_type_does_not_match_for_given_key()
+        {
+            using var host = CreateOpenedContainerHost();
+            var messageProcessor = host.CreateMessageProcessor("a1");
+            await using var connection = await CreateConnection(host.Endpoint);
+            await using var producer = await connection.CreateProducerAsync("a1", RoutingType.Anycast);
+            
+            var message = new Message("foo")
+            {
+                ApplicationProperties = { ["key"] = "value" }
+            };
+            await producer.SendAsync(message);
+
+            var received = messageProcessor.Dequeue(ShortTimeout);
+            Assert.False(received.ApplicationProperties.TryGetValue("key", out int value));
+            Assert.Equal(default, value);
+        }
+        
+        [Fact]
+        public async Task Should_get_value_when_application_property_specified_for_given_key()
+        {
+            using var host = CreateOpenedContainerHost();
+            var messageProcessor = host.CreateMessageProcessor("a1");
+            await using var connection = await CreateConnection(host.Endpoint);
+            await using var producer = await connection.CreateProducerAsync("a1", RoutingType.Anycast);
+            
+            var message = new Message("foo")
+            {
+                ApplicationProperties = { ["key"] = "value" }
+            };
+            await producer.SendAsync(message);
+
+            var received = messageProcessor.Dequeue(ShortTimeout);
+            Assert.True(received.ApplicationProperties.TryGetValue("key", out string value));
+            Assert.Equal("value",value);
+        }
 
         [Fact]
         public Task Should_send_message_with_char_payload() => ShouldSendMessageWithPayload(char.MaxValue);
