@@ -59,6 +59,10 @@ module.exports = {
     },
     prism: {
       additionalLanguages: ['csharp']
+    },
+    algolia : {
+      apiKey: '967491dcac5df33f6919a6d854528bfb',
+      indexName: 'dotnet-activemq-artemis-client'
     }
   },
   presets: [
