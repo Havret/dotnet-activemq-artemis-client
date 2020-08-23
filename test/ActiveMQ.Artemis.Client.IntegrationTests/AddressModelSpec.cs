@@ -86,74 +86,10 @@ namespace ActiveMQ.Artemis.Client.IntegrationTests
         }
 
         [Fact]
-        public async Task Should_receive_messages_using_shared_queue_with_multicast_routing_type()
-        {
-            await using var connection1 = await CreateConnection();
-            await using var connection2 = await CreateConnection();
-            var address = Guid.NewGuid().ToString();
-            var queue1 = Guid.NewGuid().ToString();
-            var queue2 = Guid.NewGuid().ToString();
-
-            var topologyManager = await connection1.CreateTopologyManagerAsync();
-            await topologyManager.CreateAddressAsync(address, RoutingType.Multicast);
-            await topologyManager.CreateQueueAsync(new QueueConfiguration
-            {
-                Address = address,
-                Name = queue1,
-                RoutingType = RoutingType.Multicast,
-                MaxConsumers = -1,
-                PurgeOnNoConsumers = true
-            });
-            await topologyManager.CreateQueueAsync(new QueueConfiguration
-            {
-                Address = address,
-                Name = queue2,
-                RoutingType = RoutingType.Multicast,
-                PurgeOnNoConsumers = true
-            });
-
-            await using var producer = await connection1.CreateProducerAsync(address, RoutingType.Multicast);
-            var queue1Consumer1 = await connection1.CreateConsumerAsync(address, queue1);
-            var queue1Consumer2 = await connection1.CreateConsumerAsync(address, queue1);
-            var queue2Consumer1 = await connection1.CreateConsumerAsync(address, queue2);
-            var queue2Consumer2 = await connection1.CreateConsumerAsync(address, queue2);
-
-            await producer.SendAsync(new Message("foo1"));
-            await producer.SendAsync(new Message("foo2"));
-
-            Assert.Equal("foo1", (await queue1Consumer1.ReceiveAsync(CancellationToken)).GetBody<string>());
-            Assert.Equal("foo2", (await queue1Consumer2.ReceiveAsync(CancellationToken)).GetBody<string>());
-            Assert.Equal("foo1", (await queue2Consumer1.ReceiveAsync(CancellationToken)).GetBody<string>());
-            Assert.Equal("foo2", (await queue2Consumer2.ReceiveAsync(CancellationToken)).GetBody<string>());
-
-            // Make sure that the queues were non durable.
-            await queue1Consumer1.DisposeAsync();
-            await queue1Consumer2.DisposeAsync();
-            await queue2Consumer1.DisposeAsync();
-            await queue2Consumer2.DisposeAsync();
-
-            // give broker time to clean up the resources
-            await Task.Delay(100);
-
-            await using var newQueue1Consumer1 = await connection2.CreateConsumerAsync(address, queue1);
-            await using var newQueue1Consumer2 = await connection2.CreateConsumerAsync(address, queue1);
-            await using var newQueue2Consumer1 = await connection2.CreateConsumerAsync(address, queue2);
-            await using var newQueue2Consumer2 = await connection2.CreateConsumerAsync(address, queue2);
-
-            await producer.SendAsync(new Message("foo3"));
-            await producer.SendAsync(new Message("foo4"));
-
-            Assert.Equal("foo3", (await newQueue1Consumer1.ReceiveAsync(CancellationToken)).GetBody<string>());
-            Assert.Equal("foo4", (await newQueue1Consumer2.ReceiveAsync(CancellationToken)).GetBody<string>());
-            Assert.Equal("foo3", (await newQueue2Consumer1.ReceiveAsync(CancellationToken)).GetBody<string>());
-            Assert.Equal("foo4", (await newQueue2Consumer2.ReceiveAsync(CancellationToken)).GetBody<string>());
-        }
-
-        [Fact]
         public async Task Should_receive_messages_using_shared_durable_queue_with_multicast_routing_type()
         {
-            await using var connection1 = await CreateConnection();
-            await using var connection2 = await CreateConnection();
+            var connection1 = await CreateConnection();
+            var connection2 = await CreateConnection();
             var address = Guid.NewGuid().ToString();
             var queue1 = Guid.NewGuid().ToString();
             var queue2 = Guid.NewGuid().ToString();
@@ -165,19 +101,18 @@ namespace ActiveMQ.Artemis.Client.IntegrationTests
                 Address = address,
                 Name = queue1,
                 RoutingType = RoutingType.Multicast,
-                MaxConsumers = -1,
-                Durable = true
+                MaxConsumers = -1
             });
             await topologyManager.CreateQueueAsync(new QueueConfiguration
             {
                 Address = address,
                 Name = queue2,
                 RoutingType = RoutingType.Multicast,
-                Durable = true
+                MaxConsumers = -1
             });
 
 
-            await using var producer = await connection1.CreateProducerAsync(address, RoutingType.Multicast);
+            var producer = await connection1.CreateProducerAsync(address, RoutingType.Multicast);
             var queue1Consumer1 = await connection1.CreateConsumerAsync(address, queue1);
             var queue1Consumer2 = await connection2.CreateConsumerAsync(address, queue1);
             var queue2Consumer1 = await connection1.CreateConsumerAsync(address, queue2);
@@ -186,24 +121,24 @@ namespace ActiveMQ.Artemis.Client.IntegrationTests
             await producer.SendAsync(new Message("foo1"));
             await producer.SendAsync(new Message("foo2"));
 
-            Assert.Equal("foo1", (await queue1Consumer1.ReceiveAsync(CancellationToken)).GetBody<string>());
-            Assert.Equal("foo2", (await queue1Consumer2.ReceiveAsync(CancellationToken)).GetBody<string>());
-            Assert.Equal("foo1", (await queue2Consumer1.ReceiveAsync(CancellationToken)).GetBody<string>());
-            Assert.Equal("foo2", (await queue2Consumer2.ReceiveAsync(CancellationToken)).GetBody<string>());
-            
-            await using var newQueue1Consumer = await connection1.CreateConsumerAsync(address, queue1);
-            await using var newQueue2Consumer = await connection2.CreateConsumerAsync(address, queue2);
+            Assert.Equal("foo1", (await queue1Consumer1.ReceiveAsync()).GetBody<string>());
+            Assert.Equal("foo2", (await queue1Consumer2.ReceiveAsync()).GetBody<string>());
+            Assert.Equal("foo1", (await queue2Consumer1.ReceiveAsync()).GetBody<string>());
+            Assert.Equal("foo2", (await queue2Consumer2.ReceiveAsync()).GetBody<string>());
 
             // make sure that the queues are durable
-            await queue1Consumer1.DisposeAsync();
-            await queue1Consumer2.DisposeAsync();
-            await queue2Consumer1.DisposeAsync();
-            await queue2Consumer2.DisposeAsync();
+            await connection1.DisposeAsync();
+            await connection2.DisposeAsync();
 
-            Assert.Equal("foo1", (await newQueue1Consumer.ReceiveAsync(CancellationToken)).GetBody<string>());
-            Assert.Equal("foo2", (await newQueue1Consumer.ReceiveAsync(CancellationToken)).GetBody<string>());
-            Assert.Equal("foo1", (await newQueue2Consumer.ReceiveAsync(CancellationToken)).GetBody<string>());
-            Assert.Equal("foo2", (await newQueue2Consumer.ReceiveAsync(CancellationToken)).GetBody<string>());
+            await using var connection3 = await CreateConnection();
+            await using var connection4 = await CreateConnection();
+            await using var newQueue1Consumer = await connection3.CreateConsumerAsync(address, queue1);
+            await using var newQueue2Consumer = await connection4.CreateConsumerAsync(address, queue2);
+
+            Assert.Equal("foo1", (await newQueue1Consumer.ReceiveAsync()).GetBody<string>());
+            Assert.Equal("foo2", (await newQueue1Consumer.ReceiveAsync()).GetBody<string>());
+            Assert.Equal("foo1", (await newQueue2Consumer.ReceiveAsync()).GetBody<string>());
+            Assert.Equal("foo2", (await newQueue2Consumer.ReceiveAsync()).GetBody<string>());
         }
 
         [Fact]
