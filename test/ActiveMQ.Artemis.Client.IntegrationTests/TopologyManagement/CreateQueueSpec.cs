@@ -115,5 +115,41 @@ namespace ActiveMQ.Artemis.Client.IntegrationTests.TopologyManagement
             
             Assert.Equal("foo2", (await consumer.ReceiveAsync(CancellationToken)).GetBody<string>());
         }
+
+        [Fact]
+        public async Task Should_create_queue_with_PurgeOnNoConsumers_flag()
+        {
+            var connection = await CreateConnection();
+            var address = Guid.NewGuid().ToString();
+            var queue = Guid.NewGuid().ToString();
+
+            var topologyManager = await connection.CreateTopologyManagerAsync();
+            await topologyManager.CreateAddressAsync(address, RoutingType.Multicast);
+            await topologyManager.CreateQueueAsync(new QueueConfiguration
+            {
+                Address = address,
+                Name = queue,
+                RoutingType = RoutingType.Multicast,
+                MaxConsumers = -1,
+                PurgeOnNoConsumers = true
+            });
+
+            var producer = await connection.CreateProducerAsync(address, RoutingType.Multicast);
+            var consumer = await connection.CreateConsumerAsync(address, queue);
+
+            await producer.SendAsync(new Message("foo1"));
+
+            Assert.Equal("foo1", (await consumer.ReceiveAsync(CancellationToken)).GetBody<string>());
+
+            await connection.DisposeAsync();
+            
+            await using var newConnection = await CreateConnection();
+            await using var newQueue1Consumer = await newConnection.CreateConsumerAsync(address, queue);
+            await using var newProducer = await newConnection.CreateProducerAsync(address, RoutingType.Multicast);
+
+            await newProducer.SendAsync(new Message("foo2"));
+
+            Assert.Equal("foo2", (await newQueue1Consumer.ReceiveAsync(CancellationToken)).GetBody<string>());
+        }
     }
 }
