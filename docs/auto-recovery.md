@@ -16,7 +16,7 @@ public interface IRecoveryPolicy
 }
 ```
 
-This interface defines how long the delay should be between subsequent recovery attempts if recovery fails due to an exception (e.g. ActiveMQ Artemis node is still not reachable), and how many recovery attempts will be made before terminal exception will be signaled.
+This interface defines how long the delay should last between subsequent recovery attempts if recovery fails due to an exception (e.g. ActiveMQ Artemis node is still not reachable), and how many recovery attempts will be made before terminal exception will be signaled.
 
 You can subscribe to this occurrence using `IConnection.ConnectionRecoveryError` event:
 
