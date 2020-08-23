@@ -63,7 +63,12 @@ module.exports = {
     algolia : {
       apiKey: '967491dcac5df33f6919a6d854528bfb',
       indexName: 'dotnet-activemq-artemis-client'
-    }
+    },
+    announcementBar: {
+      id: 'supportus',
+      content:
+        '⭐️ If you like .NET Client for ActiveMQ Artemis, give it a star on <a target="_blank" rel="noopener noreferrer" href="https://github.com/Havret/dotnet-activemq-artemis-client">GitHub</a>! ⭐️',
+    },
   },
   presets: [
     [
