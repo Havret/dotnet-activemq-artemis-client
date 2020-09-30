@@ -20,7 +20,7 @@ The core API interfaces and classes are:
 * `ConnectionFactory` : constructs IConnection instances
 * `IConsumer` : represents a message consumer
 * `IProducer` : represents a message producer attached to a specified *address*
-* `IAnonymousProducer` : represents a message producer capable of sending messages to different *addresses*
+* `IAnonymousProducer` : represents a message producer capable of sending messages to multiple *addresses*
 
 ## Creating a connection
 
