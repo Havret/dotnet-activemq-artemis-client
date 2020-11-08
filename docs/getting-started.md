@@ -6,6 +6,14 @@ sidebar_label: Getting Started
 
 .NET ActiveMQ Artemis Client is a lightweight library built on top of [AmqpNetLite](http://azure.github.io/amqpnetlite/). The main goal of this project is to provide a simple API that allows fully leverage Apache ActiveMQ Artemis capabilities in .NET World.
 
+## Installation
+
+.NET ActiveMQ Artemis Client is distributed via [NuGet](https://www.nuget.org/packages/Unofficial.ActiveMQ.Artemis.Client). You can add ActiveMQ.Artemis.Client NuGet package using dotnet CLI:
+
+```
+dotnet add package Unofficial.ActiveMQ.Artemis.Client
+```
+
 ## API overview
 
 The API interfaces and classes are defined in the `ActiveMQ.Artemis.Client` namespace:
