@@ -3,7 +3,7 @@
   <PropertyGroup>
     <Summary>Unofficial ActiveMQ Artemis .NET Client for .NET Core and .NET Framework.</Summary>
     <Description>Unofficial ActiveMQ Artemis .NET Client for .NET Core and .NET Framework.</Description>
-    <TargetFrameworks>netstandard2.0;netstandard2.1</TargetFrameworks>
+    <TargetFrameworks>netstandard2.0;netstandard2.1;net5.0;</TargetFrameworks>
     <LangVersion>9</LangVersion>
     <PackageProjectUrl>https://havret.github.io/dotnet-activemq-artemis-client/</PackageProjectUrl>
     <PackageId>Unofficial.ActiveMQ.Artemis.Client</PackageId>
