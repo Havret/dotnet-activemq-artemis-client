@@ -53,6 +53,10 @@ var message = await consumer.ReceiveAsync();
 
 Detailed documentation is available on [the project website](https://havret.github.io/dotnet-activemq-artemis-client/).
 
+## Online resources
+
+- [Messaging with ActiveMQ Artemis and ASP.NET Core](https://havret.io/activemq-artemis-net-core) (January 31, 2021)
+
 ## Features
 
 The following table shows what features are currently supported.
