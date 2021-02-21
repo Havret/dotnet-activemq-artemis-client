@@ -8,10 +8,10 @@ sidebar_label: Getting Started
 
 ## Installation
 
-.NET ActiveMQ Artemis Client is distributed via [NuGet](https://www.nuget.org/packages/Unofficial.ActiveMQ.Artemis.Client). You can add ActiveMQ.Artemis.Client NuGet package using dotnet CLI:
+.NET ActiveMQ Artemis Client is distributed via [NuGet](https://www.nuget.org/packages/ArtemisNetClient). You can add ActiveMQ.Artemis.Client NuGet package using dotnet CLI:
 
 ```
-dotnet add package Unofficial.ActiveMQ.Artemis.Client
+dotnet add package ArtemisNetClient
 ```
 
 ## API overview
