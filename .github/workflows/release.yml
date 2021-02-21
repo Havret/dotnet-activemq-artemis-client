@@ -18,23 +18,23 @@ jobs:
       - name: Archive NuGet Package
         uses: actions/upload-artifact@v1
         with:
-          name: ActiveMQ.Artemis.Client
-          path: ./src/ActiveMQ.Artemis.Client/bin/Release/Unofficial.ActiveMQ.Artemis.Client.${{ github.event.release.name }}.nupkg
+          name: ArtemisNetClient
+          path: ./src/ActiveMQ.Artemis.Client/bin/Release/ArtemisNetClient.${{ github.event.release.name }}.nupkg
       - name: Archive NuGet Package With Symbols
         uses: actions/upload-artifact@v1
         with:
-          name: ActiveMQ.Artemis.Client
-          path: ./src/ActiveMQ.Artemis.Client/bin/Release/Unofficial.ActiveMQ.Artemis.Client.${{ github.event.release.name }}.snupkg
+          name: ArtemisNetClient
+          path: ./src/ActiveMQ.Artemis.Client/bin/Release/ArtemisNetClient.${{ github.event.release.name }}.snupkg
       - name: Publish NuGet Package
-        run: dotnet nuget push ./src/ActiveMQ.Artemis.Client/bin/Release/Unofficial.ActiveMQ.Artemis.Client.${{ github.event.release.name }}.nupkg --api-key ${{ secrets.nuget_api_key }} --source https://api.nuget.org/v3/index.json
+        run: dotnet nuget push ./src/ActiveMQ.Artemis.Client/bin/Release/ArtemisNetClient.${{ github.event.release.name }}.nupkg --api-key ${{ secrets.nuget_api_key }} --source https://api.nuget.org/v3/index.json
       - name: Upload NuGet Package
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ github.event.release.upload_url }}
-          asset_path: ./src/ActiveMQ.Artemis.Client/bin/Release/Unofficial.ActiveMQ.Artemis.Client.${{ github.event.release.name }}.nupkg
-          asset_name: Unofficial.ActiveMQ.Artemis.Client.${{ github.event.release.name }}.nupkg
+          asset_path: ./src/ActiveMQ.Artemis.Client/bin/Release/ArtemisNetClient.${{ github.event.release.name }}.nupkg
+          asset_name: ArtemisNetClient.${{ github.event.release.name }}.nupkg
           asset_content_type: application/zip
       - name: NuGet Package With Symbols
         uses: actions/upload-release-asset@v1
@@ -42,6 +42,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ github.event.release.upload_url }}
-          asset_path: ./src/ActiveMQ.Artemis.Client/bin/Release/Unofficial.ActiveMQ.Artemis.Client.${{ github.event.release.name }}.snupkg
-          asset_name: Unofficial.ActiveMQ.Artemis.Client.${{ github.event.release.name }}.snupkg
+          asset_path: ./src/ActiveMQ.Artemis.Client/bin/Release/ArtemisNetClient.${{ github.event.release.name }}.snupkg
+          asset_name: ArtemisNetClient.${{ github.event.release.name }}.snupkg
           asset_content_type: application/zip
