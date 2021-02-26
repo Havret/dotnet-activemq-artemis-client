@@ -3,7 +3,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using ActiveMQ.Artemis.Client.Builders;
 using ActiveMQ.Artemis.Client.Exceptions;
-using ActiveMQ.Artemis.Client.Management;
 using ActiveMQ.Artemis.Client.MessageIdPolicy;
 using ActiveMQ.Artemis.Client.Transactions;
 using Amqp;
