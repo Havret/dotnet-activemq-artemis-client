@@ -7,7 +7,7 @@ using ActiveMQ.Artemis.Client.InternalUtilities;
 using Amqp;
 using Amqp.Framing;
 
-namespace ActiveMQ.Artemis.Client.Management
+namespace ActiveMQ.Artemis.Client
 {
     internal class RpcClient : IAsyncDisposable
     {

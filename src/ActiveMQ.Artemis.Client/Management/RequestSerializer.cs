@@ -5,7 +5,7 @@ using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 
-namespace ActiveMQ.Artemis.Client.Management
+namespace ActiveMQ.Artemis.Client
 {
     internal static class RequestSerializer
     {
