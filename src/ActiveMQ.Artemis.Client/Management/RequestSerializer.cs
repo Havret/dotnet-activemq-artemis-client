@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -35,6 +36,16 @@ namespace ActiveMQ.Artemis.Client
                 writer.WriteBoolean("purge-on-no-consumers", configuration.PurgeOnNoConsumers);
                 writer.WriteBoolean("auto-create-address", configuration.AutoCreateAddress);
                 writer.WriteString("filter-string", configuration.FilterExpression ?? string.Empty);
+                writer.WriteBoolean("auto-delete", configuration.AutoDelete);
+                writer.WriteNumber("auto-delete-message-count", configuration.AutoDeleteMessageCount);
+                if (configuration.AutoDeleteDelay.HasValue)
+                {
+                    writer.WriteNumber("auto-delete-delay", Convert.ToInt64(configuration.AutoDeleteDelay.Value.TotalMilliseconds));    
+                }
+                else
+                {
+                    writer.WriteNumber("auto-delete-delay", -1);
+                }
                 writer.WriteEndObject();
             }
 
