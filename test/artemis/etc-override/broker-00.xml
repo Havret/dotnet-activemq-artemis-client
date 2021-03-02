@@ -18,5 +18,7 @@
         </anycast>
       </address>
     </addresses>
+	
+	<message-expiry-scan-period>1000</message-expiry-scan-period>
   </core>
 </configuration>
