@@ -77,7 +77,7 @@ The following table shows what features are currently supported.
 |Message Acknowledgement|✔|Messages can be either *accepted* or *rejected*.|
 |Scheduled Messages|✔|Message delivery can be scheduled either by `ScheduledDeliveryTime` or `ScheduledDeliveryDelay` property.
 |Filter Expressions|✔||
-|NoLocal filter|✔|Allows your consumers to subscribe to messages sent by producers created by other connections.|
+|NoLocal filter|✔|Allows your consumers to subscribe *exclusively* to messages sent by producers created by other connections.|
 |Consumer Credit|✔||
 |Auto-recovery|✔|3 built-in recovery policies `ConstantBackoff`, `LinearBackoff`, `ExponentialBackoff`, and the option to implement your own recovery policy via `IRecoveryPolicy` interface.|
 |Address Model|✔|Advanced routing strategies use FQQN, thus require queues to be pre-configured using `TopologyManager`.|
