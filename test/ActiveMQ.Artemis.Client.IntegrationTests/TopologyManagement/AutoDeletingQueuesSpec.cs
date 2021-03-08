@@ -38,8 +38,12 @@ namespace ActiveMQ.Artemis.Client.IntegrationTests.TopologyManagement
             var msg = await consumer.ReceiveAsync();
             await consumer.AcceptAsync(msg);
             await consumer.DisposeAsync();
-
-            Assert.DoesNotContain(queueName, await topologyManager.GetQueueNamesAsync());
+            
+            var queues = await Retry.RetryUntil(
+                () => topologyManager.GetQueueNamesAsync(),
+                x => !x.Contains(queueName),
+                TimeSpan.FromMinutes(1));
+            Assert.DoesNotContain(queueName, queues);
         }
 
         [Fact]
@@ -73,7 +77,6 @@ namespace ActiveMQ.Artemis.Client.IntegrationTests.TopologyManagement
                 () => topologyManager.GetQueueNamesAsync(),
                 x => !x.Contains(queueName),
                 TimeSpan.FromMinutes(1));
-            
             Assert.DoesNotContain(queueName, queues);
         }
 
@@ -115,7 +118,11 @@ namespace ActiveMQ.Artemis.Client.IntegrationTests.TopologyManagement
             await consumer.DisposeAsync();
 
             // one unacknowledged message remained, thus broker should remove the queue
-            Assert.DoesNotContain(queueName, await topologyManager.GetQueueNamesAsync());
+            var queues = await Retry.RetryUntil(
+                () => topologyManager.GetQueueNamesAsync(),
+                x => !x.Contains(queueName),
+                TimeSpan.FromMinutes(1));
+            Assert.DoesNotContain(queueName, queues);
         }
     }
 }
