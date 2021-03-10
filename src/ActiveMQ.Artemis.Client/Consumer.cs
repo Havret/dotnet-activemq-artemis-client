@@ -28,7 +28,7 @@ namespace ActiveMQ.Artemis.Client
             var channel = Channel.CreateBounded<Message>(configuration.Credit);
             _reader = channel.Reader;
             _writer = channel.Writer;
-            _receiverLink.Start(configuration.Credit, (receiver, m) =>
+            _receiverLink.Start(configuration.Credit, (_, m) =>
             {
                 var message = new Message(m);
                 if (_writer.TryWrite(message))

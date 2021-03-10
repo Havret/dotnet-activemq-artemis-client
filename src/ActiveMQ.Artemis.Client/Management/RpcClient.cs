@@ -24,7 +24,7 @@ namespace ActiveMQ.Artemis.Client
             _receiverLink = receiverLink;
             _replyToAddress = replyToAddress;
 
-            _receiverLink.Start(200, (receiver, msg) =>
+            _receiverLink.Start(200, (_, msg) =>
             {
                 var message = new Message(msg);
                 var correlationId = message.GetCorrelationId<Guid>();

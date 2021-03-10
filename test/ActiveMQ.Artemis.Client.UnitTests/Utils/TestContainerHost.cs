@@ -13,7 +13,7 @@ namespace ActiveMQ.Artemis.Client.UnitTests.Utils
         {
             Endpoint = endpoint;            
             _host = new ContainerHost(endpoint.Address);
-            _host.Listeners[0].HandlerFactory = listener => handler;
+            _host.Listeners[0].HandlerFactory = _ => handler;
             _linkProcessor = new TestLinkProcessor();
             _host.RegisterLinkProcessor(_linkProcessor);
         }

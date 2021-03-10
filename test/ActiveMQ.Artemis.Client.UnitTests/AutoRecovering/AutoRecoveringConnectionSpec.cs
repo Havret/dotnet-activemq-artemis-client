@@ -137,7 +137,7 @@ namespace ActiveMQ.Artemis.Client.UnitTests.AutoRecovering
 
             var connectionRecovered = new AutoResetEvent(false);
             Endpoint fallbackEndpoint = null;
-            connection.ConnectionRecovered += (sender, args) =>
+            connection.ConnectionRecovered += (_, args) =>
             {
                 fallbackEndpoint = args.Endpoint;
                 connectionRecovered.Set();
@@ -165,7 +165,7 @@ namespace ActiveMQ.Artemis.Client.UnitTests.AutoRecovering
 
             var connectionRecoveryFailed = new AutoResetEvent(false);
             Exception connectionRecoveryError = null;
-            connection.ConnectionRecoveryError += (sender, args) =>
+            connection.ConnectionRecoveryError += (_, args) =>
             {
                 connectionRecoveryError = args.Exception;
                 connectionRecoveryFailed.Set();
