@@ -121,7 +121,7 @@ namespace ActiveMQ.Artemis.Client.UnitTests.AutoRecovering
 
             var connectionClosed = new ManualResetEvent(false);
             var connection = await CreateConnection(endpoint);
-            connection.ConnectionClosed += (_, args) => connectionClosed.Set();
+            connection.ConnectionClosed += (_, _) => connectionClosed.Set();
             
             var producer = await connection.CreateProducerAsync("a1", RoutingType.Anycast);
 

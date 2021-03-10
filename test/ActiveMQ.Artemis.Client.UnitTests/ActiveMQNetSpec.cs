@@ -77,7 +77,7 @@ namespace ActiveMQ.Artemis.Client.UnitTests
             var linkProcessor = host.CreateTestLinkProcessor();
             
             // do not complete link attachment, as a result no Attach frame will be sent back to the client
-            linkProcessor.SetHandler(context => true);
+            linkProcessor.SetHandler(_ => true);
 
             return host;
         }
@@ -87,7 +87,7 @@ namespace ActiveMQ.Artemis.Client.UnitTests
             var tcs = new TaskCompletionSource<bool>();
             using var cts = new CancellationTokenSource(Timeout);
             cts.Token.Register(() => tcs.TrySetCanceled());
-            connection.ConnectionClosed += (sender, args) =>
+            connection.ConnectionClosed += (_, _) =>
             {
                 tcs.TrySetResult(true);
             };
@@ -100,7 +100,7 @@ namespace ActiveMQ.Artemis.Client.UnitTests
             var tcs = new TaskCompletionSource<bool>();
             using var cts = new CancellationTokenSource(Timeout);
             cts.Token.Register(() => tcs.TrySetCanceled());
-            connection.ConnectionRecovered += (sender, args) =>
+            connection.ConnectionRecovered += (_, _) =>
             {
                 tcs.TrySetResult(true);
             };

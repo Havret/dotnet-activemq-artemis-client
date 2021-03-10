@@ -289,7 +289,7 @@ namespace ActiveMQ.Artemis.Client.UnitTests.AutoRecovering
             var host1 = CreateOpenedContainerHost(endpoint, testHandler);
 
             var connection = await CreateConnection(endpoint);
-            connection.ConnectionRecovered += (sender, args) => connectionRecovered.Set();
+            connection.ConnectionRecovered += (_, _) => connectionRecovered.Set();
             var consumer = await connection.CreateConsumerAsync("a1", RoutingType.Anycast);
 
             Assert.True(consumerAttached.WaitOne(Timeout));

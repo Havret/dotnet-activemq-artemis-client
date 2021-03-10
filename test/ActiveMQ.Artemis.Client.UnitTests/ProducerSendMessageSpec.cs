@@ -83,7 +83,7 @@ namespace ActiveMQ.Artemis.Client.UnitTests
 
             // do not send outcome from a remote peer
             // as a result send should timeout
-            messageProcessor.SetHandler(context => true);
+            messageProcessor.SetHandler(_ => true);
 
             await using var connection = await CreateConnection(endpoint);
             var producer = await connection.CreateProducerAsync("a1", RoutingType.Anycast);
