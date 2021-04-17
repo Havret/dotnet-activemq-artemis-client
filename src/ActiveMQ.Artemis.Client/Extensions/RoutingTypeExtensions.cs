@@ -5,8 +5,8 @@ namespace ActiveMQ.Artemis.Client
 {
     internal static class RoutingTypeExtensions
     {
-        private static readonly object _addressRoutingTypeAnycast = (byte) 1;
-        private static readonly object _addressRoutingTypeMulticast = (byte) 0;
+        private static readonly object _addressRoutingTypeAnycast = (sbyte)1;
+        private static readonly object _addressRoutingTypeMulticast = (sbyte) 0;
         private static readonly object _addressRoutingTypeBoth = null;
 
         public static Symbol GetRoutingCapability(this RoutingType routingType) => routingType switch

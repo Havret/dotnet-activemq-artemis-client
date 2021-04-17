@@ -133,8 +133,8 @@ namespace ActiveMQ.Artemis.Client.UnitTests
         {
             return new[]
             {
-                new object[] { RoutingType.Multicast, (byte) 0 },
-                new object[] { RoutingType.Anycast, (byte) 1 },
+                new object[] { RoutingType.Multicast, (sbyte) 0 },
+                new object[] { RoutingType.Anycast, (sbyte) 1 },
             };
         }
     }
