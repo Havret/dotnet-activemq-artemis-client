@@ -26,7 +26,7 @@ module.exports = {
           position: 'right',
         },
         {
-          to: 'https://www.nuget.org/packages/Unofficial.ActiveMQ.Artemis.Client',
+          to: 'https://www.nuget.org/packages/ArtemisNetClient',
           label: 'Download',
           position: 'right',
         }
