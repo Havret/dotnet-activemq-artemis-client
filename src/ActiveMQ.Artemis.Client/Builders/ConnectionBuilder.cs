@@ -28,11 +28,18 @@ namespace ActiveMQ.Artemis.Client.Builders
             cancellationToken.Register(() => _tcs.TrySetCanceled());
 
             var connectionFactory = new Amqp.ConnectionFactory();
-            var connection = await connectionFactory.CreateAsync(endpoint.Address, null, OnOpened).ConfigureAwait(false);
-            connection.AddClosedCallback(OnClosed);
-            await _tcs.Task.ConfigureAwait(false);
-            connection.Closed -= OnClosed;
-            return new Connection(_loggerFactory, endpoint, connection, _messageIdPolicyFactory);
+            try
+            {
+                var connection = await connectionFactory.CreateAsync(endpoint.Address, null, OnOpened).ConfigureAwait(false);
+                connection.AddClosedCallback(OnClosed);
+                await _tcs.Task.ConfigureAwait(false);
+                connection.Closed -= OnClosed;
+                return new Connection(_loggerFactory, endpoint, connection, _messageIdPolicyFactory);
+            }
+            catch (AmqpException exception)
+            {
+                throw new CreateConnectionException(message: exception.Error?.Description ?? exception.Message, errorCode: exception.Error?.Condition);
+            }
         }
 
         private void OnOpened(Amqp.IConnection connection, Open open)
