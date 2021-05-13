@@ -32,7 +32,7 @@ namespace ActiveMQ.Artemis.Client.IntegrationTests
             return connectionFactory.CreateAsync(endpoint);
         }
 
-        private static Endpoint GetEndpoint()
+        protected static Endpoint GetEndpoint()
         {
             string userName = Environment.GetEnvironmentVariable("ARTEMIS_USERNAME") ?? "guest";
             string password = Environment.GetEnvironmentVariable("ARTEMIS_PASSWORD") ?? "guest";

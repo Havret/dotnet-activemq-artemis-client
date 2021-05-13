@@ -6,8 +6,10 @@ using System.Threading.Channels;
 using System.Threading.Tasks;
 using ActiveMQ.Artemis.Client.AutoRecovering.RecoveryPolicy;
 using ActiveMQ.Artemis.Client.Builders;
+using ActiveMQ.Artemis.Client.Exceptions;
 using ActiveMQ.Artemis.Client.InternalUtilities;
 using ActiveMQ.Artemis.Client.MessageIdPolicy;
+using Amqp;
 using Microsoft.Extensions.Logging;
 using Polly;
 using Polly.Retry;
@@ -52,7 +54,11 @@ namespace ActiveMQ.Artemis.Client.AutoRecovering
         private AsyncRetryPolicy<IConnection> CreateConnectionRetryPolicy(IRecoveryPolicy recoveryPolicy)
         {
             return Policy<IConnection>
-                   .Handle<Exception>()
+                   .Handle<Exception>(exception => exception switch
+                   {
+                       CreateConnectionException { ErrorCode: ErrorCode.UnauthorizedAccess } => false,
+                       _ => true
+                   })
                    .WaitAndRetryAsync(recoveryPolicy.RetryCount, (retryAttempt, context) =>
                    {
                        context.SetRetryCount(retryAttempt);
@@ -85,7 +91,7 @@ namespace ActiveMQ.Artemis.Client.AutoRecovering
                         if (!IsOpened)
                         {
                             await DisposeInnerConnection().ConfigureAwait(false);
-                            
+
                             foreach (var recoverable in _recoverables.Values)
                             {
                                 recoverable.Suspend();
@@ -110,7 +116,7 @@ namespace ActiveMQ.Artemis.Client.AutoRecovering
                             _connection.ConnectionClosed += OnConnectionClosed;
 
                             Log.ConnectionRecovered(_logger);
-                            
+
                             ConnectionRecovered?.Invoke(this, new ConnectionRecoveredEventArgs(_connection.Endpoint));
                         }
                         else
@@ -135,7 +141,7 @@ namespace ActiveMQ.Artemis.Client.AutoRecovering
                     {
                         await recoverable.TerminateAsync(e).ConfigureAwait(false);
                     }
-                    
+
                     ConnectionRecoveryError?.Invoke(this, new ConnectionRecoveryErrorEventArgs(e));
                 }
             });
@@ -197,7 +203,7 @@ namespace ActiveMQ.Artemis.Client.AutoRecovering
         }
 
         public event EventHandler<ConnectionClosedEventArgs> ConnectionClosed;
-        
+
         public event EventHandler<ConnectionRecoveredEventArgs> ConnectionRecovered;
         public event EventHandler<ConnectionRecoveryErrorEventArgs> ConnectionRecoveryError;
 
