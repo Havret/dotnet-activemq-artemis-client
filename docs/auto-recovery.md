@@ -41,7 +41,11 @@ If the initial connection to an ActiveMQ Artemis node fails, automatic connectio
 
 ## Recovery Policies
 
-There are 3 built-in recovery policies that are available via `RecoveryPolicyFactory` class:
+There are 4 built-in recovery policies that are available via `RecoveryPolicyFactory` class:
+
+### Decorrelated Jitter Backoff Recovery Policy
+
+// TODO: 
 
 ### Constant Backoff Recovery Policy
 
