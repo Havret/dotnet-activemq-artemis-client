@@ -2,7 +2,7 @@
 
 namespace ActiveMQ.Artemis.Client.AutoRecovering.RecoveryPolicy
 {
-    public class DecorrelatedJitterBackoffPolicy : IRecoveryPolicy
+    internal class DecorrelatedJitterBackoffPolicy : IRecoveryPolicy
     {
         private readonly long _targetTicksFirstDelay;
         private readonly TimeSpan _maxDelay;
