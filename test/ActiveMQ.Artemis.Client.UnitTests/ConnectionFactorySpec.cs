@@ -51,7 +51,7 @@ namespace ActiveMQ.Artemis.Client.UnitTests
             using var host = CreateOpenedContainerHost(endpoint);
 
             var exception = await Assert.ThrowsAsync<CreateConnectionException>(() => CreateConnection(Enumerable.Empty<Endpoint>()));
-            Assert.Contains((string) exception.Message, "No endpoints provided.");
+            Assert.Contains(exception.Message, "No endpoints provided.");
         }
 
         [Theory]

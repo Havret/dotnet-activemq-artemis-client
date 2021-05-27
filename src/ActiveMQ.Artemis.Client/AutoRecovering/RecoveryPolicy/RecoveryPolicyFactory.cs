@@ -28,6 +28,16 @@ namespace ActiveMQ.Artemis.Client.AutoRecovering.RecoveryPolicy
         {
             return new ExponentialBackoffRecoveryPolicy(initialDelay, maxDelay, retryCount, factor, fastFirst);
         }
+        
+        public static IRecoveryPolicy DecorrelatedJitterBackoff(TimeSpan medianFirstRetryDelay, int retryCount = RecoveryPolicyConsts.NoLimit, int? seed = null, bool fastFirst = false)
+        {
+            return new DecorrelatedJitterBackoffPolicy(medianFirstRetryDelay, TimeSpan.MaxValue, retryCount, seed, fastFirst);
+        }
+        
+        public static IRecoveryPolicy DecorrelatedJitterBackoff(TimeSpan medianFirstRetryDelay, TimeSpan maxDelay, int retryCount = RecoveryPolicyConsts.NoLimit, int? seed = null, bool fastFirst = false)
+        {
+            return new DecorrelatedJitterBackoffPolicy(medianFirstRetryDelay, maxDelay, retryCount, seed, fastFirst);
+        }
 
         public static IRecoveryPolicy Default()
         {
