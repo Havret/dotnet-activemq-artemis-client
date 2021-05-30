@@ -2,6 +2,11 @@
 
 namespace ActiveMQ.Artemis.Client.AutoRecovering.RecoveryPolicy
 {
+    /// <summary>
+    /// Generates sleep durations in an exponentially backing-off, jittered manner, making sure to mitigate any correlations.
+    /// Implementation inspired by https://github.com/Polly-Contrib/Polly.Contrib.WaitAndRetry/blob/master/src/Polly.Contrib.WaitAndRetry/Backoff.DecorrelatedJitterV2.cs
+    /// The original author/credit for this jitter formula is George Polevoy (@george-polevoy). Used here with his permission.
+    /// </summary>
     internal class DecorrelatedJitterBackoffRecoveryPolicy : IRecoveryPolicy
     {
         private readonly long _targetTicksFirstDelay;
