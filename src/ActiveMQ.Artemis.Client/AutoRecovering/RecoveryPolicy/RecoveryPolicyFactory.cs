@@ -31,12 +31,12 @@ namespace ActiveMQ.Artemis.Client.AutoRecovering.RecoveryPolicy
         
         public static IRecoveryPolicy DecorrelatedJitterBackoff(TimeSpan medianFirstRetryDelay, int retryCount = RecoveryPolicyConsts.NoLimit, int? seed = null, bool fastFirst = false)
         {
-            return new DecorrelatedJitterBackoffPolicy(medianFirstRetryDelay, TimeSpan.MaxValue, retryCount, seed, fastFirst);
+            return new DecorrelatedJitterBackoffRecoveryPolicy(medianFirstRetryDelay, TimeSpan.MaxValue, retryCount, seed, fastFirst);
         }
         
         public static IRecoveryPolicy DecorrelatedJitterBackoff(TimeSpan medianFirstRetryDelay, TimeSpan maxDelay, int retryCount = RecoveryPolicyConsts.NoLimit, int? seed = null, bool fastFirst = false)
         {
-            return new DecorrelatedJitterBackoffPolicy(medianFirstRetryDelay, maxDelay, retryCount, seed, fastFirst);
+            return new DecorrelatedJitterBackoffRecoveryPolicy(medianFirstRetryDelay, maxDelay, retryCount, seed, fastFirst);
         }
 
         public static IRecoveryPolicy Default()
