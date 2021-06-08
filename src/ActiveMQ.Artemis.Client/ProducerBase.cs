@@ -40,7 +40,13 @@ namespace ActiveMQ.Artemis.Client
             var txnId = await _transactionsManager.GetTxnIdAsync(transaction, cancellationToken).ConfigureAwait(false);
             var transactionalState = txnId != null ? new TransactionalState { TxnId = txnId } : null;
             var tcs = TaskUtil.CreateTaskCompletionSource<bool>(cancellationToken);
-            cancellationToken.Register(() => tcs.TrySetCanceled());
+            cancellationToken.Register(() =>
+            {
+                if (tcs.TrySetCanceled())
+                {
+                    _senderLink.Cancel(message.InnerMessage);    
+                }
+            });
             message.DurabilityMode ??= _configuration.MessageDurabilityMode ?? DurabilityMode.Durable;
             Send(address, routingType, message, transactionalState, _onOutcome, tcs);
             await tcs.Task.ConfigureAwait(false);
