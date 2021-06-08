@@ -204,6 +204,10 @@ under the License.
             <auto-create-jms-queues>true</auto-create-jms-queues>
             <auto-create-jms-topics>true</auto-create-jms-topics>
          </address-setting>
+         <address-setting match="address_full_policy">
+            <max-size-bytes>1000</max-size-bytes>
+            <address-full-policy>BLOCK</address-full-policy>
+         </address-setting>
          <!--default for catch all-->
          <address-setting match="#">
             <dead-letter-address>DLQ</dead-letter-address>
@@ -242,7 +246,7 @@ under the License.
             </anycast>
          </address>
 
-      </addresses>     
+      </addresses>
 
       <!-- Uncomment the following if you want to use the Standard LoggingActiveMQServerPlugin pluging to log in events
       <broker-plugins>
