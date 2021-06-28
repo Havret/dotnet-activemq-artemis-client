@@ -80,7 +80,7 @@ The following table shows what features are currently supported.
 |Filter Expressions|✔||
 |NoLocal filter|✔|Allows your consumers to subscribe *exclusively* to messages sent by producers created by other connections.|
 |Consumer Credit|✔||
-|Auto-recovery|✔|3 built-in recovery policies `ConstantBackoff`, `LinearBackoff`, `ExponentialBackoff`, `DecorrelatedJitterBackoff` and the option to implement your own recovery policy via `IRecoveryPolicy` interface.|
+|Auto-recovery|✔|4 built-in recovery policies `ConstantBackoff`, `LinearBackoff`, `ExponentialBackoff`, `DecorrelatedJitterBackoff` and the option to implement your own recovery policy via `IRecoveryPolicy` interface.|
 |Address Model|✔|Advanced routing strategies use FQQN, thus require queues to be pre-configured using `TopologyManager`.|
 |Topology Management|✔|`TopologyManager` supports: getting all address names, getting all queue names, address creation, queue creation, address declaration, queue declaration, address removal, queue removal.|
 |Logging|✔|Uses [Microsoft.Extensions.Logging.Abstractions](https://www.nuget.org/packages/Microsoft.Extensions.Logging.Abstractions/).|
