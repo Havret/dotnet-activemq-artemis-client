@@ -12,8 +12,8 @@ jobs:
   linux:
     runs-on: ubuntu-latest
     env:
-      ARTEMIS_USERNAME: "guest"
-      ARTEMIS_PASSWORD: "guest"
+      ARTEMIS_USERNAME: "artemis"
+      ARTEMIS_PASSWORD: "artemis"
       ARTEMIS_HOST: "localhost"
       ARTEMIS_PORT: 5672
     steps:
