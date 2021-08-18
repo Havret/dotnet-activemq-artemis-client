@@ -2,12 +2,9 @@ version: "3"
 services:
   activemq-artemis:
     container_name: activemq-artemis
-    image: vromero/activemq-artemis:2.16-latest
-    environment:
-      - ARTEMIS_USERNAME=guest
-      - ARTEMIS_PASSWORD=guest
+    image: havret/dotnet-activemq-artemis-client-test-broker:2.18.0
     ports:
       - 5672:5672
       - 8161:8161
     volumes:
-      - ./etc-override:/var/lib/artemis/etc-override
+      - ./broker.xml:/artemis/amq/etc/broker.xml
