@@ -86,7 +86,7 @@ namespace ActiveMQ.Artemis.Client.UnitTests
         {
             var tcs = new TaskCompletionSource<bool>();
             using var cts = new CancellationTokenSource(Timeout);
-            cts.Token.Register(() => tcs.TrySetCanceled());
+            await using var _ = cts.Token.Register(() => tcs.TrySetCanceled());
             connection.ConnectionClosed += (_, _) =>
             {
                 tcs.TrySetResult(true);
@@ -99,7 +99,7 @@ namespace ActiveMQ.Artemis.Client.UnitTests
         {
             var tcs = new TaskCompletionSource<bool>();
             using var cts = new CancellationTokenSource(Timeout);
-            cts.Token.Register(() => tcs.TrySetCanceled());
+            await using var _ = cts.Token.Register(() => tcs.TrySetCanceled());
             connection.ConnectionRecovered += (_, _) =>
             {
                 tcs.TrySetResult(true);

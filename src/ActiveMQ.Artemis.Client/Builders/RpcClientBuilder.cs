@@ -26,7 +26,8 @@ namespace ActiveMQ.Artemis.Client.Builders
 
         private async Task<SenderLink> CreateSenderLink(string address, CancellationToken cancellationToken)
         {
-            var tcs = TaskUtil.CreateTaskCompletionSource<bool>(cancellationToken);
+            var (tcs, ctr) = TaskUtil.CreateTaskCompletionSource<bool>(ref cancellationToken);
+            using var _ = ctr;
             var senderLink = new SenderLink(_session, Guid.NewGuid().ToString(), new Target
             {
                 Address = address
@@ -35,7 +36,6 @@ namespace ActiveMQ.Artemis.Client.Builders
             await tcs.Task.ConfigureAwait(false);
             senderLink.Closed -= OnClosed;
             return senderLink;
-
 
             void OnAttached(ILink link, Attach attach)
             {
@@ -56,7 +56,8 @@ namespace ActiveMQ.Artemis.Client.Builders
 
         private async Task<(ReceiverLink receiverLink, string address)> CreateReceiverLink(CancellationToken cancellationToken)
         {
-            var tcs = TaskUtil.CreateTaskCompletionSource<string>(cancellationToken);
+            var (tcs, ctr) = TaskUtil.CreateTaskCompletionSource<string>(ref cancellationToken);
+            using var _ = ctr;
             var receiverLink = new ReceiverLink(_session, Guid.NewGuid().ToString(), new Source
             {
                 Dynamic = true
@@ -68,7 +69,7 @@ namespace ActiveMQ.Artemis.Client.Builders
 
             void OnAttached(ILink link, Attach attach)
             {
-                if (attach != null && attach.Source is Source source)
+                if (attach is { Source: Source source })
                 {
                     tcs.TrySetResult(source.Address);
                 }

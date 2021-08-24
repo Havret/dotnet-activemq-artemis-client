@@ -41,7 +41,9 @@ namespace ActiveMQ.Artemis.Client
             message.SetCorrelationId(correlationId);
             message.Properties.ReplyTo = _replyToAddress;
 
-            var tcs = TaskUtil.CreateTaskCompletionSource<Message>(cancellationToken);
+            var (tcs, ctr) = TaskUtil.CreateTaskCompletionSource<Message>(ref cancellationToken);
+            using var cancellationTokenRegistration = ctr;
+            cancellationToken.Register(() => tcs.TrySetCanceled());
             try
             {
                 _pendingRequests.TryAdd(correlationId, tcs);

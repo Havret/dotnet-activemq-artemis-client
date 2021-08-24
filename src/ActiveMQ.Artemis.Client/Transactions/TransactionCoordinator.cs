@@ -20,20 +20,22 @@ namespace ActiveMQ.Artemis.Client.Transactions
             _senderLink = senderLink;
         }
         
-        public Task<byte[]> DeclareAsync(CancellationToken cancellationToken)
+        public async Task<byte[]> DeclareAsync(CancellationToken cancellationToken)
         {
             var message = new Amqp.Message(new Declare());
-            var tcs = TaskUtil.CreateTaskCompletionSource<byte[]>(cancellationToken);
+            var (tcs, ctr) = TaskUtil.CreateTaskCompletionSource<byte[]>(ref cancellationToken);
+            using var _ = ctr;
             _senderLink.Send(message, null, _onDeclareOutcome, tcs);
-            return tcs.Task;
+            return await tcs.Task;
         }
 
-        public Task DischargeAsync(byte[] txnId, bool fail, CancellationToken cancellationToken)
+        public async Task DischargeAsync(byte[] txnId, bool fail, CancellationToken cancellationToken)
         {
             var message = new Amqp.Message(new Discharge { TxnId = txnId, Fail = fail });
-            var tcs = TaskUtil.CreateTaskCompletionSource<bool>(cancellationToken);
+            var (tcs, ctr) = TaskUtil.CreateTaskCompletionSource<bool>(ref cancellationToken);
+            using var _ = ctr;
             _senderLink.Send(message, null, _onDischargeOutcome, tcs);
-            return tcs.Task;
+            await tcs.Task;
         }
         
         private static void OnDeclareOutcome(ILink link, Amqp.Message message, Outcome outcome, object state)

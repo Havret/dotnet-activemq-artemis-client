@@ -34,7 +34,7 @@ namespace ActiveMQ.Artemis.Client.Builders
             if (string.IsNullOrWhiteSpace(configuration.Address)) throw new ArgumentNullException(nameof(configuration.Address), "The address cannot be empty.");
 
             cancellationToken.ThrowIfCancellationRequested();
-            cancellationToken.Register(() => _tcs.TrySetCanceled());
+            using var _ = cancellationToken.Register(() => _tcs.TrySetCanceled());
 
             var target = new Target
             {

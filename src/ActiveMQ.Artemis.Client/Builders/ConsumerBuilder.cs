@@ -30,7 +30,7 @@ namespace ActiveMQ.Artemis.Client.Builders
             CheckConfiguration(configuration);
 
             cancellationToken.ThrowIfCancellationRequested();
-            cancellationToken.Register(() => _tcs.TrySetCanceled());
+            using var _ = cancellationToken.Register(() => _tcs.TrySetCanceled());
 
             var source = new Source
             {

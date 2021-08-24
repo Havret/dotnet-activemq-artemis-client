@@ -25,7 +25,7 @@ namespace ActiveMQ.Artemis.Client.Builders
         public async Task<IConnection> CreateAsync(Endpoint endpoint, CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            cancellationToken.Register(() => _tcs.TrySetCanceled());
+            using var _ = cancellationToken.Register(() => _tcs.TrySetCanceled());
 
             var connectionFactory = new Amqp.ConnectionFactory();
             try

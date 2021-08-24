@@ -23,7 +23,7 @@ namespace ActiveMQ.Artemis.Client.Builders
         public async Task<TransactionCoordinator> CreateAsync(CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            cancellationToken.Register(() => _tcs.TrySetCanceled());
+            using var _ = cancellationToken.Register(() => _tcs.TrySetCanceled());
 
             var attach = new Attach
             {
