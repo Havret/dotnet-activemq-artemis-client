@@ -29,7 +29,7 @@ namespace ActiveMQ.Artemis.Client.Builders
             if (configuration == null) throw new ArgumentNullException(nameof(configuration));
             
             cancellationToken.ThrowIfCancellationRequested();
-            cancellationToken.Register(() => _tcs.TrySetCanceled());
+            using var _ = cancellationToken.Register(() => _tcs.TrySetCanceled());
 
             var target = new Target
             {
