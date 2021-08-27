@@ -1,18 +1,38 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ActiveMQ.Artemis.Client.UnitTests", "test\ActiveMQ.Artemis.Client.UnitTests\ActiveMQ.Artemis.Client.UnitTests.csproj", "{042B0533-6AEA-4353-8723-CEFFFCB78398}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ArtemisNetClient.UnitTests", "test\ArtemisNetClient.UnitTests\ArtemisNetClient.UnitTests.csproj", "{042B0533-6AEA-4353-8723-CEFFFCB78398}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ActiveMQ.Artemis.Client", "src\ActiveMQ.Artemis.Client\ActiveMQ.Artemis.Client.csproj", "{FECF1F2E-2DD5-40FE-970E-B0F1BB8152E9}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ArtemisNetClient", "src\ArtemisNetClient\ArtemisNetClient.csproj", "{FECF1F2E-2DD5-40FE-970E-B0F1BB8152E9}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ActiveMQ.Artemis.Client.IntegrationTests", "test\ActiveMQ.Artemis.Client.IntegrationTests\ActiveMQ.Artemis.Client.IntegrationTests.csproj", "{78611D83-43E6-447B-814C-C73289AEDA30}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ArtemisNetClient.IntegrationTests", "test\ArtemisNetClient.IntegrationTests\ArtemisNetClient.IntegrationTests.csproj", "{78611D83-43E6-447B-814C-C73289AEDA30}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ActiveMQ.Artemis.Client.TestUtils", "test\ActiveMQ.Artemis.Client.TestUtils\ActiveMQ.Artemis.Client.TestUtils.csproj", "{850CFBD1-9BD7-447D-988B-2742F217DA00}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ArtemisNetClient.TestUtils", "test\ArtemisNetClient.TestUtils\ArtemisNetClient.TestUtils.csproj", "{850CFBD1-9BD7-447D-988B-2742F217DA00}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{4B33FA85-AAA6-4363-9C46-C5045A96E975}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Benchmarks", "Benchmarks", "{31102C89-C76C-48F9-B41A-8A9F84D07A94}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PingPong", "benchmark\PingPong\PingPong.csproj", "{546D2DEF-3AE8-4ED8-B11B-B1A71E96D04C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ArtemisNetClient.Extensions.DependencyInjection", "src\ArtemisNetClient.Extensions.DependencyInjection\ArtemisNetClient.Extensions.DependencyInjection.csproj", "{A7F9D6F0-AAA2-43DC-A220-E1E6CC9AAE4C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ArtemisNetClient.Extensions.Hosting", "src\ArtemisNetClient.Extensions.Hosting\ArtemisNetClient.Extensions.Hosting.csproj", "{5300B3C0-EAE3-4AA3-A9A4-6F2BAB6F45B7}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ArtemisNetClient.Extensions.LeaderElection", "src\ArtemisNetClient.Extensions.LeaderElection\ArtemisNetClient.Extensions.LeaderElection.csproj", "{24BAF393-4497-47F6-B882-3CE9C6DE865B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ArtemisNetClient.Extensions.App.Metrics", "src\ArtemisNetClient.Extensions.App.Metrics\ArtemisNetClient.Extensions.App.Metrics.csproj", "{0C00F9F1-071A-4BA2-A320-5418FD6A94AF}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ArtemisNetClient.Extensions.LeaderElection.IntegrationTests", "test\ArtemisNetClient.Extensions.LeaderElection.IntegrationTests\ArtemisNetClient.Extensions.LeaderElection.IntegrationTests.csproj", "{30F2CCBF-7C02-479D-8A1B-A88C9247A0AF}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ArtemisNetClient.Extensions.App.Metrics.IntegrationTests", "test\ArtemisNetClient.Extensions.App.Metrics.IntegrationTests\ArtemisNetClient.Extensions.App.Metrics.IntegrationTests.csproj", "{F6FC1D00-00F7-4EB9-891E-6551E476193D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ArtemisNetClient.Extensions.IntegrationTests", "test\ArtemisNetClient.Extensions.IntegrationTests\ArtemisNetClient.Extensions.IntegrationTests.csproj", "{A1E318CF-19B3-4E68-A816-A3F1E6E0527E}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Samples", "Samples", "{6CD97B24-3150-4200-A898-0682800AEA80}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ArtemisNetClient.Examples.AspNetCore", "samples\ArtemisNetClient.Examples.AspNetCore\ArtemisNetClient.Examples.AspNetCore.csproj", "{F093A645-7B08-4DAC-B0B0-470E9DEEF514}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ArtemisNetClient.Examples.LeaderElection", "samples\ArtemisNetClient.Examples.LeaderElection\ArtemisNetClient.Examples.LeaderElection.csproj", "{D1EAA861-21B4-435B-A603-B6B2749A12AF}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -40,11 +60,52 @@ Global
 		{546D2DEF-3AE8-4ED8-B11B-B1A71E96D04C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{546D2DEF-3AE8-4ED8-B11B-B1A71E96D04C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{546D2DEF-3AE8-4ED8-B11B-B1A71E96D04C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A7F9D6F0-AAA2-43DC-A220-E1E6CC9AAE4C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A7F9D6F0-AAA2-43DC-A220-E1E6CC9AAE4C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A7F9D6F0-AAA2-43DC-A220-E1E6CC9AAE4C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A7F9D6F0-AAA2-43DC-A220-E1E6CC9AAE4C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5300B3C0-EAE3-4AA3-A9A4-6F2BAB6F45B7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5300B3C0-EAE3-4AA3-A9A4-6F2BAB6F45B7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5300B3C0-EAE3-4AA3-A9A4-6F2BAB6F45B7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5300B3C0-EAE3-4AA3-A9A4-6F2BAB6F45B7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{24BAF393-4497-47F6-B882-3CE9C6DE865B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{24BAF393-4497-47F6-B882-3CE9C6DE865B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{24BAF393-4497-47F6-B882-3CE9C6DE865B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{24BAF393-4497-47F6-B882-3CE9C6DE865B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0C00F9F1-071A-4BA2-A320-5418FD6A94AF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0C00F9F1-071A-4BA2-A320-5418FD6A94AF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0C00F9F1-071A-4BA2-A320-5418FD6A94AF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0C00F9F1-071A-4BA2-A320-5418FD6A94AF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{30F2CCBF-7C02-479D-8A1B-A88C9247A0AF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{30F2CCBF-7C02-479D-8A1B-A88C9247A0AF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{30F2CCBF-7C02-479D-8A1B-A88C9247A0AF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{30F2CCBF-7C02-479D-8A1B-A88C9247A0AF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F6FC1D00-00F7-4EB9-891E-6551E476193D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F6FC1D00-00F7-4EB9-891E-6551E476193D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F6FC1D00-00F7-4EB9-891E-6551E476193D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F6FC1D00-00F7-4EB9-891E-6551E476193D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A1E318CF-19B3-4E68-A816-A3F1E6E0527E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A1E318CF-19B3-4E68-A816-A3F1E6E0527E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A1E318CF-19B3-4E68-A816-A3F1E6E0527E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A1E318CF-19B3-4E68-A816-A3F1E6E0527E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F093A645-7B08-4DAC-B0B0-470E9DEEF514}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F093A645-7B08-4DAC-B0B0-470E9DEEF514}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F093A645-7B08-4DAC-B0B0-470E9DEEF514}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F093A645-7B08-4DAC-B0B0-470E9DEEF514}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D1EAA861-21B4-435B-A603-B6B2749A12AF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D1EAA861-21B4-435B-A603-B6B2749A12AF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D1EAA861-21B4-435B-A603-B6B2749A12AF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D1EAA861-21B4-435B-A603-B6B2749A12AF}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{78611D83-43E6-447B-814C-C73289AEDA30} = {4B33FA85-AAA6-4363-9C46-C5045A96E975}
 		{850CFBD1-9BD7-447D-988B-2742F217DA00} = {4B33FA85-AAA6-4363-9C46-C5045A96E975}
 		{042B0533-6AEA-4353-8723-CEFFFCB78398} = {4B33FA85-AAA6-4363-9C46-C5045A96E975}
 		{546D2DEF-3AE8-4ED8-B11B-B1A71E96D04C} = {31102C89-C76C-48F9-B41A-8A9F84D07A94}
+		{30F2CCBF-7C02-479D-8A1B-A88C9247A0AF} = {4B33FA85-AAA6-4363-9C46-C5045A96E975}
+		{F6FC1D00-00F7-4EB9-891E-6551E476193D} = {4B33FA85-AAA6-4363-9C46-C5045A96E975}
+		{A1E318CF-19B3-4E68-A816-A3F1E6E0527E} = {4B33FA85-AAA6-4363-9C46-C5045A96E975}
+		{F093A645-7B08-4DAC-B0B0-470E9DEEF514} = {6CD97B24-3150-4200-A898-0682800AEA80}
+		{D1EAA861-21B4-435B-A603-B6B2749A12AF} = {6CD97B24-3150-4200-A898-0682800AEA80}
 	EndGlobalSection
 EndGlobal
