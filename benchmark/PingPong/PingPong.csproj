@@ -6,7 +6,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\ActiveMQ.Artemis.Client\ActiveMQ.Artemis.Client.csproj" />
+    <ProjectReference Include="..\..\src\ArtemisNetClient\ArtemisNetClient.csproj" />
   </ItemGroup>
 
 </Project>

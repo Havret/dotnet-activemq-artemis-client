@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net5.0</TargetFramework>
+    <RootNamespace>ActiveMQ.Artemis.Client.Examples.LeaderElection</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\ArtemisNetClient.Extensions.Hosting\ArtemisNetClient.Extensions.Hosting.csproj" />
+    <ProjectReference Include="..\..\src\ArtemisNetClient.Extensions.LeaderElection\ArtemisNetClient.Extensions.LeaderElection.csproj" />
+  </ItemGroup>
+
+
+</Project>

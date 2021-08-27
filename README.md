@@ -1,7 +1,6 @@
 # .NET Client for ActiveMQ Artemis
 
 [![Build](https://github.com/Havret/dotnet-activemq-artemis-client/actions/workflows/build.yml/badge.svg)](https://github.com/Havret/dotnet-activemq-artemis-client/actions/workflows/build.yml)
-[![NuGet](https://img.shields.io/nuget/vpre/ArtemisNetClient.svg)](https://www.nuget.org/packages/ArtemisNetClient)
 [![Gitter](https://badges.gitter.im/dotnet-activemq-artemis-client/community.svg)](https://gitter.im/dotnet-activemq-artemis-client/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 
 Unofficial [ActiveMQ Artemis](https://activemq.apache.org/components/artemis/) .NET Client for .NET Core and .NET Framework.
@@ -9,6 +8,14 @@ Unofficial [ActiveMQ Artemis](https://activemq.apache.org/components/artemis/) .
 Apache ActiveMQ Artemis is an open-source project to build a multi-protocol, embeddable, very high performance, clustered, asynchronous messaging system.
 
 This lightweight .NET client library built on top of [AmqpNetLite](http://azure.github.io/amqpnetlite/) tries to fully leverage Apache ActiveMQ Artemis capabilities.
+
+|NuGet|Status|
+|------|-------------|
+|ArtemisNetClient|[![NuGet](https://img.shields.io/nuget/vpre/ArtemisNetClient.svg)](https://www.nuget.org/packages/ArtemisNetClient/)
+|ArtemisNetClient.Extensions.DependencyInjection|[![NuGet](https://img.shields.io/nuget/vpre/ArtemisNetClient.Extensions.DependencyInjection.svg)](https://www.nuget.org/packages/ArtemisNetClient.Extensions.DependencyInjection/)
+|ArtemisNetClient.Extensions.Hosting |[![NuGet](https://img.shields.io/nuget/vpre/ArtemisNetClient.Extensions.Hosting.svg)](https://www.nuget.org/packages/ArtemisNetClient.Extensions.Hosting/)
+|ArtemisNetClient.Extensions.App.Metrics |[![NuGet](https://img.shields.io/nuget/vpre/ArtemisNetClient.Extensions.App.Metrics.svg)](https://www.nuget.org/packages/ArtemisNetClient.Extensions.App.Metrics/)
+|ArtemisNetClient.Extensions.LeaderElection |
 
 ## Compatibility
 
@@ -87,6 +94,9 @@ The following table shows what features are currently supported.
 |Queue Browser|❌||
 |Transactions|✔||
 |Consumer Priority|❌||
+
+## Extensions
+There are several extensions available that make integration of .NET Client for ActiveMQ Artemis with ASP.NET Core based projects seamless.
 
 ## License
 

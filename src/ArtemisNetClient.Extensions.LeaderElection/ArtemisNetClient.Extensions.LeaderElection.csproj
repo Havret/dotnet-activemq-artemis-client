@@ -1,0 +1,28 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <Summary>Leader Election support for ActiveMQ Artemis .NET Client</Summary>
+    <Description>Leader Election support for ActiveMQ Artemis .NET Client.</Description>
+    <TargetFrameworks>net5.0;netcoreapp3.1;netstandard2.0;netstandard2.1</TargetFrameworks>
+    <LangVersion>8.0</LangVersion>
+    <PackageProjectUrl>https://havret.github.io/dotnet-activemq-artemis-client/</PackageProjectUrl>
+    <PackageId>ArtemisNetClient.Extensions.LeaderElection</PackageId>
+    <PackageLicenseUrl>https://github.com/Havret/activemq-artemis-extensions/blob/master/LICENSE</PackageLicenseUrl>
+    <RepositoryType>git</RepositoryType>
+    <RepositoryUrl>https://github.com/Havret/activemq-artemis-extensions</RepositoryUrl>
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+    <Authors>Havret</Authors>
+    <RootNamespace>ActiveMQ.Artemis.Client.Extensions.LeaderElection</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="ActiveMQ.Artemis.Client.Extensions.LeaderElection.csproj.DotSettings" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\ArtemisNetClient.Extensions.DependencyInjection\ArtemisNetClient.Extensions.DependencyInjection.csproj" />
+  </ItemGroup>
+
+</Project>
