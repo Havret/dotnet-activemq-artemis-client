@@ -24,7 +24,11 @@ namespace ActiveMQ.Artemis.Client.IntegrationTests
 
             var payload = CreatePayloadOfSize(900);
             await using var producer = await connection.CreateProducerAsync(address, RoutingType.Anycast);
-            await Assert.ThrowsAsync<TaskCanceledException>(() => producer.SendAsync(new Message(payload), new CancellationTokenSource(TimeSpan.FromMilliseconds(100)).Token));
+            await Assert.ThrowsAsync<TaskCanceledException>(async () =>
+            {
+                using var cts = new CancellationTokenSource(TimeSpan.FromMilliseconds(100));
+                await producer.SendAsync(new Message(payload), cts.Token);
+            });
 
             await using var consumer = await connection.CreateConsumerAsync(address, RoutingType.Anycast);
             var messages = await GetAllMessages(connection, address);
@@ -40,7 +44,8 @@ namespace ActiveMQ.Artemis.Client.IntegrationTests
                 {
                     await using var producer = await connection.CreateProducerAsync(address, RoutingType.Anycast);
                     var payload = CreatePayloadOfSize(1000);
-                    await producer.SendAsync(new Message(payload), new CancellationTokenSource(TimeSpan.FromMilliseconds(100)).Token);
+                    using var cts = new CancellationTokenSource(TimeSpan.FromMilliseconds(100));
+                    await producer.SendAsync(new Message(payload), cts.Token);
                     await Task.Delay(TimeSpan.FromMilliseconds(50));
                 }
             }
@@ -67,7 +72,8 @@ namespace ActiveMQ.Artemis.Client.IntegrationTests
             {
                 while (true)
                 {
-                    var message = await consumer.ReceiveAsync(new CancellationTokenSource(TimeSpan.FromMilliseconds(100)).Token);
+                    using var cts = new CancellationTokenSource(TimeSpan.FromMilliseconds(100));
+                    var message = await consumer.ReceiveAsync(cts.Token);
                     messages.Add(message);
                 }
             }
