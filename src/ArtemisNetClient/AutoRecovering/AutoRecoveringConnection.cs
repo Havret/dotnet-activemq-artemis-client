@@ -238,7 +238,14 @@ namespace ActiveMQ.Artemis.Client.AutoRecovering
         private async Task DisposeInnerConnection()
         {
             _connection.ConnectionClosed -= OnConnectionClosed;
-            await _connection.DisposeAsync().ConfigureAwait(false);
+            try
+            {
+                await _connection.DisposeAsync().ConfigureAwait(false);
+            }
+            catch (Exception)
+            {
+                // ignored
+            }
         }
 
         private Endpoint GetCurrentEndpoint(Context context)
