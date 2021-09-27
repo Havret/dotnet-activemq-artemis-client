@@ -19,7 +19,7 @@ namespace ActiveMQ.Artemis.Client.Examples.AspNetCore
         // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddActiveMq(name: "my-artemis-cluster", endpoints: new[] { Endpoint.Create(host: "localhost", port: 5672, "guest", "guest") })
+            services.AddActiveMq(name: "my-artemis-cluster", endpoints: new[] { Endpoint.Create(host: "localhost", port: 5672, "artemis", "artemis") })
                     .ConfigureConnectionFactory((provider, factory) =>
                     {
                         factory.LoggerFactory = provider.GetService<ILoggerFactory>();
@@ -58,8 +58,8 @@ namespace ActiveMQ.Artemis.Client.Examples.AspNetCore
             {
                 endpoints.MapGet("/", async context =>
                 {
-                    var messageProducer = context.RequestServices.GetService<MyTypedMessageProducer>();
-                    await messageProducer.SendTextAsync(DateTime.UtcNow.ToString(CultureInfo.InvariantCulture));
+                    var messageProducer = context.RequestServices.GetRequiredService<MyTypedMessageProducer>();
+                    await messageProducer.SendTextAsync(DateTime.UtcNow.ToString(CultureInfo.InvariantCulture));    
                     await context.Response.WriteAsync("Hello World!");
                 });
             });
