@@ -11,8 +11,8 @@ namespace ActiveMQ.Artemis.Client
 
         public static Symbol GetRoutingCapability(this RoutingType routingType) => routingType switch
         {
-            RoutingType.Anycast => RoutingCapabilities.Anycast,
-            RoutingType.Multicast => RoutingCapabilities.Multicast,
+            RoutingType.Anycast => Capabilities.Anycast,
+            RoutingType.Multicast => Capabilities.Multicast,
             _ => throw new ArgumentOutOfRangeException(nameof(routingType), $"RoutingType {routingType.ToString()} is not supported.")
         };
 

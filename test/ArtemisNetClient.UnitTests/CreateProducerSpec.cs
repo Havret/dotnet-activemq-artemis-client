@@ -101,7 +101,7 @@ namespace ActiveMQ.Artemis.Client.UnitTests
             Assert.True(producerAttached.WaitOne(Timeout));
             Assert.NotNull(attachFrame);
             Assert.IsType<Target>(attachFrame.Target);
-            Assert.Contains(((Target) attachFrame.Target).Capabilities, symbol => RoutingCapabilities.Anycast.Equals(symbol));
+            Assert.Contains(((Target) attachFrame.Target).Capabilities, symbol => Capabilities.Anycast.Equals(symbol));
         }
         
         [Theory, MemberData(nameof(RoutingTypesData))]
@@ -137,8 +137,8 @@ namespace ActiveMQ.Artemis.Client.UnitTests
         {
             return new[]
             {
-                new object[] { RoutingType.Anycast, RoutingCapabilities.Anycast },
-                new object[] { RoutingType.Multicast, RoutingCapabilities.Multicast }
+                new object[] { RoutingType.Anycast, Capabilities.Anycast },
+                new object[] { RoutingType.Multicast, Capabilities.Multicast }
             };
         }
 

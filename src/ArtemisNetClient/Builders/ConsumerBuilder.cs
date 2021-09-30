@@ -28,7 +28,6 @@ namespace ActiveMQ.Artemis.Client.Builders
         public async Task<IConsumer> CreateAsync(ConsumerConfiguration configuration, CancellationToken cancellationToken)
         {
             CheckConfiguration(configuration);
-
             cancellationToken.ThrowIfCancellationRequested();
             using var _ = cancellationToken.Register(() => _tcs.TrySetCanceled());
 
@@ -39,7 +38,7 @@ namespace ActiveMQ.Artemis.Client.Builders
                 FilterSet = GetFilterSet(configuration.FilterExpression, configuration.NoLocalFilter),
             };
 
-            var receiverLink = new ReceiverLink(_session, Guid.NewGuid().ToString(), source, OnAttached);
+            var receiverLink = new ReceiverLink(_session, GetReceiverName(configuration), source, OnAttached);
             receiverLink.AddClosedCallback(OnClosed);
             await _tcs.Task.ConfigureAwait(false);
             receiverLink.Closed -= OnClosed;
@@ -56,6 +55,7 @@ namespace ActiveMQ.Artemis.Client.Builders
                 throw new ArgumentException($"{nameof(ConsumerConfiguration.NoLocalFilter)} cannot be used with {RoutingType.Anycast.ToString()} routing type.",
                     nameof(configuration.NoLocalFilter));
             }
+
             if (configuration.RoutingType.HasValue && !string.IsNullOrEmpty(configuration.Queue))
             {
                 throw new ArgumentException($"Queue name cannot be explicitly set when {nameof(RoutingType)} provided. " +
@@ -67,14 +67,16 @@ namespace ActiveMQ.Artemis.Client.Builders
             }
         }
 
-        private static Symbol[] GetCapabilities(ConsumerConfiguration configuration)
+        private static Symbol[] GetCapabilities(ConsumerConfiguration configuration) => configuration switch
         {
-            return configuration.RoutingType.HasValue ? new[] { configuration.RoutingType.Value.GetRoutingCapability() } : null;
-        }
+            { RoutingType : { } } => new[] { configuration.RoutingType.Value.GetRoutingCapability() },
+            { Shared : true } => new[] { Capabilities.Shared, Capabilities.Global, Capabilities.Multicast },
+            _ => null
+        };
 
         private static string GetAddress(ConsumerConfiguration configuration)
         {
-            if (configuration.RoutingType.HasValue)
+            if (configuration.RoutingType.HasValue || configuration.Shared)
             {
                 return configuration.Address;
             }
@@ -99,6 +101,12 @@ namespace ActiveMQ.Artemis.Client.Builders
 
             return filterSet;
         }
+
+        private static string GetReceiverName(ConsumerConfiguration configuration) => configuration switch
+        {
+            { Shared : true } => configuration.Queue,
+            _ => Guid.NewGuid().ToString()
+        };
 
         private static string CreateFullyQualifiedQueueName(string address, string queue)
         {
