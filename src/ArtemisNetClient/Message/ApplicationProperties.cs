@@ -1,10 +1,13 @@
-﻿namespace ActiveMQ.Artemis.Client
+﻿using System.Collections.Generic;
+using System.Linq;
+
+namespace ActiveMQ.Artemis.Client
 {
     public sealed class ApplicationProperties
     {
         private readonly Amqp.Framing.ApplicationProperties _innerProperties;
 
-        public ApplicationProperties(Amqp.Message innerMessage)
+        internal ApplicationProperties(Amqp.Message innerMessage)
         {
             _innerProperties = innerMessage.ApplicationProperties ??= new Amqp.Framing.ApplicationProperties();
         }
@@ -41,5 +44,10 @@
                 return false;
             }
         }
+
+        /// <summary>
+        /// Gets the sequence containing the keys in the <see cref="ActiveMQ.Artemis.Client.ApplicationProperties">.</see>
+        /// </summary>
+        public IEnumerable<string> Keys => _innerProperties.Map.Keys.OfType<string>();
     }
 }
