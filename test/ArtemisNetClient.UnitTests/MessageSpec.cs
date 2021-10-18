@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Amqp.Types;
 using Xunit;
@@ -169,6 +171,33 @@ namespace ActiveMQ.Artemis.Client.UnitTests
             var received = messageProcessor.Dequeue(ShortTimeout);
             Assert.True(received.ApplicationProperties.TryGetValue("key", out string value));
             Assert.Equal("value",value);
+        }
+
+        [Fact]
+        public async Task Should_get_all_the_application_property_keys()
+        {
+            using var host = CreateOpenedContainerHost();
+            var messageProcessor = host.CreateMessageProcessor("a1");
+            await using var connection = await CreateConnection(host.Endpoint);
+            await using var producer = await connection.CreateProducerAsync("a1", RoutingType.Anycast);
+
+            var message = new Message("foo")
+            {
+                ApplicationProperties =
+                {
+                    ["key1"] = "value1",
+                    ["key2"] = 2,
+                    ["key3"] = 2.5d,
+                }
+            };
+            await producer.SendAsync(message);
+
+            var received = messageProcessor.Dequeue(ShortTimeout);
+
+            Assert.Equal(3, received.ApplicationProperties.Keys.Count());
+            Assert.Contains("key1", received.ApplicationProperties.Keys);
+            Assert.Contains("key2", received.ApplicationProperties.Keys);
+            Assert.Contains("key3", received.ApplicationProperties.Keys);
         }
 
         [Fact]
