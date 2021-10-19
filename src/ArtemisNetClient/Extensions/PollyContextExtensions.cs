@@ -1,12 +1,11 @@
-﻿using System;
-using Polly;
+﻿using Polly;
 
 namespace ActiveMQ.Artemis.Client
 {
     internal static class PollyContextExtensions
     {
         private static string _retryCountKey = "retryCount";
-        private static string _reconnectDelayKey = "reconnectDelay";
+        private static string _endpointKey = "endpoint";
 
         public static void SetRetryCount(this Context context, int retryCount)
         {
@@ -17,22 +16,15 @@ namespace ActiveMQ.Artemis.Client
         {
             return (int) context[_retryCountKey];
         }
-
-        public static TimeSpan GetReconnectDelay(this Context context, TimeSpan initialReconnectDelay)
+        
+        public static void SetEndpoint(this Context context, Endpoint endpoint)
         {
-            if (context.TryGetValue(_reconnectDelayKey, out var reconnectDelay))
-            {
-                return (TimeSpan) reconnectDelay;
-            }
-            else
-            {
-                return initialReconnectDelay;
-            }
+            context[_endpointKey] = endpoint;
         }
 
-        public static void SetReconnectDelay(this Context context, TimeSpan reconnectDelay)
+        public static Endpoint GetEndpoint(this Context context)
         {
-            context[_reconnectDelayKey] = reconnectDelay;
+            return (Endpoint) context[_endpointKey];
         }
     }
 }

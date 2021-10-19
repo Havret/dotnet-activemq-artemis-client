@@ -66,14 +66,10 @@ namespace ActiveMQ.Artemis.Client.AutoRecovering
                    }, (result, _, context) =>
                    {
                        var retryCount = context.GetRetryCount();
-                       var endpoint = GetCurrentEndpoint(context);
+                       var endpoint =context.GetEndpoint();
                        if (result.Exception != null)
                        {
                            Log.FailedToEstablishConnection(_logger, endpoint, retryCount, result.Exception);
-                       }
-                       else
-                       {
-                           Log.ConnectionEstablished(_logger, endpoint, retryCount);
                        }
                    });
         }
@@ -168,11 +164,20 @@ namespace ActiveMQ.Artemis.Client.AutoRecovering
         {
             var ctx = new Context();
             ctx.SetRetryCount(0);
-            return _connectionRetryPolicy.ExecuteAsync((context, ct) =>
+            return _connectionRetryPolicy.ExecuteAsync(async (context, ct) =>
             {
-                var endpoint = GetCurrentEndpoint(context);
+                int retryCount = context.GetRetryCount();
+                var endpoint = GetNextEndpoint(retryCount);
+                context.SetEndpoint(endpoint);
                 var connectionBuilder = new ConnectionBuilder(_loggerFactory, _messageIdPolicyFactory);
-                return connectionBuilder.CreateAsync(endpoint, ct);
+                var connection = await connectionBuilder.CreateAsync(endpoint, ct);
+
+                if (retryCount > 0)
+                {
+                    Log.ConnectionEstablished(_logger, endpoint, retryCount);
+                }
+                
+                return connection;
             }, ctx, cancellationToken);
         }
 
@@ -248,9 +253,8 @@ namespace ActiveMQ.Artemis.Client.AutoRecovering
             }
         }
 
-        private Endpoint GetCurrentEndpoint(Context context)
+        private Endpoint GetNextEndpoint(int retryCount)
         {
-            int retryCount = context.GetRetryCount();
             return _endpoints[retryCount % _endpoints.Length];
         }
 
