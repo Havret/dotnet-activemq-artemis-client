@@ -19,7 +19,7 @@ namespace ActiveMQ.Artemis.Client.Examples.AspNetCore
         // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddActiveMq(name: "my-artemis-cluster", endpoints: new[] { Endpoint.Create(host: "localhost", port: 5672, "artemis", "artemis") })
+            services.AddActiveMq(name: "my-artemis-cluster", endpoints: new[] { Endpoint.Create(host: "localhost", port: 5672, "artemis", "artemis"), Endpoint.Create(host: "localhost", port: 5673, "artemis", "artemis") })
                     .ConfigureConnectionFactory((provider, factory) =>
                     {
                         factory.LoggerFactory = provider.GetService<ILoggerFactory>();
