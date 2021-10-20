@@ -1,6 +1,9 @@
 ﻿using System;
+using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using ActiveMQ.Artemis.Client.Exceptions;
+using ActiveMQ.Artemis.Client.TestUtils;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -66,8 +69,12 @@ namespace ActiveMQ.Artemis.Client.IntegrationTests.TopologyManagement
 
             var queueNames = await topologyManager.GetQueueNamesAsync(CancellationToken);
             Assert.DoesNotContain(queue, queueNames);
-            
-            var addressNames = await topologyManager.GetAddressNamesAsync(CancellationToken);
+
+            var addressNames = await Retry.RetryUntil(
+                func: () => topologyManager.GetAddressNamesAsync(CancellationToken),
+                until: addressNames => !addressNames.Contains(address),
+                timeout: TimeSpan.FromSeconds(5));
+
             Assert.DoesNotContain(address, addressNames);
         }
         
