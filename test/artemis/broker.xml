@@ -129,6 +129,8 @@ under the License.
       <page-sync-timeout>1096000</page-sync-timeout>
 
       <message-expiry-scan-period>1000</message-expiry-scan-period>
+	  
+	  <address-queue-scan-period>100</address-queue-scan-period>
 
       <!-- the system will enter into page mode once you hit this limit.
            This is an estimate in bytes of how much the messages are using in memory
