@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+    <id>https://havret.github.io/dotnet-activemq-artemis-client/blog</id>
+    <title>.NET Client for ActiveMQ Artemis Blog</title>
+    <updated>2015-10-25T23:29:00.000Z</updated>
+    <generator>https://github.com/jpmonette/feed</generator>
+    <link rel="alternate" href="https://havret.github.io/dotnet-activemq-artemis-client/blog"/>
+    <subtitle>.NET Client for ActiveMQ Artemis Blog</subtitle>
+    <icon>https://havret.github.io/dotnet-activemq-artemis-client/img/favicon.ico</icon>
+</feed>
