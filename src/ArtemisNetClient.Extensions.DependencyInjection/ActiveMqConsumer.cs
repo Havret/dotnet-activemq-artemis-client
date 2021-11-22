@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
+using ActiveMQ.Artemis.Client.Exceptions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
@@ -51,6 +52,12 @@ namespace ActiveMQ.Artemis.Client.Extensions.DependencyInjection
                     catch (Exception exception)
                     {
                         _logger.LogError(exception, string.Empty);
+                        
+                        if (exception is ConsumerClosedException)
+                        {
+                            // At this point the consumer is in non-recoverable state.
+                            return;
+                        }
                     }
                 }
             }, token);
