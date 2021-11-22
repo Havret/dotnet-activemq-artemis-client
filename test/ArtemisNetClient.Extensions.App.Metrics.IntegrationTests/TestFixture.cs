@@ -48,14 +48,14 @@ namespace ActiveMQ.Artemis.Client.Extensions.App.Metrics.IntegrationTests
                                    }));
                                    services.AddActiveMqHostedService();
                                })
-                               .Configure(app => { })
+                               .Configure(_ => { })
                                .ConfigureLogging((hostingContext, logging) =>
                                {
                                    logging.AddConfiguration(hostingContext.Configuration.GetSection("Logging"));
                                    logging.AddProvider(new XUnitLoggerProvider(testOutputHelper));
                                    logging.SetMinimumLevel(LogLevel.Trace);
                                })
-                               .ConfigureAppConfiguration((builder, config) =>
+                               .ConfigureAppConfiguration((_, config) =>
                                {
                                    config.AddJsonFile("appsettings.json", optional: true, reloadOnChange: true);
                                });

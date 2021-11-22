@@ -27,7 +27,7 @@ namespace ActiveMQ.Artemis.Client.Extensions.App.Metrics.IntegrationTests
             var fixture = await TestFixture.CreateAsync(_testOutputHelper, builder =>
             {
                 builder
-                    .AddConsumer(address, RoutingType.Multicast, queue, async (message, consumer, token, provider) =>
+                    .AddConsumer(address, RoutingType.Multicast, queue, async (message, consumer, _, _) =>
                     {
                         await consumer.AcceptAsync(message);
                     })
@@ -62,7 +62,7 @@ namespace ActiveMQ.Artemis.Client.Extensions.App.Metrics.IntegrationTests
             var fixture = await TestFixture.CreateAsync(_testOutputHelper, builder =>
             {
                 builder
-                    .AddConsumer(address, RoutingType.Anycast, async (message, consumer, token, provider) =>
+                    .AddConsumer(address, RoutingType.Anycast, async (message, consumer, _, _) =>
                     {
                         await consumer.AcceptAsync(message);
                     })
@@ -96,7 +96,7 @@ namespace ActiveMQ.Artemis.Client.Extensions.App.Metrics.IntegrationTests
             var fixture = await TestFixture.CreateAsync(_testOutputHelper, builder =>
             {
                 builder
-                    .AddConsumer(address, RoutingType.Multicast, queue, async (message, consumer, token, provider) =>
+                    .AddConsumer(address, RoutingType.Multicast, queue, async (message, consumer, _, _) =>
                     {
                         await consumer.AcceptAsync(message);
                     })
@@ -131,7 +131,7 @@ namespace ActiveMQ.Artemis.Client.Extensions.App.Metrics.IntegrationTests
             var fixture = await TestFixture.CreateAsync(_testOutputHelper, builder =>
             {
                 builder
-                    .AddConsumer(address, RoutingType.Anycast, async (message, consumer, token, provider) =>
+                    .AddConsumer(address, RoutingType.Anycast, async (message, consumer, _, _) =>
                     {
                         await consumer.AcceptAsync(message);
                     })

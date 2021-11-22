@@ -21,7 +21,7 @@ jobs:
       - name: Setup .NET Core
         uses: actions/setup-dotnet@v1
         with:
-          dotnet-version: "5.0.x"
+          dotnet-version: "6.0.x"
       - name: Create NuGet Package
         run: dotnet pack -c Release /p:Version=${{ github.event.release.name }} /p:PackageReleaseNotes="See https://github.com/Havret/dotnet-activemq-artemis-client/releases/tag/${{ github.event.release.tag_name }}"
       - name: Archive NuGet Package

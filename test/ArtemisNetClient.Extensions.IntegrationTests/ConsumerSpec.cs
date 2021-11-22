@@ -58,7 +58,7 @@ namespace ActiveMQ.Artemis.Client.Extensions.AspNetCore.IntegrationTests
             {
                 builder.EnableAddressDeclaration()
                        .EnableQueueDeclaration()
-                       .AddConsumer(address, RoutingType.Multicast, queue, async (message, consumer, serviceProvider, token) =>
+                       .AddConsumer(address, RoutingType.Multicast, queue, async (message, consumer, _, token) =>
                        {
                            await Task.Delay(TimeSpan.FromMinutes(10), token);
                            await consumer.AcceptAsync(message);

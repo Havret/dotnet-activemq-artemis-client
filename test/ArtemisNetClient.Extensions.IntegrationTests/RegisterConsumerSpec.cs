@@ -20,7 +20,7 @@ namespace ActiveMQ.Artemis.Client.Extensions.AspNetCore.IntegrationTests
         {
             await ShouldRegisterConsumerWithGivenConfiguration((address, tcs, builder) =>
             {
-                builder.AddConsumer(address, RoutingType.Anycast, async (message, consumer, token, serviceProvider) =>
+                builder.AddConsumer(address, RoutingType.Anycast, async (message, consumer, _, _) =>
                 {
                     tcs.TrySetResult(message);
                     await consumer.AcceptAsync(message);
@@ -33,7 +33,7 @@ namespace ActiveMQ.Artemis.Client.Extensions.AspNetCore.IntegrationTests
         {
             await ShouldRegisterConsumerWithGivenConfiguration((address, tcs, builder) =>
             {
-                builder.AddConsumer(address, RoutingType.Anycast, new ConsumerOptions { Credit = 100 }, async (message, consumer, token, serviceProvider) =>
+                builder.AddConsumer(address, RoutingType.Anycast, new ConsumerOptions { Credit = 100 }, async (message, consumer, _, _) =>
                 {
                     tcs.TrySetResult(message);
                     await consumer.AcceptAsync(message);
@@ -46,7 +46,7 @@ namespace ActiveMQ.Artemis.Client.Extensions.AspNetCore.IntegrationTests
         {
             await ShouldRegisterConsumerWithGivenConfiguration((address, tcs, builder) =>
             {
-                builder.AddConsumer(address, RoutingType.Anycast, Guid.NewGuid().ToString(), async (message, consumer, token, serviceProvider) =>
+                builder.AddConsumer(address, RoutingType.Anycast, Guid.NewGuid().ToString(), async (message, consumer, _, _) =>
                 {
                     tcs.TrySetResult(message);
                     await consumer.AcceptAsync(message);
@@ -59,7 +59,7 @@ namespace ActiveMQ.Artemis.Client.Extensions.AspNetCore.IntegrationTests
         {
             await ShouldRegisterConsumerWithGivenConfiguration((address, tcs, builder) =>
             {
-                builder.AddConsumer(address, RoutingType.Anycast, Guid.NewGuid().ToString(), new ConsumerOptions { Credit = 100 }, async (message, consumer, token, serviceProvider) =>
+                builder.AddConsumer(address, RoutingType.Anycast, Guid.NewGuid().ToString(), new ConsumerOptions { Credit = 100 }, async (message, consumer, _, _) =>
                 {
                     tcs.TrySetResult(message);
                     await consumer.AcceptAsync(message);
@@ -72,7 +72,7 @@ namespace ActiveMQ.Artemis.Client.Extensions.AspNetCore.IntegrationTests
         {
             await ShouldRegisterConsumerWithGivenConfiguration((address, tcs, builder) =>
             {
-                builder.AddConsumer(address, RoutingType.Anycast, Guid.NewGuid().ToString(), new QueueOptions { Exclusive = true }, async (message, consumer, token, serviceProvider) =>
+                builder.AddConsumer(address, RoutingType.Anycast, Guid.NewGuid().ToString(), new QueueOptions { Exclusive = true }, async (message, consumer, _, _) =>
                 {
                     tcs.TrySetResult(message);
                     await consumer.AcceptAsync(message);
@@ -85,7 +85,7 @@ namespace ActiveMQ.Artemis.Client.Extensions.AspNetCore.IntegrationTests
         {
             await ShouldRegisterConsumerWithGivenConfiguration((address, tcs, builder) =>
             {
-                builder.AddConsumer(address, RoutingType.Anycast, Guid.NewGuid().ToString(), new ConsumerOptions { Credit = 100 }, new QueueOptions { Exclusive = true }, async (message, consumer, token, serviceProvider) =>
+                builder.AddConsumer(address, RoutingType.Anycast, Guid.NewGuid().ToString(), new ConsumerOptions { Credit = 100 }, new QueueOptions { Exclusive = true }, async (message, consumer, _, _) =>
                 {
                     tcs.TrySetResult(message);
                     await consumer.AcceptAsync(message);

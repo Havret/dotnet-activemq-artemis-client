@@ -24,7 +24,7 @@ namespace ActiveMQ.Artemis.Client.Extensions.AspNetCore.IntegrationTests.Observa
             await using var testFixture = await TestFixture.CreateAsync(_testOutputHelper, builder =>
             {
                 builder.Services.AddSingleton(receiveObserver);
-                builder.AddConsumer(address, RoutingType.Multicast, async (message, consumer, token, provider) =>
+                builder.AddConsumer(address, RoutingType.Multicast, async (message, consumer, _, _) =>
                 {
                     await consumer.AcceptAsync(message);
                 });
