@@ -23,9 +23,24 @@ namespace ActiveMQ.Artemis.Client.Examples.AspNetCore
                     .ConfigureConnectionFactory((provider, factory) =>
                     {
                         factory.LoggerFactory = provider.GetService<ILoggerFactory>();
-                        factory.RecoveryPolicy = RecoveryPolicyFactory.ExponentialBackoff(initialDelay: TimeSpan.FromSeconds(1), maxDelay: TimeSpan.FromSeconds(30));
+                        factory.RecoveryPolicy = RecoveryPolicyFactory.ExponentialBackoff(initialDelay: TimeSpan.FromSeconds(1), maxDelay: TimeSpan.FromSeconds(30), retryCount: 5);
                         factory.MessageIdPolicyFactory = MessageIdPolicyFactory.GuidMessageIdPolicy;
                         factory.AutomaticRecoveryEnabled = true;
+                    })
+                    .ConfigureConnection((_, connection) =>
+                    {
+                        connection.ConnectionClosed += (_, args) =>
+                        {
+                            Console.WriteLine($"Connection closed: ClosedByPeer={args.ClosedByPeer}, Error={args.Error}");
+                        };
+                        connection.ConnectionRecovered += (_, args) =>
+                        {
+                            Console.WriteLine($"Connection recovered: Endpoint={args.Endpoint}");
+                        };
+                        connection.ConnectionRecoveryError += (_, args) =>
+                        {
+                            Console.WriteLine($"Connection recovered error: Exception={args.Exception}");
+                        };
                     })
                     .AddConsumer("a1", RoutingType.Multicast, "q1", async (message, consumer, token, serviceProvider) =>
                     {

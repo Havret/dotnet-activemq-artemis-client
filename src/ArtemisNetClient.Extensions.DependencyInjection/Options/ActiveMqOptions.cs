@@ -10,6 +10,7 @@ namespace ActiveMQ.Artemis.Client.Extensions.DependencyInjection
         public List<QueueConfiguration> QueueConfigurations { get; } = new List<QueueConfiguration>();
         public Dictionary<string, HashSet<RoutingType>> AddressConfigurations { get; set; } = new Dictionary<string, HashSet<RoutingType>>();
         public List<Action<IServiceProvider, ConnectionFactory>> ConnectionFactoryActions { get; } = new List<Action<IServiceProvider, ConnectionFactory>>();
+        public List<Action<IServiceProvider, IConnection>> ConnectionActions { get; } = new List<Action<IServiceProvider, IConnection>>();
         public List<SendObserverRegistration> SendObserverRegistrations { get; } = new List<SendObserverRegistration>();
         public List<ReceiveObserverRegistration> ReceiveObserverRegistrations { get; } = new List<ReceiveObserverRegistration>();
     }
