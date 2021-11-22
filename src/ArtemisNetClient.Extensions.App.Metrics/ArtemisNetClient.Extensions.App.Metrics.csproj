@@ -3,8 +3,8 @@
   <PropertyGroup>
     <Summary>App.Metrics support for ActiveMQ Artemis .NET Client</Summary>
     <Description>App.Metrics support for ActiveMQ Artemis .NET Client.</Description>
-    <TargetFrameworks>net5.0;netcoreapp3.1;netstandard2.0;netstandard2.1</TargetFrameworks>
-    <LangVersion>8.0</LangVersion>
+    <TargetFrameworks>net6.0;net5.0;netcoreapp3.1;netstandard2.0;netstandard2.1</TargetFrameworks>
+    <LangVersion>10</LangVersion>
     <PackageProjectUrl>https://havret.github.io/dotnet-activemq-artemis-client/</PackageProjectUrl>
     <PackageId>ArtemisNetClient.Extensions.App.Metrics</PackageId>
     <PackageLicenseUrl>https://github.com/Havret/activemq-artemis-extensions/blob/master/LICENSE</PackageLicenseUrl>
