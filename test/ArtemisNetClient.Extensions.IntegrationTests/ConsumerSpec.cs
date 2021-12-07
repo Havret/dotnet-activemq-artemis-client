@@ -73,5 +73,34 @@ namespace ActiveMQ.Artemis.Client.Extensions.AspNetCore.IntegrationTests
 
             Assert.Equal(stopHostTask, result);
         }
+
+        [Fact]
+        public async Task Should_create_shared_consumer()
+        {
+            var address = Guid.NewGuid().ToString();
+            var queue = Guid.NewGuid().ToString();
+
+            var dictionary = new ConcurrentDictionary<int, bool>();
+
+            await using var testFixture = await TestFixture.CreateAsync(_testOutputHelper, builder =>
+            {
+                builder.AddSharedConsumer(address, queue, async (message, consumer, _, _) =>
+                {
+                    dictionary.TryAdd(1, true);
+                    await consumer.AcceptAsync(message);
+                });
+                builder.AddSharedConsumer(address, queue, async (message, consumer, _, _) =>
+                {
+                    dictionary.TryAdd(2, true);
+                    await consumer.AcceptAsync(message);
+                });
+            });
+
+            await using var producer = await testFixture.Connection.CreateProducerAsync(address, RoutingType.Multicast, testFixture.CancellationToken);
+            await producer.SendAsync(new Message("foo"), testFixture.CancellationToken);
+            await producer.SendAsync(new Message("foo"), testFixture.CancellationToken);
+            
+            Assert.Equal(2, dictionary.Keys.Count);
+        }
     }
 }
