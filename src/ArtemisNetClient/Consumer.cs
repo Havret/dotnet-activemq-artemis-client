@@ -18,6 +18,7 @@ namespace ActiveMQ.Artemis.Client
         private readonly TransactionsManager _transactionsManager;
         private readonly ChannelReader<Message> _reader;
         private readonly ChannelWriter<Message> _writer;
+        private readonly bool _isDurable;
         private bool _disposed;
 
         public Consumer(ILoggerFactory loggerFactory, ReceiverLink receiverLink, TransactionsManager transactionsManager, ConsumerConfiguration configuration)
@@ -25,6 +26,7 @@ namespace ActiveMQ.Artemis.Client
             _logger = loggerFactory.CreateLogger<Consumer>();
             _receiverLink = receiverLink;
             _transactionsManager = transactionsManager;
+            _isDurable = configuration.Durable;
             var channel = Channel.CreateBounded<Message>(configuration.Credit);
             _reader = channel.Reader;
             _writer = channel.Writer;
@@ -117,7 +119,14 @@ namespace ActiveMQ.Artemis.Client
             if (!_receiverLink.IsClosed)
             {
                 _receiverLink.Closed -= OnClosed;
-                await _receiverLink.CloseAsync().ConfigureAwait(false);
+                if (_isDurable)
+                {
+                    await _receiverLink.DetachAsync().ConfigureAwait(false);    
+                }
+                else
+                {
+                    await _receiverLink.CloseAsync().ConfigureAwait(false);    
+                }
             }
 
             if (!_receiverLink.Session.IsClosed)
