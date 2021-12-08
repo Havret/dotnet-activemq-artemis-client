@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using ActiveMQ.Artemis.Client.Extensions.DependencyInjection;
+using ActiveMQ.Artemis.Client.TestUtils;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -99,8 +100,11 @@ namespace ActiveMQ.Artemis.Client.Extensions.AspNetCore.IntegrationTests
             await using var producer = await testFixture.Connection.CreateProducerAsync(address, RoutingType.Multicast, testFixture.CancellationToken);
             await producer.SendAsync(new Message("foo"), testFixture.CancellationToken);
             await producer.SendAsync(new Message("foo"), testFixture.CancellationToken);
-            
-            Assert.Equal(2, dictionary.Keys.Count);
+
+            Assert.Equal(2, await Retry.RetryUntil(
+                () => Task.FromResult(dictionary.Keys.Count),
+                x => x == 2,
+                TimeSpan.FromMilliseconds(100)));
         }
     }
 }
