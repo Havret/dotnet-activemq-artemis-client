@@ -36,6 +36,7 @@ namespace ActiveMQ.Artemis.Client.Builders
                 Address = GetAddress(configuration),
                 Capabilities = GetCapabilities(configuration),
                 FilterSet = GetFilterSet(configuration.FilterExpression, configuration.NoLocalFilter),
+                Durable = GetTerminusDurability(configuration)
             };
 
             var receiverLink = new ReceiverLink(_session, GetReceiverName(configuration), source, OnAttached);
@@ -61,6 +62,7 @@ namespace ActiveMQ.Artemis.Client.Builders
                 throw new ArgumentException($"Queue name cannot be explicitly set when {nameof(RoutingType)} provided. " +
                                             $"If you want to attach to queue by name, do not set any {nameof(RoutingType)}.", nameof(configuration.Queue));
             }
+
             if (!configuration.RoutingType.HasValue && string.IsNullOrWhiteSpace(configuration.Queue))
             {
                 throw new ArgumentNullException(nameof(configuration.Queue), "Cannot attach to queue when queue name not provided.");
@@ -73,6 +75,7 @@ namespace ActiveMQ.Artemis.Client.Builders
             { Shared : true } => new[] { Capabilities.Shared, Capabilities.Global, Capabilities.Multicast },
             _ => null
         };
+
 
         private static string GetAddress(ConsumerConfiguration configuration)
         {
@@ -101,6 +104,12 @@ namespace ActiveMQ.Artemis.Client.Builders
 
             return filterSet;
         }
+        
+        private static uint GetTerminusDurability(ConsumerConfiguration configuration) => configuration switch
+        {
+            { Durable: true } => TerminusDurability.UnsettledState,
+            _ => TerminusDurability.None
+        };
 
         private static string GetReceiverName(ConsumerConfiguration configuration) => configuration switch
         {
