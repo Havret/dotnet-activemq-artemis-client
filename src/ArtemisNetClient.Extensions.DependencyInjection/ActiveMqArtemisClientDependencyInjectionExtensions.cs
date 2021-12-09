@@ -312,6 +312,53 @@ namespace ActiveMQ.Artemis.Client.Extensions.DependencyInjection
             return builder;
         }
 
+        /// <summary>
+        /// Adds the shared, durable <see cref="IConsumer"/>.
+        /// </summary>
+        /// <param name="builder">The <see cref="IActiveMqBuilder"/>.</param>
+        /// <param name="address">The address name.</param>
+        /// <param name="queue">The queue name.</param>
+        /// <param name="handler">A delegate that will be invoked when messages arrive.</param>
+        /// <returns>The <see cref="IActiveMqBuilder"/> that can be used to configure ActiveMQ Artemis Client.</returns>
+        public static IActiveMqBuilder AddSharedDurableConsumer(this IActiveMqBuilder builder, string address, string queue, Func<Message, IConsumer, IServiceProvider, CancellationToken, Task> handler)
+        {
+            return builder.AddSharedDurableConsumer(address, queue, new ConsumerOptions(), handler);
+        }
+        
+        /// <summary>
+        /// Adds the shared, durable <see cref="IConsumer"/>.
+        /// </summary>
+        /// <param name="builder">The <see cref="IActiveMqBuilder"/>.</param>
+        /// <param name="address">The address name.</param>
+        /// <param name="queue">The queue name.</param>
+        /// <param name="consumerOptions">The <see cref="IConsumer"/> configuration.</param>
+        /// <param name="handler">A delegate that will be invoked when messages arrive.</param>
+        /// <returns>The <see cref="IActiveMqBuilder"/> that can be used to configure ActiveMQ Artemis Client.</returns>
+        public static IActiveMqBuilder AddSharedDurableConsumer(this IActiveMqBuilder builder, string address, string queue, ConsumerOptions consumerOptions,
+            Func<Message, IConsumer, IServiceProvider, CancellationToken, Task> handler)
+        {
+            for (int i = 0; i < consumerOptions.ConcurrentConsumers; i++)
+            {
+                builder.AddConsumer(new ConsumerConfiguration
+                {
+                    Address = address,
+                    Queue = queue,
+                    Credit = consumerOptions.Credit,
+                    FilterExpression = consumerOptions.FilterExpression,
+                    NoLocalFilter = consumerOptions.NoLocalFilter,
+                    Shared = true,
+                    Durable = true
+                }, observable =>
+                {
+                    observable.Address = address;
+                    observable.RoutingType = RoutingType.Multicast;
+                    observable.Queue = queue;
+                }, handler);
+            }
+
+            return builder;
+        }
+
         private static void AddConsumer(this IActiveMqBuilder builder,
             ConsumerConfiguration consumerConfiguration,
             Action<ContextualReceiveObservable> configureContextualReceiveObservableAction,

@@ -190,6 +190,8 @@ under the License.
             <permission type="manage" roles="amq"/>
          </security-setting>
       </security-settings>
+	  
+	  <amqp-use-core-subscription-naming>true</amqp-use-core-subscription-naming>
 
       <address-settings>
          <!-- if you define auto-create on certain queues, management has to be auto-create -->
