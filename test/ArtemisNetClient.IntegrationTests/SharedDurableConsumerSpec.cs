@@ -27,12 +27,12 @@ namespace ActiveMQ.Artemis.Client.IntegrationTests
 
             await using var topologyManager = await connection.CreateTopologyManagerAsync();
             var queueNames = await topologyManager.GetQueueNamesAsync();
-            Assert.Contains($"{queue}:global", queueNames);
+            Assert.Contains(queue, queueNames);
 
             await consumer.DisposeAsync();
 
             queueNames = await topologyManager.GetQueueNamesAsync();
-            Assert.Contains($"{queue}:global", queueNames);
+            Assert.Contains(queue, queueNames);
         }
 
         [Fact]
@@ -79,6 +79,39 @@ namespace ActiveMQ.Artemis.Client.IntegrationTests
                 Shared = true,
                 Durable = true
             });
+        }
+
+        [Fact]
+        public async Task Should_attach_shared_durable_consumer_to_pre_configured_shared_durable_queue()
+        {
+            await using var connection = await CreateConnection();
+            await using var topologyManager = await connection.CreateTopologyManagerAsync();
+
+            var address = Guid.NewGuid().ToString();
+            var queue = Guid.NewGuid().ToString();
+            await topologyManager.DeclareQueueAsync(new QueueConfiguration
+            {
+                Address = address,
+                RoutingType = RoutingType.Multicast,
+                Name = queue,
+                Durable = true,
+                MaxConsumers = -1,
+                AutoCreateAddress = true
+            });
+            
+            await using var producer = await connection.CreateProducerAsync(address, RoutingType.Multicast);
+            await producer.SendAsync(new Message("foo"));
+
+            await using var consumer = await connection.CreateConsumerAsync(new ConsumerConfiguration
+            {
+                Address = address,
+                Queue = queue,
+                Shared = true,
+                Durable = true
+            });
+            
+            var msg = await consumer.ReceiveAsync();
+            Assert.Equal("foo", msg.GetBody<string>());
         }
     }
 }

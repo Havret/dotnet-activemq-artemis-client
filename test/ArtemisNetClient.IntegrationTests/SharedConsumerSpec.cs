@@ -26,12 +26,12 @@ namespace ActiveMQ.Artemis.Client.IntegrationTests
 
             await using var topologyManager = await connection.CreateTopologyManagerAsync();
             var queueNames = await topologyManager.GetQueueNamesAsync();
-            Assert.Contains($"{queue}:shared-volatile:global", queueNames);
+            Assert.Contains($"nonDurable.{queue}", queueNames);
 
             await consumer.DisposeAsync();
 
             queueNames = await topologyManager.GetQueueNamesAsync();
-            Assert.DoesNotContain($"{queue}:shared-volatile:global", queueNames);
+            Assert.DoesNotContain($"nonDurable.{queue}", queueNames);
         }
 
         [Fact]
