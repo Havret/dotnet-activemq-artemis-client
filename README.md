@@ -73,7 +73,7 @@ The following table shows what features are currently supported.
 |:-:|:-:|:-|
 |Connection|✔|Allows to asynchronously create producers and consumers.|
 |Session|✔|Sessions are created transparently for each link (producer or consumer).|
-|Message Consumer|✔|`ReceiveAsync` available.|
+|Message Consumer|✔|`ReceiveAsync` available. Message consumer can by attached to pre-existing queue or can be instructed to create address and queue dynamically.|
 |Message Producer|✔|`SendAsync` for *durable* messages and non-blocking fire and forget `Send` for *nondurable* messages.|
 |Anonymous Message Producer|✔||
 |Message Payload|✔|All primitive types, `System.Guid`, `System.DateTime`, `byte[]` and `Amqp.Types.List`.|
@@ -88,7 +88,7 @@ The following table shows what features are currently supported.
 |NoLocal filter|✔|Allows your consumers to subscribe *exclusively* to messages sent by producers created by other connections.|
 |Consumer Credit|✔||
 |Auto-recovery|✔|4 built-in recovery policies `ConstantBackoff`, `LinearBackoff`, `ExponentialBackoff`, `DecorrelatedJitterBackoff` and the option to implement your own recovery policy via `IRecoveryPolicy` interface.|
-|Address Model|✔|Advanced routing strategies use FQQN, thus require queues to be pre-configured using `TopologyManager`.|
+|Address Model|✔|Advanced routing strategies use FQQN, thus require queues to be pre-configured using `TopologyManager` or by editing `broker.xml` file. It is also possible to create shared, non-durable (volatile) subscriptions and shared durable subscriptions dynamically using `IConsumer` API.|
 |Topology Management|✔|`TopologyManager` supports: getting all address names, getting all queue names, address creation, queue creation, address declaration, queue declaration, address removal, queue removal.|
 |Logging|✔|Uses [Microsoft.Extensions.Logging.Abstractions](https://www.nuget.org/packages/Microsoft.Extensions.Logging.Abstractions/).|
 |Queue Browser|❌||
