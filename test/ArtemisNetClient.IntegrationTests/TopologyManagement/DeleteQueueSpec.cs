@@ -48,7 +48,7 @@ namespace ActiveMQ.Artemis.Client.IntegrationTests.TopologyManagement
             Assert.Contains($"AMQ229017: Queue {queue} does not exist", exception.Message);
         }
 
-        [Fact(Skip = "https://www.mail-archive.com/dev@activemq.apache.org/msg67682.html")]
+        [Fact]
         public async Task Should_delete_queue_alongside_with_auto_created_address()
         {
             await using var connection = await CreateConnection();
