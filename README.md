@@ -16,6 +16,8 @@ This lightweight .NET client library built on top of [AmqpNetLite](http://azure.
 |ArtemisNetClient.Extensions.Hosting |[![NuGet](https://img.shields.io/nuget/vpre/ArtemisNetClient.Extensions.Hosting.svg)](https://www.nuget.org/packages/ArtemisNetClient.Extensions.Hosting/)
 |ArtemisNetClient.Extensions.App.Metrics |[![NuGet](https://img.shields.io/nuget/vpre/ArtemisNetClient.Extensions.App.Metrics.svg)](https://www.nuget.org/packages/ArtemisNetClient.Extensions.App.Metrics/)
 |ArtemisNetClient.Extensions.LeaderElection |
+|ArtemisNetClient.Testing|[![NuGet](https://img.shields.io/nuget/vpre/ArtemisNetClient.Testing.svg)](https://www.nuget.org/packages/ArtemisNetClient.Testing/)
+
 
 ## Compatibility
 
