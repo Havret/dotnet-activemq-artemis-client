@@ -118,7 +118,11 @@ namespace ActiveMQ.Artemis.Client
         /// <summary>
         /// The address of the node the message is destined for.
         /// </summary>
-        public string To => Properties.To;
+        public string To
+        {
+            get => Properties.To;
+            internal set => Properties.To = value;
+        }
 
         /// <summary>
         /// The address of the node to send replies to.
