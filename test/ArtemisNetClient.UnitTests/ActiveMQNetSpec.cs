@@ -4,6 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using ActiveMQ.Artemis.Client.AutoRecovering.RecoveryPolicy;
 using ActiveMQ.Artemis.Client.MessageIdPolicy;
+using ActiveMQ.Artemis.Client.TestUtils;
 using ActiveMQ.Artemis.Client.TestUtils.Logging;
 using ActiveMQ.Artemis.Client.UnitTests.Utils;
 using Amqp.Handler;

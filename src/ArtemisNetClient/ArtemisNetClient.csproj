@@ -46,6 +46,9 @@
     <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
       <_Parameter1>ArtemisNetClient.IntegrationTests</_Parameter1>
     </AssemblyAttribute>
+    <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
+      <_Parameter1>ArtemisNetClient.Testing</_Parameter1>
+    </AssemblyAttribute>
   </ItemGroup>
 
 </Project>
