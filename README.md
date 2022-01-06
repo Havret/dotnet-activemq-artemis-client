@@ -96,6 +96,7 @@ The following table shows what features are currently supported.
 |Queue Browser|❌||
 |Transactions|✔||
 |Consumer Priority|❌||
+|[Test Kit](https://havret.github.io/dotnet-activemq-artemis-client/docs/testing)|✔|ArtemisNetClient comes with a dedicated package `ArtemisNetClient.Testing` that will help you to test the messaging-dependent part of your application with ease in a controlled but realistic environment.|
 
 ## Extensions
 There are several extensions available that make integration of .NET Client for ActiveMQ Artemis with ASP.NET Core based projects seamless.
