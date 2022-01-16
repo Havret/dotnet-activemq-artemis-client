@@ -61,8 +61,10 @@ module.exports = {
       additionalLanguages: ['csharp']
     },
     algolia : {
-      apiKey: '967491dcac5df33f6919a6d854528bfb',
-      indexName: 'dotnet-activemq-artemis-client'
+      appId: 'RMXXLJY88T',
+      apiKey: 'edbb88cf11bbbc8f628dbab83ebb47e8',
+      indexName: 'dotnet-activemq-artemis-client',
+      contextualSearch: true,
     },
     announcementBar: {
       id: 'supportus',
