@@ -25,8 +25,8 @@ namespace ActiveMQ.Artemis.Client.AutoRecovering
         private readonly Endpoint[] _endpoints;
         private readonly ChannelReader<ConnectCommand> _reader;
         private readonly ChannelWriter<ConnectCommand> _writer;
-        private readonly ConcurrentHashSet<IRecoverable> _recoverables = new ConcurrentHashSet<IRecoverable>();
-        private readonly CancellationTokenSource _recoveryCancellationToken = new CancellationTokenSource();
+        private readonly ConcurrentHashSet<IRecoverable> _recoverables = new();
+        private readonly CancellationTokenSource _recoveryCancellationToken = new();
         private readonly AsyncRetryPolicy<IConnection> _connectionRetryPolicy;
         private readonly Task _recoveryLoopTask;
 
@@ -181,9 +181,10 @@ namespace ActiveMQ.Artemis.Client.AutoRecovering
             }, ctx, cancellationToken);
         }
 
-        public Task<ITopologyManager> CreateTopologyManagerAsync(CancellationToken cancellationToken = default)
+        public async Task<ITopologyManager> CreateTopologyManagerAsync(CancellationToken cancellationToken = default)
         {
-            return _connection.CreateTopologyManagerAsync(cancellationToken);
+            var rpcClient = await CreateRpcClientAsync(cancellationToken);
+            return new TopologyManager("activemq.management", rpcClient);
         }
 
         public async Task<IConsumer> CreateConsumerAsync(ConsumerConfiguration configuration, CancellationToken cancellationToken)
@@ -207,8 +208,14 @@ namespace ActiveMQ.Artemis.Client.AutoRecovering
             return autoRecoveringAnonymousProducer;
         }
 
-        public event EventHandler<ConnectionClosedEventArgs> ConnectionClosed;
+        public async Task<IRpcClient> CreateRpcClientAsync(CancellationToken cancellationToken = default)
+        {
+            var autoRecoveringRpcClient = new AutoRecoveringRpcClient(_loggerFactory);
+            await PrepareRecoverable(autoRecoveringRpcClient, cancellationToken);
+            return autoRecoveringRpcClient;
+        }
 
+        public event EventHandler<ConnectionClosedEventArgs> ConnectionClosed;
         public event EventHandler<ConnectionRecoveredEventArgs> ConnectionRecovered;
         public event EventHandler<ConnectionRecoveryErrorEventArgs> ConnectionRecoveryError;
 

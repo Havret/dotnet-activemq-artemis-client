@@ -15,10 +15,12 @@ namespace ActiveMQ.Artemis.Client
         private const string OperationName = "_AMQ_OperationName";
         private const string EmptyRequest = "[]";
 
-        private readonly RpcClient _rpcClient;
+        private readonly string _managementAddress;
+        private readonly IRpcClient _rpcClient;
 
-        public TopologyManager(RpcClient rpcClient)
+        public TopologyManager(string managementAddress, IRpcClient rpcClient)
         {
+            _managementAddress = managementAddress;
             _rpcClient = rpcClient;
         }
 
@@ -110,21 +112,24 @@ namespace ActiveMQ.Artemis.Client
 
         private async Task<string> SendAsync(string operation, string request, CancellationToken cancellationToken)
         {
-            var message = new Message(request);
-            message.ApplicationProperties[ResourceName] = BrokerResourceName;
-            message.ApplicationProperties[OperationName] = operation;
-            var response = await _rpcClient.SendAsync(message, cancellationToken).ConfigureAwait(false);
+            var message = new Message(request)
+            {
+                ApplicationProperties =
+                {
+                    [ResourceName] = BrokerResourceName,
+                    [OperationName] = operation
+                }
+            };
+            var response = await _rpcClient.SendAsync(_managementAddress, null, message, cancellationToken).ConfigureAwait(false);
 
             var payload = response.GetBody<string>();
             if (response.ApplicationProperties.TryGetValue<bool>(OperationSucceeded, out var operationSucceeded) && operationSucceeded)
             {
                 return payload;
             }
-            else
-            {
-                var error = string.IsNullOrWhiteSpace(payload) ? null : JsonSerializer.Deserialize<string[]>(payload).FirstOrDefault();
-                throw new InvalidOperationException(error);
-            }
+
+            var error = string.IsNullOrWhiteSpace(payload) ? null : JsonSerializer.Deserialize<string[]>(payload).FirstOrDefault();
+            throw new InvalidOperationException(error);
         }
 
         public ValueTask DisposeAsync()
