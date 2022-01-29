@@ -17,20 +17,20 @@ namespace ActiveMQ.Artemis.Client.Builders
             _session = session;
         }
 
-        public async Task<RpcClient> CreateAsync(string address, CancellationToken cancellationToken)
+        public async Task<RpcClient> CreateAsync(CancellationToken cancellationToken)
         {
-            var senderLink = await CreateSenderLink(address, cancellationToken).ConfigureAwait(false);
+            var senderLink = await CreateSenderLink(cancellationToken).ConfigureAwait(false);
             var (receiverLink, replyToAddress) = await CreateReceiverLink(cancellationToken).ConfigureAwait(false);
             return new RpcClient(senderLink, receiverLink, replyToAddress);
         }
 
-        private async Task<SenderLink> CreateSenderLink(string address, CancellationToken cancellationToken)
+        private async Task<SenderLink> CreateSenderLink(CancellationToken cancellationToken)
         {
             var (tcs, ctr) = TaskUtil.CreateTaskCompletionSource<bool>(ref cancellationToken);
             using var _ = ctr;
             var senderLink = new SenderLink(_session, Guid.NewGuid().ToString(), new Target
             {
-                Address = address
+                Address = null
             }, OnAttached);
             senderLink.AddClosedCallback(OnClosed);
             await tcs.Task.ConfigureAwait(false);

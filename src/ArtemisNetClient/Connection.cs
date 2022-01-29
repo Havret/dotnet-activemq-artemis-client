@@ -40,10 +40,8 @@ namespace ActiveMQ.Artemis.Client
             
             try
             {
-                var session = await CreateSession(cancellationToken).ConfigureAwait(false);
-                var rpcClientBuilder = new RpcClientBuilder(session);
-                var rpcClient = await rpcClientBuilder.CreateAsync("activemq.management", cancellationToken).ConfigureAwait(false);
-                return new TopologyManager(rpcClient);
+                var rpcClient = await CreateRpcClientAsync(cancellationToken);
+                return new TopologyManager("activemq.management", rpcClient);
             }
             catch (Exception e)
             {
@@ -76,6 +74,15 @@ namespace ActiveMQ.Artemis.Client
             var session = await CreateSession(cancellationToken).ConfigureAwait(false);
             var producerBuilder = new AnonymousProducerBuilder(_loggerFactory, _transactionsManager, session);
             return await producerBuilder.CreateAsync(configuration, cancellationToken).ConfigureAwait(false);
+        }
+
+        public async Task<IRpcClient> CreateRpcClientAsync(CancellationToken cancellationToken = default)
+        {
+            CheckState();
+            
+            var session = await CreateSession(cancellationToken).ConfigureAwait(false);
+            var rpcClientBuilder = new RpcClientBuilder(session);
+            return await rpcClientBuilder.CreateAsync(cancellationToken).ConfigureAwait(false);
         }
 
         internal async Task<TransactionCoordinator> CreateTransactionCoordinator(CancellationToken cancellationToken)
