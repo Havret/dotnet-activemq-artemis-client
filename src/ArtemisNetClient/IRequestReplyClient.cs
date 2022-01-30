@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 
 namespace ActiveMQ.Artemis.Client;
 
-public interface IRpcClient : IAsyncDisposable
+public interface IRequestReplyClient : IAsyncDisposable
 {
     Task<Message> SendAsync(string address, RoutingType? routingType, Message message, CancellationToken cancellationToken);
 }

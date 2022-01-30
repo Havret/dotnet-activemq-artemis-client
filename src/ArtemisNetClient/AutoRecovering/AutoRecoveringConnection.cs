@@ -183,7 +183,7 @@ namespace ActiveMQ.Artemis.Client.AutoRecovering
 
         public async Task<ITopologyManager> CreateTopologyManagerAsync(CancellationToken cancellationToken = default)
         {
-            var rpcClient = await CreateRpcClientAsync(cancellationToken);
+            var rpcClient = await CreateRequestReplyClientAsync(cancellationToken);
             return new TopologyManager("activemq.management", rpcClient);
         }
 
@@ -208,9 +208,9 @@ namespace ActiveMQ.Artemis.Client.AutoRecovering
             return autoRecoveringAnonymousProducer;
         }
 
-        public async Task<IRpcClient> CreateRpcClientAsync(CancellationToken cancellationToken = default)
+        public async Task<IRequestReplyClient> CreateRequestReplyClientAsync(CancellationToken cancellationToken = default)
         {
-            var autoRecoveringRpcClient = new AutoRecoveringRpcClient(_loggerFactory);
+            var autoRecoveringRpcClient = new AutoRecoveringRequestReplyClient(_loggerFactory);
             await PrepareRecoverable(autoRecoveringRpcClient, cancellationToken);
             return autoRecoveringRpcClient;
         }

@@ -6,9 +6,9 @@ using Xunit.Abstractions;
 
 namespace ActiveMQ.Artemis.Client.IntegrationTests;
 
-public class RpcClientSpec : ActiveMQNetIntegrationSpec
+public class RequestReplyClientSpec : ActiveMQNetIntegrationSpec
 {
-    public RpcClientSpec(ITestOutputHelper output) : base(output)
+    public RequestReplyClientSpec(ITestOutputHelper output) : base(output)
     {
     }
 
@@ -33,7 +33,7 @@ public class RpcClientSpec : ActiveMQNetIntegrationSpec
         });
 
         await using var connection2 = await CreateConnection();
-        await using var rpcClientAsync = await connection2.CreateRpcClientAsync();
+        await using var rpcClientAsync = await connection2.CreateRequestReplyClientAsync();
         
         // Act
         var response = await rpcClientAsync.SendAsync(address, RoutingType.Anycast, new Message("foo"), default);
