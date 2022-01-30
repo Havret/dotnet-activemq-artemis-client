@@ -7,17 +7,17 @@ using Nito.AsyncEx;
 
 namespace ActiveMQ.Artemis.Client.AutoRecovering;
 
-internal class AutoRecoveringRpcClient : IRpcClient, IRecoverable
+internal class AutoRecoveringRequestReplyClient : IRequestReplyClient, IRecoverable
 {
     private readonly AsyncManualResetEvent _manualResetEvent = new(true);
     private bool _closed;
     private volatile Exception _failureCause;
-    private volatile IRpcClient _rpcClient;
-    private readonly ILogger<AutoRecoveringRpcClient> _logger;
+    private volatile IRequestReplyClient _requestReplyClient;
+    private readonly ILogger<AutoRecoveringRequestReplyClient> _logger;
 
-    public AutoRecoveringRpcClient(ILoggerFactory loggerFactory)
+    public AutoRecoveringRequestReplyClient(ILoggerFactory loggerFactory)
     {
-        _logger = loggerFactory.CreateLogger<AutoRecoveringRpcClient>();
+        _logger = loggerFactory.CreateLogger<AutoRecoveringRequestReplyClient>();
     }
 
     public async Task<Message> SendAsync(string address, RoutingType? routingType, Message message, CancellationToken cancellationToken)
@@ -28,9 +28,9 @@ internal class AutoRecoveringRpcClient : IRpcClient, IRecoverable
 
             try
             {
-                return await _rpcClient.SendAsync(address, routingType, message, cancellationToken).ConfigureAwait(false);
+                return await _requestReplyClient.SendAsync(address, routingType, message, cancellationToken).ConfigureAwait(false);
             }
-            catch (RpcClientClosedException)
+            catch (RequestReplyClientClosedException)
             {
                 CheckState();
 
@@ -49,21 +49,21 @@ internal class AutoRecoveringRpcClient : IRpcClient, IRecoverable
         {
             if (_failureCause != null)
             {
-                throw new RpcClientClosedException("The RpcClient was closed due to an unrecoverable error.", _failureCause);
+                throw new RequestReplyClientClosedException("The RpcClient was closed due to an unrecoverable error.", _failureCause);
             }
             else
             {
-                throw new RpcClientClosedException();
+                throw new RequestReplyClientClosedException();
             }
         }
     }
 
     public async Task RecoverAsync(IConnection connection, CancellationToken cancellationToken)
     {
-        var oldRpcClient = _rpcClient;
-        _rpcClient = await connection.CreateRpcClientAsync(cancellationToken).ConfigureAwait(false);
+        var oldRpcClient = _requestReplyClient;
+        _requestReplyClient = await connection.CreateRequestReplyClientAsync(cancellationToken).ConfigureAwait(false);
         await DisposeUnderlyingRpcClientSafe(oldRpcClient).ConfigureAwait(false);
-        Log.RpcClientRecovered(_logger);
+        Log.RequestReplyClientRecovered(_logger);
     }
 
     public void Suspend()
@@ -73,7 +73,7 @@ internal class AutoRecoveringRpcClient : IRpcClient, IRecoverable
 
         if (!wasSuspended)
         {
-            Log.RpcClientSuspended(_logger);                
+            Log.RequestReplyClientSuspended(_logger);                
         }
     }
 
@@ -84,7 +84,7 @@ internal class AutoRecoveringRpcClient : IRpcClient, IRecoverable
 
         if (wasSuspended)
         {
-            Log.RpcClientResumed(_logger);
+            Log.RequestReplyClientResumed(_logger);
         }
     }
     
@@ -102,19 +102,19 @@ internal class AutoRecoveringRpcClient : IRpcClient, IRecoverable
         _closed = true;
         _failureCause = exception;
         _manualResetEvent.Set();
-        await DisposeUnderlyingRpcClientSafe(_rpcClient).ConfigureAwait(false);
+        await DisposeUnderlyingRpcClientSafe(_requestReplyClient).ConfigureAwait(false);
     }
 
     public async ValueTask DisposeAsync()
     {
-        await DisposeUnderlyingRpcClient(_rpcClient).ConfigureAwait(false);
+        await DisposeUnderlyingRpcClient(_requestReplyClient).ConfigureAwait(false);
     }
 
-    private async Task DisposeUnderlyingRpcClientSafe(IRpcClient rpcClient)
+    private async Task DisposeUnderlyingRpcClientSafe(IRequestReplyClient requestReplyClient)
     {
         try
         {
-            await DisposeUnderlyingRpcClient(rpcClient).ConfigureAwait(false);
+            await DisposeUnderlyingRpcClient(requestReplyClient).ConfigureAwait(false);
         }
         catch (Exception)
         {
@@ -122,11 +122,11 @@ internal class AutoRecoveringRpcClient : IRpcClient, IRecoverable
         }
     }
 
-    private static async ValueTask DisposeUnderlyingRpcClient(IRpcClient rpcClient)
+    private static async ValueTask DisposeUnderlyingRpcClient(IRequestReplyClient requestReplyClient)
     {
-        if (rpcClient != null)
+        if (requestReplyClient != null)
         {
-            await rpcClient.DisposeAsync().ConfigureAwait(false);
+            await requestReplyClient.DisposeAsync().ConfigureAwait(false);
         }
     }
 
@@ -135,22 +135,22 @@ internal class AutoRecoveringRpcClient : IRpcClient, IRecoverable
         private static readonly Action<ILogger, Exception> _retryingSendAsync = LoggerMessage.Define(
             LogLevel.Trace,
             0,
-            "Retrying send after RpcClient reestablished.");
+            "Retrying send after RequestReplyClient reestablished.");
 
-        private static readonly Action<ILogger, Exception> _rpcClientRecovered = LoggerMessage.Define(
+        private static readonly Action<ILogger, Exception> _requestReplyClientRecovered = LoggerMessage.Define(
             LogLevel.Trace,
             0,
-            "RpcClient recovered.");
+            "RequestReplyClient recovered.");
 
-        private static readonly Action<ILogger, Exception> _rpcClientSuspended = LoggerMessage.Define(
+        private static readonly Action<ILogger, Exception> _requestReplyClientClientSuspended = LoggerMessage.Define(
             LogLevel.Trace,
             0,
-            "RpcClient suspended.");
+            "RequestReplyClient suspended.");
 
-        private static readonly Action<ILogger, Exception> _rpcClientResumed = LoggerMessage.Define(
+        private static readonly Action<ILogger, Exception> _requestReplyClientClientResumed = LoggerMessage.Define(
             LogLevel.Trace,
             0,
-            "RpcClient resumed.");
+            "RequestReplyClient resumed.");
 
         public static void RetryingSendAsync(ILogger logger)
         {
@@ -160,27 +160,27 @@ internal class AutoRecoveringRpcClient : IRpcClient, IRecoverable
             }
         }
 
-        public static void RpcClientRecovered(ILogger logger)
+        public static void RequestReplyClientRecovered(ILogger logger)
         {
             if (logger.IsEnabled(LogLevel.Trace))
             {
-                _rpcClientRecovered(logger, null);
+                _requestReplyClientRecovered(logger, null);
             }
         }
 
-        public static void RpcClientSuspended(ILogger logger)
+        public static void RequestReplyClientSuspended(ILogger logger)
         {
             if (logger.IsEnabled(LogLevel.Trace))
             {
-                _rpcClientSuspended(logger, null);
+                _requestReplyClientClientSuspended(logger, null);
             }
         }
 
-        public static void RpcClientResumed(ILogger logger)
+        public static void RequestReplyClientResumed(ILogger logger)
         {
             if (logger.IsEnabled(LogLevel.Trace))
             {
-                _rpcClientResumed(logger, null);
+                _requestReplyClientClientResumed(logger, null);
             }
         }
     }

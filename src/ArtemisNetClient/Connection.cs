@@ -40,7 +40,7 @@ namespace ActiveMQ.Artemis.Client
             
             try
             {
-                var rpcClient = await CreateRpcClientAsync(cancellationToken);
+                var rpcClient = await CreateRequestReplyClientAsync(cancellationToken);
                 return new TopologyManager("activemq.management", rpcClient);
             }
             catch (Exception e)
@@ -76,7 +76,7 @@ namespace ActiveMQ.Artemis.Client
             return await producerBuilder.CreateAsync(configuration, cancellationToken).ConfigureAwait(false);
         }
 
-        public async Task<IRpcClient> CreateRpcClientAsync(CancellationToken cancellationToken = default)
+        public async Task<IRequestReplyClient> CreateRequestReplyClientAsync(CancellationToken cancellationToken = default)
         {
             CheckState();
             

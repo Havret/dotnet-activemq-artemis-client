@@ -16,12 +16,12 @@ namespace ActiveMQ.Artemis.Client
         private const string EmptyRequest = "[]";
 
         private readonly string _managementAddress;
-        private readonly IRpcClient _rpcClient;
+        private readonly IRequestReplyClient _requestReplyClient;
 
-        public TopologyManager(string managementAddress, IRpcClient rpcClient)
+        public TopologyManager(string managementAddress, IRequestReplyClient requestReplyClient)
         {
             _managementAddress = managementAddress;
-            _rpcClient = rpcClient;
+            _requestReplyClient = requestReplyClient;
         }
 
         public async Task<IReadOnlyList<string>> GetAddressNamesAsync(CancellationToken cancellationToken)
@@ -120,7 +120,7 @@ namespace ActiveMQ.Artemis.Client
                     [OperationName] = operation
                 }
             };
-            var response = await _rpcClient.SendAsync(_managementAddress, null, message, cancellationToken).ConfigureAwait(false);
+            var response = await _requestReplyClient.SendAsync(_managementAddress, null, message, cancellationToken).ConfigureAwait(false);
 
             var payload = response.GetBody<string>();
             if (response.ApplicationProperties.TryGetValue<bool>(OperationSucceeded, out var operationSucceeded) && operationSucceeded)
@@ -134,7 +134,7 @@ namespace ActiveMQ.Artemis.Client
 
         public ValueTask DisposeAsync()
         {
-            return _rpcClient.DisposeAsync();
+            return _requestReplyClient.DisposeAsync();
         }
     }
 }

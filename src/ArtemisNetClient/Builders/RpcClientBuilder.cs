@@ -17,11 +17,11 @@ namespace ActiveMQ.Artemis.Client.Builders
             _session = session;
         }
 
-        public async Task<RpcClient> CreateAsync(CancellationToken cancellationToken)
+        public async Task<RequestReplyClient> CreateAsync(CancellationToken cancellationToken)
         {
             var senderLink = await CreateSenderLink(cancellationToken).ConfigureAwait(false);
             var (receiverLink, replyToAddress) = await CreateReceiverLink(cancellationToken).ConfigureAwait(false);
-            return new RpcClient(senderLink, receiverLink, replyToAddress);
+            return new RequestReplyClient(senderLink, receiverLink, replyToAddress);
         }
 
         private async Task<SenderLink> CreateSenderLink(CancellationToken cancellationToken)

@@ -9,7 +9,7 @@ using Amqp.Framing;
 
 namespace ActiveMQ.Artemis.Client
 {
-    internal class RpcClient : IRpcClient
+    internal class RequestReplyClient : IRequestReplyClient
     {
         private static readonly OutcomeCallback _onOutcome = OnOutcome;
         
@@ -19,7 +19,7 @@ namespace ActiveMQ.Artemis.Client
         private readonly ConcurrentDictionary<string, TaskCompletionSource<Message>> _pendingRequests = new();
         private bool _disposed;
 
-        public RpcClient(SenderLink senderLink, ReceiverLink receiverLink, string replyToAddress)
+        public RequestReplyClient(SenderLink senderLink, ReceiverLink receiverLink, string replyToAddress)
         {
             _senderLink = senderLink;
             _receiverLink = receiverLink;
@@ -65,7 +65,7 @@ namespace ActiveMQ.Artemis.Client
             }
             catch (AmqpException e) when (IsClosed || IsDetaching)
             {
-                throw new RpcClientClosedException(e.Error.Description, e.Error.Condition, e);
+                throw new RequestReplyClientClosedException(e.Error.Description, e.Error.Condition, e);
             }
             catch (AmqpException e)
             {
@@ -73,7 +73,7 @@ namespace ActiveMQ.Artemis.Client
             }
             catch (ObjectDisposedException e)
             {
-                throw new RpcClientClosedException(e);
+                throw new RequestReplyClientClosedException(e);
             }
             catch (Exception e)
             {
