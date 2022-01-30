@@ -15,17 +15,17 @@ namespace ActiveMQ.Artemis.Client
         
         private readonly SenderLink _senderLink;
         private readonly ReceiverLink _receiverLink;
-        private readonly string _replyToAddress;
+        private readonly RequestReplyClientConfiguration _configuration;
         private readonly ConcurrentDictionary<string, TaskCompletionSource<Message>> _pendingRequests = new();
         private bool _disposed;
 
-        public RequestReplyClient(SenderLink senderLink, ReceiverLink receiverLink, string replyToAddress)
+        public RequestReplyClient(SenderLink senderLink, ReceiverLink receiverLink, RequestReplyClientConfiguration configuration)
         {
             _senderLink = senderLink;
             _receiverLink = receiverLink;
-            _replyToAddress = replyToAddress;
+            _configuration = configuration;
 
-            _receiverLink.Start(200, (_, msg) =>
+            _receiverLink.Start(_configuration.Credit, (_, msg) =>
             {
                 var message = new Message(msg);
                 var correlationId = message.CorrelationId;
@@ -48,7 +48,7 @@ namespace ActiveMQ.Artemis.Client
             var correlationId = Guid.NewGuid().ToString();
             message.CorrelationId = correlationId;
             message.Properties.To = address;
-            message.Properties.ReplyTo = _replyToAddress;
+            message.Properties.ReplyTo = _configuration.ReplyToAddress;
             message.MessageAnnotations[SymbolUtils.RoutingType] ??= routingType.GetRoutingAnnotation();
 
             var (tcs, ctr) = TaskUtil.CreateTaskCompletionSource<Message>(ref cancellationToken, () =>

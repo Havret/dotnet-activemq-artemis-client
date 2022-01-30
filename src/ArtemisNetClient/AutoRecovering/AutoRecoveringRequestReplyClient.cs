@@ -9,14 +9,16 @@ namespace ActiveMQ.Artemis.Client.AutoRecovering;
 
 internal class AutoRecoveringRequestReplyClient : IRequestReplyClient, IRecoverable
 {
+    private readonly RequestReplyClientConfiguration _configuration;
     private readonly AsyncManualResetEvent _manualResetEvent = new(true);
     private bool _closed;
     private volatile Exception _failureCause;
     private volatile IRequestReplyClient _requestReplyClient;
     private readonly ILogger<AutoRecoveringRequestReplyClient> _logger;
 
-    public AutoRecoveringRequestReplyClient(ILoggerFactory loggerFactory)
+    public AutoRecoveringRequestReplyClient(ILoggerFactory loggerFactory, RequestReplyClientConfiguration configuration)
     {
+        _configuration = configuration;
         _logger = loggerFactory.CreateLogger<AutoRecoveringRequestReplyClient>();
     }
 
@@ -49,7 +51,7 @@ internal class AutoRecoveringRequestReplyClient : IRequestReplyClient, IRecovera
         {
             if (_failureCause != null)
             {
-                throw new RequestReplyClientClosedException("The RpcClient was closed due to an unrecoverable error.", _failureCause);
+                throw new RequestReplyClientClosedException("The RequestReplyClient was closed due to an unrecoverable error.", _failureCause);
             }
             else
             {
@@ -61,7 +63,7 @@ internal class AutoRecoveringRequestReplyClient : IRequestReplyClient, IRecovera
     public async Task RecoverAsync(IConnection connection, CancellationToken cancellationToken)
     {
         var oldRpcClient = _requestReplyClient;
-        _requestReplyClient = await connection.CreateRequestReplyClientAsync(cancellationToken).ConfigureAwait(false);
+        _requestReplyClient = await connection.CreateRequestReplyClientAsync(_configuration, cancellationToken).ConfigureAwait(false);
         await DisposeUnderlyingRpcClientSafe(oldRpcClient).ConfigureAwait(false);
         Log.RequestReplyClientRecovered(_logger);
     }

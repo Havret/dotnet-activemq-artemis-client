@@ -40,8 +40,15 @@ namespace ActiveMQ.Artemis.Client
             
             try
             {
-                var rpcClient = await CreateRequestReplyClientAsync(cancellationToken);
-                return new TopologyManager("activemq.management", rpcClient);
+                var session = await CreateSession(cancellationToken).ConfigureAwait(false);
+                var rpcClientBuilder = new RequestReplyClientBuilder(session);
+                var configuration = new RequestReplyClientConfiguration
+                {
+                    Address = "activemq.management"
+                };
+                var requestReplyClient = await rpcClientBuilder.CreateAsync(configuration, cancellationToken).ConfigureAwait(false);
+
+                return new TopologyManager(configuration.ReplyToAddress, requestReplyClient);
             }
             catch (Exception e)
             {
@@ -76,13 +83,13 @@ namespace ActiveMQ.Artemis.Client
             return await producerBuilder.CreateAsync(configuration, cancellationToken).ConfigureAwait(false);
         }
 
-        public async Task<IRequestReplyClient> CreateRequestReplyClientAsync(CancellationToken cancellationToken = default)
+        public async Task<IRequestReplyClient> CreateRequestReplyClientAsync(RequestReplyClientConfiguration configuration, CancellationToken cancellationToken = default)
         {
             CheckState();
             
             var session = await CreateSession(cancellationToken).ConfigureAwait(false);
-            var rpcClientBuilder = new RpcClientBuilder(session);
-            return await rpcClientBuilder.CreateAsync(cancellationToken).ConfigureAwait(false);
+            var requestReplyClientBuilder = new RequestReplyClientBuilder(session);
+            return await requestReplyClientBuilder.CreateAsync(configuration, cancellationToken).ConfigureAwait(false);
         }
 
         internal async Task<TransactionCoordinator> CreateTransactionCoordinator(CancellationToken cancellationToken)

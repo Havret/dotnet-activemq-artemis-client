@@ -8,29 +8,30 @@ using Amqp.Framing;
 
 namespace ActiveMQ.Artemis.Client.Builders
 {
-    internal class RpcClientBuilder
+    internal class RequestReplyClientBuilder
     {
         private readonly Session _session;
 
-        public RpcClientBuilder(Session session)
+        public RequestReplyClientBuilder(Session session)
         {
             _session = session;
         }
 
-        public async Task<RequestReplyClient> CreateAsync(CancellationToken cancellationToken)
+        public async Task<RequestReplyClient> CreateAsync(RequestReplyClientConfiguration configuration, CancellationToken cancellationToken)
         {
-            var senderLink = await CreateSenderLink(cancellationToken).ConfigureAwait(false);
+            var senderLink = await CreateSenderLink(configuration.Address, cancellationToken).ConfigureAwait(false);
             var (receiverLink, replyToAddress) = await CreateReceiverLink(cancellationToken).ConfigureAwait(false);
-            return new RequestReplyClient(senderLink, receiverLink, replyToAddress);
+            configuration.ReplyToAddress = replyToAddress;
+            return new RequestReplyClient(senderLink, receiverLink, configuration);
         }
 
-        private async Task<SenderLink> CreateSenderLink(CancellationToken cancellationToken)
+        private async Task<SenderLink> CreateSenderLink(string address, CancellationToken cancellationToken)
         {
             var (tcs, ctr) = TaskUtil.CreateTaskCompletionSource<bool>(ref cancellationToken);
             using var _ = ctr;
             var senderLink = new SenderLink(_session, Guid.NewGuid().ToString(), new Target
             {
-                Address = null
+                Address = address
             }, OnAttached);
             senderLink.AddClosedCallback(OnClosed);
             await tcs.Task.ConfigureAwait(false);
