@@ -15,7 +15,7 @@ namespace ActiveMQ.Artemis.Client
         Task<IConsumer> CreateConsumerAsync(ConsumerConfiguration configuration, CancellationToken cancellationToken = default);
         Task<IProducer> CreateProducerAsync(ProducerConfiguration configuration, CancellationToken cancellationToken = default);
         Task<IAnonymousProducer> CreateAnonymousProducerAsync(AnonymousProducerConfiguration configuration, CancellationToken cancellationToken = default);
-        Task<IRequestReplyClient> CreateRequestReplyClientAsync(CancellationToken cancellationToken = default);
+        Task<IRequestReplyClient> CreateRequestReplyClientAsync(RequestReplyClientConfiguration configuration, CancellationToken cancellationToken = default);
         event EventHandler<ConnectionClosedEventArgs> ConnectionClosed;
         event EventHandler<ConnectionRecoveredEventArgs> ConnectionRecovered;
         event EventHandler<ConnectionRecoveryErrorEventArgs> ConnectionRecoveryError;

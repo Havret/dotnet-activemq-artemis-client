@@ -183,8 +183,12 @@ namespace ActiveMQ.Artemis.Client.AutoRecovering
 
         public async Task<ITopologyManager> CreateTopologyManagerAsync(CancellationToken cancellationToken = default)
         {
-            var rpcClient = await CreateRequestReplyClientAsync(cancellationToken);
-            return new TopologyManager("activemq.management", rpcClient);
+            var configuration = new RequestReplyClientConfiguration
+            {
+                Address = "activemq.management"
+            };
+            var rpcClient = await CreateRequestReplyClientAsync(configuration, cancellationToken).ConfigureAwait(false);
+            return new TopologyManager(configuration.Address, rpcClient);
         }
 
         public async Task<IConsumer> CreateConsumerAsync(ConsumerConfiguration configuration, CancellationToken cancellationToken)
@@ -204,14 +208,14 @@ namespace ActiveMQ.Artemis.Client.AutoRecovering
         public async Task<IAnonymousProducer> CreateAnonymousProducerAsync(AnonymousProducerConfiguration configuration, CancellationToken cancellationToken = default)
         {
             var autoRecoveringAnonymousProducer = new AutoRecoveringAnonymousProducer(_loggerFactory, configuration);
-            await PrepareRecoverable(autoRecoveringAnonymousProducer, cancellationToken);
+            await PrepareRecoverable(autoRecoveringAnonymousProducer, cancellationToken).ConfigureAwait(false);
             return autoRecoveringAnonymousProducer;
         }
 
-        public async Task<IRequestReplyClient> CreateRequestReplyClientAsync(CancellationToken cancellationToken = default)
+        public async Task<IRequestReplyClient> CreateRequestReplyClientAsync(RequestReplyClientConfiguration configuration, CancellationToken cancellationToken = default)
         {
-            var autoRecoveringRpcClient = new AutoRecoveringRequestReplyClient(_loggerFactory);
-            await PrepareRecoverable(autoRecoveringRpcClient, cancellationToken);
+            var autoRecoveringRpcClient = new AutoRecoveringRequestReplyClient(_loggerFactory, configuration);
+            await PrepareRecoverable(autoRecoveringRpcClient, cancellationToken).ConfigureAwait(false);
             return autoRecoveringRpcClient;
         }
 

@@ -1,53 +1,58 @@
 ﻿using System.Threading;
 using System.Threading.Tasks;
 
-namespace ActiveMQ.Artemis.Client
+namespace ActiveMQ.Artemis.Client;
+
+public static class ConnectionExtensions
 {
-    public static class ConnectionExtensions
+    public static Task<IConsumer> CreateConsumerAsync(this IConnection connection, string address, string queue, CancellationToken cancellationToken = default)
     {
-        public static Task<IConsumer> CreateConsumerAsync(this IConnection connection, string address, string queue, CancellationToken cancellationToken = default)
+        var configuration = new ConsumerConfiguration
         {
-            var configuration = new ConsumerConfiguration
-            {
-                Address = address,
-                Queue = queue
-            };
-            return connection.CreateConsumerAsync(configuration, cancellationToken);
-        }
+            Address = address,
+            Queue = queue
+        };
+        return connection.CreateConsumerAsync(configuration, cancellationToken);
+    }
         
-        public static Task<IConsumer> CreateConsumerAsync(this IConnection connection, string address, RoutingType routingType, CancellationToken cancellationToken = default)
+    public static Task<IConsumer> CreateConsumerAsync(this IConnection connection, string address, RoutingType routingType, CancellationToken cancellationToken = default)
+    {
+        var configuration = new ConsumerConfiguration
         {
-            var configuration = new ConsumerConfiguration
-            {
-                Address = address,
-                RoutingType = routingType
-            };
-            return connection.CreateConsumerAsync(configuration, cancellationToken);
-        }
+            Address = address,
+            RoutingType = routingType
+        };
+        return connection.CreateConsumerAsync(configuration, cancellationToken);
+    }
 
-        public static Task<IProducer> CreateProducerAsync(this IConnection connection, string address, CancellationToken cancellationToken = default)
+    public static Task<IProducer> CreateProducerAsync(this IConnection connection, string address, CancellationToken cancellationToken = default)
+    {
+        var configuration = new ProducerConfiguration
         {
-            var configuration = new ProducerConfiguration
-            {
-                Address = address,
-            };            
-            return connection.CreateProducerAsync(configuration, cancellationToken);
-        }
+            Address = address,
+        };            
+        return connection.CreateProducerAsync(configuration, cancellationToken);
+    }
 
-        public static Task<IProducer> CreateProducerAsync(this IConnection connection, string address, RoutingType routingType, CancellationToken cancellationToken = default)
+    public static Task<IProducer> CreateProducerAsync(this IConnection connection, string address, RoutingType routingType, CancellationToken cancellationToken = default)
+    {
+        var configuration = new ProducerConfiguration
         {
-            var configuration = new ProducerConfiguration
-            {
-                Address = address,
-                RoutingType = routingType
-            };            
-            return connection.CreateProducerAsync(configuration, cancellationToken);
-        }
+            Address = address,
+            RoutingType = routingType
+        };            
+        return connection.CreateProducerAsync(configuration, cancellationToken);
+    }
 
-        public static Task<IAnonymousProducer> CreateAnonymousProducerAsync(this IConnection connection, CancellationToken cancellationToken = default)
-        {
-            var configuration = new AnonymousProducerConfiguration();
-            return connection.CreateAnonymousProducerAsync(configuration, cancellationToken);
-        }
+    public static Task<IAnonymousProducer> CreateAnonymousProducerAsync(this IConnection connection, CancellationToken cancellationToken = default)
+    {
+        var configuration = new AnonymousProducerConfiguration();
+        return connection.CreateAnonymousProducerAsync(configuration, cancellationToken);
+    }
+
+    public static Task<IRequestReplyClient> CreateRequestReplyClientAsync(this IConnection connection, CancellationToken cancellationToken = default)
+    {
+        var configuration = new RequestReplyClientConfiguration();
+        return connection.CreateRequestReplyClientAsync(configuration, cancellationToken);
     }
 }
