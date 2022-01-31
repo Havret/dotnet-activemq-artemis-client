@@ -24,6 +24,7 @@
 
   <ItemGroup>
     <None Remove="ActiveMQ.Artemis.Client.Extensions.DependencyInjection.csproj.DotSettings" />
+    <None Remove="ArtemisNetClient.Extensions.DependencyInjection.csproj.DotSettings" />
   </ItemGroup>
 
   <ItemGroup>

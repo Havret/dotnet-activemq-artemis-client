@@ -100,7 +100,7 @@ namespace ActiveMQ.Artemis.Client
             {
                 throw new RequestReplyClientClosedException(e);
             }
-            catch (Exception e)
+            catch (Exception e) when(e is not OperationCanceledException)
             {
                 throw new MessageSendException("Failed to send the message.", e);
             }
