@@ -6,34 +6,59 @@ using ActiveMQ.Artemis.Client.Exceptions;
 using ActiveMQ.Artemis.Client.InternalUtilities;
 using Amqp;
 using Amqp.Framing;
+using Microsoft.Extensions.Logging;
 
 namespace ActiveMQ.Artemis.Client
 {
     internal class RequestReplyClient : IRequestReplyClient
     {
         private static readonly OutcomeCallback _onOutcome = OnOutcome;
-        
+
+        private readonly ILogger _logger;
         private readonly SenderLink _senderLink;
         private readonly ReceiverLink _receiverLink;
         private readonly RequestReplyClientConfiguration _configuration;
         private readonly ConcurrentDictionary<string, TaskCompletionSource<Message>> _pendingRequests = new();
         private bool _disposed;
 
-        public RequestReplyClient(SenderLink senderLink, ReceiverLink receiverLink, RequestReplyClientConfiguration configuration)
+        public RequestReplyClient(ILoggerFactory loggerFactory,
+            SenderLink senderLink,
+            ReceiverLink receiverLink,
+            RequestReplyClientConfiguration configuration)
         {
+            _logger = loggerFactory.CreateLogger<RequestReplyClient>();
             _senderLink = senderLink;
             _receiverLink = receiverLink;
             _configuration = configuration;
 
             _receiverLink.Start(_configuration.Credit, (_, msg) =>
             {
-                var message = new Message(msg);
-                var correlationId = message.CorrelationId;
-                if (_pendingRequests.TryGetValue(correlationId, out var tcs))
+                try
                 {
-                    tcs.TrySetResult(message);
+                    _receiverLink.Accept(msg);
                 }
-                _receiverLink.Accept(msg);
+                catch (Exception e)
+                {
+                    _logger.LogError(e, "Failed acknowledge reply message.");
+                }
+
+                try
+                {
+                    var message = new Message(msg);
+                    var correlationId = message.CorrelationId;
+                    if (_pendingRequests.TryGetValue(correlationId, out var tcs))
+                    {
+                        tcs.TrySetResult(message);
+                    }
+                    else
+                    {
+                        _logger.LogWarning("The response could not be matched with any of the pending requests.");
+                    }
+                }
+                catch (Exception e)
+                {
+                    _logger.LogError(e, "The response could not be matched with any of the pending requests.");
+                }
             });
         }
         

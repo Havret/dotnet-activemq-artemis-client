@@ -41,7 +41,7 @@ namespace ActiveMQ.Artemis.Client
             try
             {
                 var session = await CreateSession(cancellationToken).ConfigureAwait(false);
-                var rpcClientBuilder = new RequestReplyClientBuilder(session);
+                var rpcClientBuilder = new RequestReplyClientBuilder(_loggerFactory, session);
                 var configuration = new RequestReplyClientConfiguration
                 {
                     Address = "activemq.management"
@@ -88,7 +88,7 @@ namespace ActiveMQ.Artemis.Client
             CheckState();
             
             var session = await CreateSession(cancellationToken).ConfigureAwait(false);
-            var requestReplyClientBuilder = new RequestReplyClientBuilder(session);
+            var requestReplyClientBuilder = new RequestReplyClientBuilder(_loggerFactory, session);
             return await requestReplyClientBuilder.CreateAsync(configuration, cancellationToken).ConfigureAwait(false);
         }
 
