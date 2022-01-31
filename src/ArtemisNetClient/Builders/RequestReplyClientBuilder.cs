@@ -5,15 +5,18 @@ using ActiveMQ.Artemis.Client.Exceptions;
 using ActiveMQ.Artemis.Client.InternalUtilities;
 using Amqp;
 using Amqp.Framing;
+using Microsoft.Extensions.Logging;
 
 namespace ActiveMQ.Artemis.Client.Builders
 {
     internal class RequestReplyClientBuilder
     {
+        private readonly ILoggerFactory _loggerFactory;
         private readonly Session _session;
 
-        public RequestReplyClientBuilder(Session session)
+        public RequestReplyClientBuilder(ILoggerFactory loggerFactory, Session session)
         {
+            _loggerFactory = loggerFactory;
             _session = session;
         }
 
@@ -22,7 +25,7 @@ namespace ActiveMQ.Artemis.Client.Builders
             var senderLink = await CreateSenderLink(configuration.Address, cancellationToken).ConfigureAwait(false);
             var (receiverLink, replyToAddress) = await CreateReceiverLink(cancellationToken).ConfigureAwait(false);
             configuration.ReplyToAddress = replyToAddress;
-            return new RequestReplyClient(senderLink, receiverLink, configuration);
+            return new RequestReplyClient(_loggerFactory, senderLink, receiverLink, configuration);
         }
 
         private async Task<SenderLink> CreateSenderLink(string address, CancellationToken cancellationToken)
