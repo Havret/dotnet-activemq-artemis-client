@@ -649,5 +649,42 @@ namespace ActiveMQ.Artemis.Client.Extensions.DependencyInjection
             }));
             return builder;
         }
+        
+        /// <summary>
+        /// Adds the <see cref="TRequestReplyClient"/> and configures a binding between the <typeparam name="TRequestReplyClient" /> and named <see cref="TRequestReplyClient"/> instance.  
+        /// </summary>
+        /// <param name="builder">The <see cref="IActiveMqBuilder"/>.</param>
+        /// <param name="producerLifetime">The lifetime with which to register the <typeparam name="TRequestReplyClient" /> in the container.</param>
+        /// <typeparam name="TRequestReplyClient">The type of the typed request response client. The type specified will be registered in the service collection as
+        /// a transient service by default.</typeparam>
+        /// <returns>The <see cref="IActiveMqBuilder"/> that can be used to configure ActiveMQ Artemis Client.</returns>
+        public static IActiveMqBuilder AddRequestReplyClient<TRequestReplyClient>(this IActiveMqBuilder builder, ServiceLifetime producerLifetime = ServiceLifetime.Transient) where TRequestReplyClient : class
+        {
+            var configuration = new RequestReplyClientConfiguration();
+            if (builder.Services.Any(x => x.ServiceType == typeof(TRequestReplyClient)))
+            {
+                var message =
+                    $"There has already been registered Request Reply Client with the type '{typeof(TRequestReplyClient).FullName}'. " +
+                    "Typed Request Reply Client must be unique. " +
+                    "Consider using inheritance to create multiple unique types with the same API surface.";
+                throw new InvalidOperationException(message);
+            }
+
+            builder.Services.AddSingleton(provider =>
+            {
+                var sendObservable = provider.GetServices<SendObservable>().Single(x => x.Name == builder.Name);
+                var logger = provider.GetService<ILogger<TypedRequestReplyClient<TRequestReplyClient>>>();
+                return new TypedRequestReplyClient<TRequestReplyClient>(logger, async token =>
+                {
+                    var connection = await provider.GetConnection(builder.Name, token).ConfigureAwait(false);
+                    return await connection.CreateRequestReplyClientAsync(configuration, token).ConfigureAwait(false);
+                }, sendObservable);
+            });
+            builder.Services.AddSingleton<IActiveMqRequestReplyClient>(provider => provider.GetRequiredService<TypedRequestReplyClient<TRequestReplyClient>>());
+            builder.Services.Add(ServiceDescriptor.Describe(typeof(TRequestReplyClient),
+                provider => ActivatorUtilities.CreateInstance<TRequestReplyClient>(provider, provider.GetRequiredService<TypedRequestReplyClient<TRequestReplyClient>>()),
+                producerLifetime));
+            return builder;
+        }
     }
 }

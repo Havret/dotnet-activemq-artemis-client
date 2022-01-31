@@ -9,12 +9,17 @@ namespace ActiveMQ.Artemis.Client.Extensions.DependencyInjection
         private readonly IEnumerable<ActiveMqTopologyManager> _topologyManagers;
         private readonly IEnumerable<ActiveMqConsumer> _consumers;
         private readonly IEnumerable<IActiveMqProducer> _producerInitializers;
+        private readonly IEnumerable<IActiveMqRequestReplyClient> _requestReplyClientInitializers;
 
-        public ActiveMqClient(IEnumerable<ActiveMqTopologyManager> topologyManagers, IEnumerable<ActiveMqConsumer> consumers, IEnumerable<IActiveMqProducer> producerInitializers)
+        public ActiveMqClient(IEnumerable<ActiveMqTopologyManager> topologyManagers,
+            IEnumerable<ActiveMqConsumer> consumers,
+            IEnumerable<IActiveMqProducer> producerInitializers,
+            IEnumerable<IActiveMqRequestReplyClient> requestReplyClientInitializers)
         {
             _topologyManagers = topologyManagers;
             _consumers = consumers;
             _producerInitializers = producerInitializers;
+            _requestReplyClientInitializers = requestReplyClientInitializers;
         }
         
         public async Task StartAsync(CancellationToken cancellationToken)
@@ -22,6 +27,11 @@ namespace ActiveMQ.Artemis.Client.Extensions.DependencyInjection
             foreach (var producer in _producerInitializers)
             {
                 await producer.StartAsync(cancellationToken).ConfigureAwait(false);
+            }
+
+            foreach (var requestReplyClientInitializer in _requestReplyClientInitializers)
+            {
+                await requestReplyClientInitializer.StartAsync(cancellationToken).ConfigureAwait(false);
             }
             
             foreach (var activeMqTopologyManager in _topologyManagers)
@@ -45,6 +55,11 @@ namespace ActiveMQ.Artemis.Client.Extensions.DependencyInjection
             foreach (var producer in _producerInitializers)
             {
                 await producer.StopAsync().ConfigureAwait(false);
+            }
+            
+            foreach (var requestReplyClientInitializer in _requestReplyClientInitializers)
+            {
+                await requestReplyClientInitializer.StopAsync().ConfigureAwait(false);
             }
         }
     }
