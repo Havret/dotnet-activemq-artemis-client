@@ -22,8 +22,8 @@ namespace ActiveMQ.Artemis.Client.Extensions.AspNetCore.IntegrationTests
             {
                 builder.AddConsumer(address, RoutingType.Anycast, async (message, consumer, _, _) =>
                 {
-                    tcs.TrySetResult(message);
                     await consumer.AcceptAsync(message);
+                    tcs.TrySetResult(message);
                 });
             });
         }
@@ -35,8 +35,8 @@ namespace ActiveMQ.Artemis.Client.Extensions.AspNetCore.IntegrationTests
             {
                 builder.AddConsumer(address, RoutingType.Anycast, new ConsumerOptions { Credit = 100 }, async (message, consumer, _, _) =>
                 {
-                    tcs.TrySetResult(message);
                     await consumer.AcceptAsync(message);
+                    tcs.TrySetResult(message);
                 });
             });
         }
@@ -48,8 +48,8 @@ namespace ActiveMQ.Artemis.Client.Extensions.AspNetCore.IntegrationTests
             {
                 builder.AddConsumer(address, RoutingType.Anycast, Guid.NewGuid().ToString(), async (message, consumer, _, _) =>
                 {
-                    tcs.TrySetResult(message);
                     await consumer.AcceptAsync(message);
+                    tcs.TrySetResult(message);
                 });
             });
         }
@@ -61,8 +61,8 @@ namespace ActiveMQ.Artemis.Client.Extensions.AspNetCore.IntegrationTests
             {
                 builder.AddConsumer(address, RoutingType.Anycast, Guid.NewGuid().ToString(), new ConsumerOptions { Credit = 100 }, async (message, consumer, _, _) =>
                 {
-                    tcs.TrySetResult(message);
                     await consumer.AcceptAsync(message);
+                    tcs.TrySetResult(message);
                 });
             });
         }
@@ -74,8 +74,8 @@ namespace ActiveMQ.Artemis.Client.Extensions.AspNetCore.IntegrationTests
             {
                 builder.AddConsumer(address, RoutingType.Anycast, Guid.NewGuid().ToString(), new QueueOptions { Exclusive = true }, async (message, consumer, _, _) =>
                 {
-                    tcs.TrySetResult(message);
                     await consumer.AcceptAsync(message);
+                    tcs.TrySetResult(message);
                 });
             });
         }
@@ -87,8 +87,8 @@ namespace ActiveMQ.Artemis.Client.Extensions.AspNetCore.IntegrationTests
             {
                 builder.AddConsumer(address, RoutingType.Anycast, Guid.NewGuid().ToString(), new ConsumerOptions { Credit = 100 }, new QueueOptions { Exclusive = true }, async (message, consumer, _, _) =>
                 {
-                    tcs.TrySetResult(message);
                     await consumer.AcceptAsync(message);
+                    tcs.TrySetResult(message);
                 });
             });
         }
@@ -104,7 +104,7 @@ namespace ActiveMQ.Artemis.Client.Extensions.AspNetCore.IntegrationTests
                 activeMqBuilder.EnableAddressDeclaration().EnableQueueDeclaration();
             });
 
-            var producer = await testFixture.Connection.CreateProducerAsync(address, testFixture.CancellationToken);
+            await using var producer = await testFixture.Connection.CreateProducerAsync(address, testFixture.CancellationToken);
             await producer.SendAsync(new Message("foo"), testFixture.CancellationToken);
 
             Assert.Equal("foo", (await tcs.Task).GetBody<string>());
