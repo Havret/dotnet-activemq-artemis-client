@@ -62,7 +62,7 @@ module.exports = {
     },
     algolia : {
       appId: 'RMXXLJY88T',
-      apiKey: 'edbb88cf11bbbc8f628dbab83ebb47e8',
+      apiKey: '3c7b091748d9d22e62c4ed2ac4b8bf5a',
       indexName: 'dotnet-activemq-artemis-client',
       contextualSearch: true,
     },
