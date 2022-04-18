@@ -20,7 +20,7 @@ This lightweight .NET client library built on top of [AmqpNetLite](http://azure.
 
 ## Commercial support
 
-For commercial support, contact
+For commercial support, contact<br/>
 ![#](https://raw.githubusercontent.com/Havret/dotnet-activemq-artemis-client/master/website/static/img/email.png)
 
 ## Compatibility
