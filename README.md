@@ -18,6 +18,10 @@ This lightweight .NET client library built on top of [AmqpNetLite](http://azure.
 |ArtemisNetClient.Extensions.LeaderElection |
 |ArtemisNetClient.Testing|[![NuGet](https://img.shields.io/nuget/vpre/ArtemisNetClient.Testing.svg)](https://www.nuget.org/packages/ArtemisNetClient.Testing/)
 
+## Commercial support
+
+For commercial support, contact
+![#](https://raw.githubusercontent.com/Havret/dotnet-activemq-artemis-client/master/website/static/img/email.png)
 
 ## Compatibility
 
