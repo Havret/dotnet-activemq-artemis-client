@@ -1,7 +1,6 @@
 # .NET Client for ActiveMQ Artemis
 
 [![Build](https://github.com/Havret/dotnet-activemq-artemis-client/actions/workflows/build.yml/badge.svg)](https://github.com/Havret/dotnet-activemq-artemis-client/actions/workflows/build.yml)
-[![Gitter](https://badges.gitter.im/dotnet-activemq-artemis-client/community.svg)](https://gitter.im/dotnet-activemq-artemis-client/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 
 Unofficial [ActiveMQ Artemis](https://activemq.apache.org/components/artemis/) .NET Client for .NET Core and .NET Framework.
 
