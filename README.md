@@ -69,6 +69,7 @@ Detailed documentation is available on [the project website](https://havret.gith
 ## Online resources
 
 - [Messaging with ActiveMQ Artemis and ASP.NET Core](https://havret.io/activemq-artemis-net-core) (January 31, 2021)
+- [ActiveMQ Artemis address model explained with examples in .NET](https://havret.io/activemq-artemis-address-model) (April 19, 2022)
 
 ## Features
 
