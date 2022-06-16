@@ -15,6 +15,7 @@
     <IncludeSymbols>true</IncludeSymbols>
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
     <Authors>Havret</Authors>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <RootNamespace>ActiveMQ.Artemis.Client</RootNamespace>
   </PropertyGroup>
   <ItemGroup>

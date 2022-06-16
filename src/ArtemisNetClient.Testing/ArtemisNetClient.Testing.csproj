@@ -17,10 +17,11 @@
         <IncludeSymbols>true</IncludeSymbols>
         <SymbolPackageFormat>snupkg</SymbolPackageFormat>
         <Authors>Havret</Authors>
+        <GenerateDocumentationFile>true</GenerateDocumentationFile>
         <RootNamespace>ActiveMQ.Artemis.Client.Testing</RootNamespace>
     </PropertyGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\ArtemisNetClient\ArtemisNetClient.csproj" />
+        <ProjectReference Include="..\ArtemisNetClient\ArtemisNetClient.csproj"/>
     </ItemGroup>
 </Project>
