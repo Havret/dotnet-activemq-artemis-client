@@ -58,7 +58,7 @@ namespace ActiveMQ.Artemis.Client.IntegrationTests
 
             await producer.SendAsync(new Message("foo")
             {
-                ScheduledDeliveryTime = DateTime.UtcNow.AddMilliseconds(1000),
+                ScheduledDeliveryTime = DateTime.UtcNow.AddMilliseconds(2000),
                 ScheduledDeliveryDelay = TimeSpan.FromMilliseconds(200)
             });
 
