@@ -1,6 +1,8 @@
 using System.Collections.Concurrent;
 using System.Text.RegularExpressions;
-using ContainerHost = ActiveMQ.Artemis.Client.Testing.Listener.ContainerHost;
+using Amqp.Framing;
+using Amqp.Listener;
+using Amqp.Transactions;
 
 namespace ActiveMQ.Artemis.Client.Testing;
 
@@ -13,9 +15,28 @@ public class TestKit : IDisposable
     public TestKit(Endpoint endpoint)
     {
         _host = new ContainerHost(endpoint.Address);
+        _host.AddressResolver = AddressResolver;
         _host.Listeners[0].HandlerFactory = _ => new Handler();
         _host.RegisterLinkProcessor(new TestLinkProcessor(OnMessage, OnMessageSource));
         _host.Open();
+    }
+
+    private string? AddressResolver(ContainerHost containerHost, Attach attach)
+    {
+        if (attach.Role)
+        {
+            return ((Source) attach.Source).Address;
+        }
+        if (attach.Target is Target target)
+        {
+            return target.Address;
+        }
+        if (attach.Target is Coordinator)
+        {
+            return attach.LinkName;
+        }
+
+        return null;
     }
 
     private void OnMessage(Message message)
