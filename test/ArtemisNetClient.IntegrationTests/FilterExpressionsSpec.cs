@@ -160,13 +160,13 @@ namespace ActiveMQ.Artemis.Client.IntegrationTests
             {
                 Address = address,
                 RoutingType = RoutingType.Anycast,
-                FilterExpression = "color = 'red'"
+                FilterExpression = "color <> 'blue'"
             });
             await using var blueMessageConsumer = await connection.CreateConsumerAsync(new ConsumerConfiguration
             {
                 Address = address,
                 RoutingType = RoutingType.Anycast,
-                FilterExpression = "color = 'blue'"
+                FilterExpression = "color <> 'red'"
             });
 
             for (int i = 0; i < 3; i++)
