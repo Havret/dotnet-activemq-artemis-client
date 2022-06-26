@@ -1,7 +1,7 @@
 ---
 id: consumer-credit
-title: Consumer credit
-sidebar_label: Consumer credit
+title: Consumer Credit
+sidebar_label: Consumer Credit
 ---
 
 A consumer can control the flow of messages from a broker by allocating *credit* for a particular number of messages. As the broker delivers messages, it spends this credit. Each delivered message results in decrementing the available message credit by one. Each message acknowledged by the client increments the available message credit by one.

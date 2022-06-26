@@ -1,7 +1,7 @@
 ---
 id: message-payload
-title: Message payload
-sidebar_label: Message payload
+title: Message Payload
+sidebar_label: Message Payload
 ---
 
 The client uses `Message` class to represent messages which may be transmitted. A `Message` can carry various types of payload and accompanying metadata.

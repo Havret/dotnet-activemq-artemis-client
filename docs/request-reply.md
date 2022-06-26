@@ -1,7 +1,7 @@
 ---
 id: request-reply
-title: Request reply
-sidebar_label: Request reply
+title: Request Reply
+sidebar_label: Request Reply
 ---
 
 *Request-reply* is one of the basic messaging patterns. From a high level, a request-reply scenario involves an application that sends a message (the request) and expects to receive a message in return (the reply).
