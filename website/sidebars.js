@@ -7,8 +7,9 @@ module.exports = {
       'message-priority',
       'consumer-credit',
       'auto-recovery',
+      'messaging-model',
+      'request-reply',
       'testing',
-      'request-reply'
     ],
     Community: ['online-resources']
   },
