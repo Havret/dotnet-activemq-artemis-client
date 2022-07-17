@@ -174,9 +174,30 @@ namespace ActiveMQ.Artemis.Client.UnitTests.AutoRecovering
             Assert.True(connection.IsOpened);
 
             host.Dispose();
-            
+
             Assert.True(connectionRecoveryFailed.WaitOne(Timeout));
             Assert.NotNull(connectionRecoveryError);
+        }
+
+        [Fact]
+        public async Task Should_raise_ConnectionClosed_even_if_connection_lost_in_recovery_mode()
+        {
+            var host1 = CreateOpenedContainerHost();
+            using var host2 = CreateOpenedContainerHost();
+
+            await using var connection = await CreateConnection(new[] { host1.Endpoint, host2.Endpoint });
+
+            var connectionRecovered = new AutoResetEvent(false);
+            var connectionClosed = new ManualResetEvent(false);
+            connection.ConnectionRecovered += (_, _) => connectionRecovered.Set();
+            connection.ConnectionClosed += (_, _) => { connectionClosed.Set(); };
+
+            Assert.True(connection.IsOpened);
+
+            host1.Dispose();
+
+            Assert.True(connectionRecovered.WaitOne(Timeout));
+            Assert.True(connectionClosed.WaitOne(Timeout));
         }
 
         private static (TestContainerHost host, AutoResetEvent connected) CreateHost()

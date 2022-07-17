@@ -6,6 +6,7 @@ module.exports = {
       'message-durability',
       'message-priority',
       'consumer-credit',
+      'connection-lifecycle',
       'auto-recovery',
       'messaging-model',
       'request-reply',
