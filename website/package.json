@@ -9,8 +9,8 @@
     "deploy": "docusaurus deploy"
   },
   "dependencies": {
-    "@docusaurus/core": "^2.0.0-beta.ff31de0ff",
-    "@docusaurus/preset-classic": "^2.0.0-beta.ff31de0ff",
+    "@docusaurus/core": "2.0.0-rc.1",
+    "@docusaurus/preset-classic": "2.0.0-rc.1",
     "classnames": "^2.3.1",
     "immer": ">=9.0.6",
     "react": "^17.0.2",
