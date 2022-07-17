@@ -17,7 +17,7 @@ namespace ActiveMQ.Artemis.Client.UnitTests.AutoRecovering
         }
         
         [Fact]
-        public async Task Should_reconnect_when_broker_is_available_after_outage_is_over()
+        public async Task Should_reconnect_when_broker_outage_is_over()
         {
             var endpoint = GetUniqueEndpoint();
             var connectionOpened = new ManualResetEvent(false);
