@@ -5,7 +5,7 @@ namespace ActiveMQ.Artemis.Client.UnitTests.Utils
 {
     public class TestHandler : IHandler
     {
-        readonly Action<Event> _action;
+        private readonly Action<Event> _action;
 
         public TestHandler(Action<Event> action)
         {
