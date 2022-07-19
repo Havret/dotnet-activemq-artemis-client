@@ -72,6 +72,31 @@ Detailed documentation is available on [the project website](https://havret.gith
 - [Run ActiveMQ Artemis in Docker for local development](https://blog.jeroenmaes.eu/2021/12/run-activemq-artemis-in-docker-for-local-development/) (December 15, 2021)
 - [ActiveMQ Artemis address model explained with examples in .NET](https://havret.io/activemq-artemis-address-model) (April 19, 2022)
 
+## Running the tests
+The tests are grouped in two categories:
+- Unit Tests that don't require any infrastructure to run
+- Integration Tests that require Apache ActiveMQ Artemis 
+
+You can run the unit tests suite with the following command:
+
+```
+dotnet test --filter "FullyQualifiedName!~IntegrationTests"
+```
+
+Integration tests can be run with Apache ActiveMQ Artemis server hosted on a Docker container. 
+
+### Spinning up the necessary infrastructure
+This assumes docker and docker-compose are properly setup.
+
+1. Go to `/test/artemis` directory
+2. Run the following command: `docker-compose up -V -d`
+
+Having the broker up and running you can execute the integration test suite:
+
+```
+dotnet test --filter "FullyQualifiedName~IntegrationTests"
+```
+
 ## Features
 
 The following table shows what features are currently supported.
