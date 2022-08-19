@@ -21,6 +21,7 @@ namespace ActiveMQ.Artemis.Client.AutoRecovering
         private IConnection _connection;
         private readonly ILoggerFactory _loggerFactory;
         private readonly Func<IMessageIdPolicy> _messageIdPolicyFactory;
+        private readonly Func<string> _clientIdFactory;
         private readonly ILogger<AutoRecoveringConnection> _logger;
         private readonly Endpoint[] _endpoints;
         private readonly ChannelReader<ConnectCommand> _reader;
@@ -30,11 +31,16 @@ namespace ActiveMQ.Artemis.Client.AutoRecovering
         private readonly AsyncRetryPolicy<IConnection> _connectionRetryPolicy;
         private readonly Task _recoveryLoopTask;
 
-        public AutoRecoveringConnection(ILoggerFactory loggerFactory, IEnumerable<Endpoint> endpoints, IRecoveryPolicy recoveryPolicy, Func<IMessageIdPolicy> messageIdPolicyFactory)
+        public AutoRecoveringConnection(ILoggerFactory loggerFactory,
+            IEnumerable<Endpoint> endpoints,
+            IRecoveryPolicy recoveryPolicy,
+            Func<IMessageIdPolicy> messageIdPolicyFactory,
+            Func<string> clientIdFactory)
         {
             _logger = loggerFactory.CreateLogger<AutoRecoveringConnection>();
             _loggerFactory = loggerFactory;
             _messageIdPolicyFactory = messageIdPolicyFactory;
+            _clientIdFactory = clientIdFactory;
             _endpoints = endpoints.ToArray();
 
             var channel = Channel.CreateUnbounded<ConnectCommand>();
@@ -169,7 +175,7 @@ namespace ActiveMQ.Artemis.Client.AutoRecovering
                 int retryCount = context.GetRetryCount();
                 var endpoint = GetNextEndpoint(retryCount);
                 context.SetEndpoint(endpoint);
-                var connectionBuilder = new ConnectionBuilder(_loggerFactory, _messageIdPolicyFactory);
+                var connectionBuilder = new ConnectionBuilder(_loggerFactory, _messageIdPolicyFactory, _clientIdFactory);
                 var connection = await connectionBuilder.CreateAsync(endpoint, ct);
 
                 if (retryCount > 0)

@@ -17,6 +17,7 @@ namespace ActiveMQ.Artemis.Client
     {
         private IRecoveryPolicy _recoveryPolicy;
         private Func<IMessageIdPolicy> _messageIdPolicyFactory;
+        private Func<string> _clientIdFactory;
 
         public async Task<IConnection> CreateAsync(IEnumerable<Endpoint> endpoints, CancellationToken cancellationToken)
         {
@@ -29,13 +30,13 @@ namespace ActiveMQ.Artemis.Client
 
             if (AutomaticRecoveryEnabled)
             {
-                var autoRecoveringConnection = new AutoRecoveringConnection(LoggerFactory, endpointsList, RecoveryPolicy, MessageIdPolicyFactory);
+                var autoRecoveringConnection = new AutoRecoveringConnection(LoggerFactory, endpointsList, RecoveryPolicy, MessageIdPolicyFactory, ClientIdFactory);
                 await autoRecoveringConnection.InitAsync(cancellationToken).ConfigureAwait(false);
                 return autoRecoveringConnection;
             }
             else
             {
-                var connectionBuilder = new ConnectionBuilder(LoggerFactory, MessageIdPolicyFactory);
+                var connectionBuilder = new ConnectionBuilder(LoggerFactory, MessageIdPolicyFactory, ClientIdFactory);
                 return await connectionBuilder.CreateAsync(endpointsList.First(), cancellationToken).ConfigureAwait(false);
             }
         }
@@ -52,6 +53,15 @@ namespace ActiveMQ.Artemis.Client
         {
             get => _messageIdPolicyFactory ?? ActiveMQ.Artemis.Client.MessageIdPolicy.MessageIdPolicyFactory.DisableMessageIdPolicy;
             set => _messageIdPolicyFactory = value ?? throw new ArgumentNullException(nameof(value), "MessageId Policy Factory cannot be null.");
+        }
+
+        /// <summary>
+        /// Factory function that creates unique identifier for the connection.
+        /// </summary>
+        public Func<string> ClientIdFactory
+        {
+            get => _clientIdFactory;
+            set => _clientIdFactory = value ?? throw new ArgumentNullException(nameof(value), "Client Id Factory cannot be null.");
         }
     }
 }
