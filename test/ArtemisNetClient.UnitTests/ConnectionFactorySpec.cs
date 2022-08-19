@@ -7,6 +7,7 @@ using ActiveMQ.Artemis.Client.AutoRecovering.RecoveryPolicy;
 using ActiveMQ.Artemis.Client.Exceptions;
 using ActiveMQ.Artemis.Client.MessageIdPolicy;
 using ActiveMQ.Artemis.Client.UnitTests.Utils;
+using Amqp.Framing;
 using Amqp.Handler;
 using Xunit;
 using Xunit.Abstractions;
@@ -107,6 +108,35 @@ namespace ActiveMQ.Artemis.Client.UnitTests
         {
             var connectionFactory = CreateConnectionFactory();
             connectionFactory.MessageIdPolicyFactory = MessageIdPolicyFactory.GuidMessageIdPolicy;
+        }
+
+        [Fact]
+        public async Task Should_create_connection_with_specified_client_id()
+        {
+            // Arrange
+            var endpoint = GetUniqueEndpoint();
+
+            var tcs = new TaskCompletionSource<Open>();
+            var handler = new TestHandler(@event =>
+            {
+                switch (@event.Id)
+                {
+                    case EventId.ConnectionRemoteOpen:
+                        tcs.TrySetResult((Open) @event.Context);
+                        break;
+                }
+            });
+            using var host = CreateOpenedContainerHost(endpoint, handler);
+
+            var connectionFactory = CreateConnectionFactory();
+            connectionFactory.ClientIdFactory = () => "foo";
+
+            // Act
+            await using var connection = await connectionFactory.CreateAsync(endpoint);
+
+            // Assert
+            var openFrame = await tcs.Task;
+            Assert.Equal("foo", openFrame.ContainerId);
         }
     }
 }
