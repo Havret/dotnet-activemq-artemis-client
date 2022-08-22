@@ -8,6 +8,7 @@ module.exports = {
       'consumer-credit',
       'connection-lifecycle',
       'auto-recovery',
+      'transactions',
       'messaging-model',
       'request-reply',
       'testing',
