@@ -2,7 +2,7 @@ version: "3"
 services:
   activemq-artemis:
     container_name: activemq-artemis
-    image: havret/dotnet-activemq-artemis-client-test-broker:2.24.0
+    image: havret/dotnet-activemq-artemis-client-test-broker:2.25.0-rc1
     ports:
       - 5672:5672
       - 8161:8161
