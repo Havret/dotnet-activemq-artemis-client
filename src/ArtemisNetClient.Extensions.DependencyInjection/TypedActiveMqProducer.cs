@@ -27,7 +27,7 @@ namespace ActiveMQ.Artemis.Client.Extensions.DependencyInjection
                 throw new InvalidOperationException($"Producer with type {typeof(T).FullName} has already been initialized.");
             }
 
-            _producer = await _producerFactory(cancellationToken);
+            _producer = await _producerFactory(cancellationToken).ConfigureAwait(false);
         }
 
         public async ValueTask StopAsync()

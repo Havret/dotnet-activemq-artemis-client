@@ -14,7 +14,7 @@ namespace ActiveMQ.Artemis.Client.InternalUtilities
             {
                 try
                 {
-                    await TryDispose(obj);
+                    await TryDispose(obj).ConfigureAwait(false);
                 }
                 catch (Exception e)
                 {
@@ -33,7 +33,7 @@ namespace ActiveMQ.Artemis.Client.InternalUtilities
             switch (obj)
             {
                 case IAsyncDisposable asyncDisposable:
-                    await asyncDisposable.DisposeAsync();
+                    await asyncDisposable.DisposeAsync().ConfigureAwait(false);
                     break;
                 case IDisposable disposable:
                     disposable.Dispose();

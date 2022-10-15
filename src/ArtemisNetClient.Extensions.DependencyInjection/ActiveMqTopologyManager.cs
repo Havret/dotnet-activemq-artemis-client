@@ -27,11 +27,12 @@ namespace ActiveMQ.Artemis.Client.Extensions.DependencyInjection
             }
 
             var connection = await _lazyConnection.GetValueAsync(cancellationToken).ConfigureAwait(false);
-            await using var topologyManager = await connection.CreateTopologyManagerAsync(cancellationToken).ConfigureAwait(false);
+            var topologyManager = await connection.CreateTopologyManagerAsync(cancellationToken).ConfigureAwait(false);
+            await using var _ = topologyManager.ConfigureAwait(false);
 
             foreach (var addressConfiguration in _addressConfigurations)
             {
-                await topologyManager.DeclareAddressAsync(addressConfiguration.Key, addressConfiguration.Value, cancellationToken);
+                await topologyManager.DeclareAddressAsync(addressConfiguration.Key, addressConfiguration.Value, cancellationToken).ConfigureAwait(false);
             }
             
             var queues = await topologyManager.GetQueueNamesAsync(cancellationToken).ConfigureAwait(false);

@@ -19,7 +19,7 @@ namespace ActiveMQ.Artemis.Client.Extensions.DependencyInjection
         public async ValueTask<IConnection> GetConnection(string name, CancellationToken cancellationToken)
         {
             var namedConnection = _serviceProvider.GetServices<NamedConnection>().First(x => x.Name == name);
-            return await namedConnection.Connection.GetValueAsync(cancellationToken);
+            return await namedConnection.Connection.GetValueAsync(cancellationToken).ConfigureAwait(false);
         }
 
         public AsyncValueLazy<IConnection> GetConnection(string name)
