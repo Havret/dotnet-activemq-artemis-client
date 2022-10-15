@@ -176,7 +176,7 @@ namespace ActiveMQ.Artemis.Client.AutoRecovering
                 var endpoint = GetNextEndpoint(retryCount);
                 context.SetEndpoint(endpoint);
                 var connectionBuilder = new ConnectionBuilder(_loggerFactory, _messageIdPolicyFactory, _clientIdFactory);
-                var connection = await connectionBuilder.CreateAsync(endpoint, ct);
+                var connection = await connectionBuilder.CreateAsync(endpoint, ct).ConfigureAwait(false);
 
                 if (retryCount > 0)
                 {
@@ -253,7 +253,7 @@ namespace ActiveMQ.Artemis.Client.AutoRecovering
         {
             _recoveryCancellationToken.Cancel();
             await _recoveryLoopTask.ConfigureAwait(false);
-            await Task.WhenAll(_recoverables.Values.Select(async x => await x.DisposeAsync().ConfigureAwait(false)));
+            await Task.WhenAll(_recoverables.Values.Select(async x => await x.DisposeAsync().ConfigureAwait(false))).ConfigureAwait(false);
             await DisposeInnerConnection().ConfigureAwait(false);
         }
 

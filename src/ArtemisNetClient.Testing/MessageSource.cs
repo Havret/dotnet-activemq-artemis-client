@@ -22,7 +22,7 @@ internal class MessageSource : IMessageSource
 
     async Task<ReceiveContext> IMessageSource.GetMessageAsync(ListenerLink link)
     {
-        var msg = await _reader.ReadAsync();
+        var msg = await _reader.ReadAsync().ConfigureAwait(false);
         return new ReceiveContext(link, msg.InnerMessage);
     }
 

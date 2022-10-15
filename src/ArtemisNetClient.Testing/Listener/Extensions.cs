@@ -1,5 +1,4 @@
 using System.Reflection;
-using ActiveMQ.Artemis.Client.Testing.Utils;
 using Amqp.Framing;
 using Amqp.Listener;
 

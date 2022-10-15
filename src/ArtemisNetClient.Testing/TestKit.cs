@@ -104,7 +104,7 @@ public class TestKit : IDisposable
 
     public async Task SendMessageAsync(string address, Message message)
     {
-        var messageSource = await GetMessageSourceAsync(address);
+        var messageSource = await GetMessageSourceAsync(address).ConfigureAwait(false);
         if (messageSource != null)
         {
             message.To = address;
@@ -126,7 +126,7 @@ public class TestKit : IDisposable
                 return messageSource;
             }
 
-            await Task.Delay(delay++);
+            await Task.Delay(delay++).ConfigureAwait(false);
         }
 
         return null;

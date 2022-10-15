@@ -371,7 +371,7 @@ namespace ActiveMQ.Artemis.Client.Extensions.DependencyInjection
                 configureContextualReceiveObservableAction(contextualReceiveObservable);
                 return new ActiveMqConsumer(provider, contextualReceiveObservable, async token =>
                 {
-                    var connection = await provider.GetConnection(builder.Name, token);
+                    var connection = await provider.GetConnection(builder.Name, token).ConfigureAwait(false);
                     return await connection.CreateConsumerAsync(consumerConfiguration, token).ConfigureAwait(false);
                 }, handler);
             });
@@ -496,7 +496,7 @@ namespace ActiveMQ.Artemis.Client.Extensions.DependencyInjection
                 };
                 return new TypedActiveMqProducer<TProducer>(logger, async token =>
                 {
-                    var connection = await provider.GetConnection(builder.Name, token);
+                    var connection = await provider.GetConnection(builder.Name, token).ConfigureAwait(false);
                     return await connection.CreateProducerAsync(producerConfiguration, token).ConfigureAwait(false);
                 }, contextualSendObservable);
             });
