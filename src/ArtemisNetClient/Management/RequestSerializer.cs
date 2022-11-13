@@ -47,6 +47,10 @@ namespace ActiveMQ.Artemis.Client
                 {
                     writer.WriteNumber("auto-delete-delay", -1);
                 }
+                if (string.IsNullOrEmpty(configuration.LastValueKey) == false)
+                {
+                    writer.WriteString("last-value-key", configuration.LastValueKey);
+                }
                 writer.WriteEndObject();
             }
 
