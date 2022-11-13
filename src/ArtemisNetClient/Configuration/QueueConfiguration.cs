@@ -31,5 +31,10 @@ namespace ActiveMQ.Artemis.Client
         /// Delay for auto-deleting queues that do not have any consumers attached.
         /// </summary>
         public TimeSpan? AutoDeleteDelay { get; set; }
+
+        /// <summary>
+        /// Configures Last-Value key for a queue 
+        /// </summary>
+        public string LastValueKey { get; set; }
     }
 }

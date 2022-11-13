@@ -1,7 +1,7 @@
 ﻿namespace ActiveMQ.Artemis.Client.Extensions.DependencyInjection
 {
     /// <summary>
-    /// Provides programmatic configuration for a queue to be declared. 
+    /// Provides programmatic configuration for a queue to be declared.
     /// </summary>
     public class QueueOptions
     {
@@ -18,5 +18,10 @@
         public bool AutoCreateAddress { get; set; }
 
         public string FilterExpression { get; set; }
+
+        /// <summary>
+        /// Configures Last-Value key for a queue 
+        /// </summary>
+        public string LastValueKey { get; set; }
     }
 }

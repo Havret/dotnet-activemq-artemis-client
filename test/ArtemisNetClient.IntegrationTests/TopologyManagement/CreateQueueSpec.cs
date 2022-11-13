@@ -151,5 +151,42 @@ namespace ActiveMQ.Artemis.Client.IntegrationTests.TopologyManagement
 
             Assert.Equal("foo2", (await newQueue1Consumer.ReceiveAsync(CancellationToken)).GetBody<string>());
         }
+
+        [Fact]
+        public async Task Should_create_last_value_queue()
+        {
+            var connection = await CreateConnection();
+            var address = Guid.NewGuid().ToString();
+            var queue = Guid.NewGuid().ToString();
+            var lastValueKey = "my-last-value-key";
+
+            var topologyManager = await connection.CreateTopologyManagerAsync();
+            await topologyManager.CreateAddressAsync(address, RoutingType.Multicast);
+            await topologyManager.CreateQueueAsync(new QueueConfiguration
+            {
+                Address = address,
+                Name = queue,
+                RoutingType = RoutingType.Multicast,
+                LastValueKey = lastValueKey
+            });
+            
+            var producer = await connection.CreateProducerAsync(address, RoutingType.Multicast);
+            
+            // Send series of messages with the same last value key
+            await producer.SendAsync(new Message("foo1") { ApplicationProperties = { [lastValueKey] = "1" } });
+            await producer.SendAsync(new Message("foo2") { ApplicationProperties = { [lastValueKey] = "1" } });
+            await producer.SendAsync(new Message("foo3") { ApplicationProperties = { [lastValueKey] = "1" } });
+            
+            // Send series of messages with another last value key
+            await producer.SendAsync(new Message("foo4") { ApplicationProperties = { [lastValueKey] = "2" } });
+            await producer.SendAsync(new Message("foo5") { ApplicationProperties = { [lastValueKey] = "2" } });
+            await producer.SendAsync(new Message("foo6") { ApplicationProperties = { [lastValueKey] = "2" } });
+            
+            var consumer = await connection.CreateConsumerAsync(address, queue, CancellationToken);
+            
+            // Only messages foo3 and foo6 should survive
+            Assert.Equal("foo3", (await consumer.ReceiveAsync(CancellationToken)).GetBody<string>());
+            Assert.Equal("foo6", (await consumer.ReceiveAsync(CancellationToken)).GetBody<string>());
+        }
     }
 }
