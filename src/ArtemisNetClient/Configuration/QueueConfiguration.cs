@@ -36,5 +36,10 @@ namespace ActiveMQ.Artemis.Client
         /// Configures Last-Value key for a queue 
         /// </summary>
         public string LastValueKey { get; set; }
+
+        /// <summary>
+        /// True if the queue is non-destructive 
+        /// </summary>
+        public bool NonDestructive { get; set; }
     }
 }

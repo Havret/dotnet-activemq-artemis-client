@@ -39,6 +39,7 @@ namespace ActiveMQ.Artemis.Client
                 writer.WriteString("filter-string", configuration.FilterExpression ?? string.Empty);
                 writer.WriteBoolean("auto-delete", configuration.AutoDelete);
                 writer.WriteNumber("auto-delete-message-count", configuration.AutoDeleteMessageCount);
+                writer.WriteBoolean("non-destructive", configuration.NonDestructive);
                 if (configuration.AutoDeleteDelay.HasValue)
                 {
                     writer.WriteNumber("auto-delete-delay", Convert.ToInt64(configuration.AutoDeleteDelay.Value.TotalMilliseconds));    

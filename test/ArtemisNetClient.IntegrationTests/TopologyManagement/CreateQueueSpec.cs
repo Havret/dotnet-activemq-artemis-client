@@ -188,5 +188,41 @@ namespace ActiveMQ.Artemis.Client.IntegrationTests.TopologyManagement
             Assert.Equal("foo3", (await consumer.ReceiveAsync(CancellationToken)).GetBody<string>());
             Assert.Equal("foo6", (await consumer.ReceiveAsync(CancellationToken)).GetBody<string>());
         }
+
+        [Fact]
+        public async Task Should_create_non_destructive_queue()
+        {
+            var connection = await CreateConnection();
+            var address = Guid.NewGuid().ToString();
+            var queue = Guid.NewGuid().ToString();
+
+            var topologyManager = await connection.CreateTopologyManagerAsync();
+            await topologyManager.CreateAddressAsync(address, RoutingType.Multicast);
+            await topologyManager.CreateQueueAsync(new QueueConfiguration
+            {
+                Address = address,
+                Name = queue,
+                RoutingType = RoutingType.Multicast,
+                NonDestructive = true
+            });
+            
+            var producer = await connection.CreateProducerAsync(address, RoutingType.Multicast);
+
+            await producer.SendAsync(new Message("foo"));
+
+            var consumer = await connection.CreateConsumerAsync(address, queue, CancellationToken);
+            var msg = await consumer.ReceiveAsync(CancellationToken);
+            await consumer.AcceptAsync(msg);
+            Assert.Equal("foo", msg.GetBody<string>());
+
+            // close consumer
+            await consumer.DisposeAsync();
+            
+            // recreate consumer, and the message should be redelivered as the queue was created as non-destructive
+            consumer = await connection.CreateConsumerAsync(address, queue, CancellationToken);
+            msg = await consumer.ReceiveAsync(CancellationToken);
+            await consumer.AcceptAsync(msg);
+            Assert.Equal("foo", msg.GetBody<string>());
+        }
     }
 }
