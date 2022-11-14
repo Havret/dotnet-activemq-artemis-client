@@ -236,7 +236,8 @@ namespace ActiveMQ.Artemis.Client.Extensions.DependencyInjection
                     MaxConsumers = queueOptions.MaxConsumers,
                     AutoCreateAddress = queueOptions.AutoCreateAddress,
                     PurgeOnNoConsumers = queueOptions.PurgeOnNoConsumers,
-                    LastValueKey = queueOptions.LastValueKey
+                    LastValueKey = queueOptions.LastValueKey,
+                    NonDestructive = queueOptions.NonDestructive
                 });
                 if (options.AddressConfigurations.TryGetValue(address, out var routingTypes))
                 {
