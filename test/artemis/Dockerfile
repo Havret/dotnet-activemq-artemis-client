@@ -1,21 +1,15 @@
 # ActiveMQ Artemis
-FROM alpine:latest
+FROM --platform=linux/amd64 azul/zulu-openjdk-alpine:14
 
 RUN mkdir /artemis
 WORKDIR /artemis
-
-RUN apk add libaio wget
-RUN wget -O jre14.tar https://cdn.azul.com/zulu/bin/zulu14.28.21-ca-jre14.0.1-linux_musl_x64.tar.gz
-RUN tar -xvf ./jre14.tar
-RUN ln -s /artemis/zulu14.28.21-ca-jre14.0.1-linux_musl_x64/bin/java /usr/bin/java
-RUN java --version
 
 RUN wget -O "artemis.tar" "https://dist.apache.org/repos/dist/dev/activemq/activemq-artemis/2.27.0/apache-artemis-2.27.0-bin.tar.gz"
 RUN tar -xvf ./artemis.tar; \
     ln -s /artemis/apache-artemis-2.27.0/ ./current
 #WORKDIR /artemis/current
-ENV JAVA_HOME /artemis/zulu14.28.21-ca-jre14.0.1-linux_musl_x64/
-RUN /artemis/current/bin/artemis create --user artemis --password artemis --http-host 0.0.0.0 --require-login --relax-jolokia amq
+
+RUN /artemis/current/bin/artemis create --user artemis --password artemis --http-host 0.0.0.0 --require-login --nio --relax-jolokia amq
 
 # Web Server
 EXPOSE 8161 \
