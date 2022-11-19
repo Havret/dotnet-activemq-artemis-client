@@ -60,7 +60,7 @@ namespace ActiveMQ.Artemis.Client.Extensions.DependencyInjection
                 var queueConfigurations = activeMqOptions.EnableQueueDeclaration ? activeMqOptions.QueueConfigurations : new List<QueueConfiguration>(0);
                 var addressConfigurations = activeMqOptions.EnableAddressDeclaration ? activeMqOptions.AddressConfigurations : new Dictionary<string, HashSet<RoutingType>>(0);
                 var lazyConnection = provider.GetConnection(name);
-                return new ActiveMqTopologyManager(lazyConnection, queueConfigurations, addressConfigurations);
+                return new ActiveMqTopologyManager(provider, lazyConnection, queueConfigurations, addressConfigurations, activeMqOptions.ConfigureTopologyActions);
             });
             builder.Services.AddSingleton(provider =>
             {
@@ -107,7 +107,7 @@ namespace ActiveMQ.Artemis.Client.Extensions.DependencyInjection
         }
 
         /// <summary>
-        /// Adds action to configure a <see cref="IConnection"/>.
+        /// Adds an action to configure a <see cref="IConnection"/>.
         /// </summary>
         /// <param name="builder">The <see cref="IActiveMqBuilder"/>.</param>
         /// <param name="configureConnectionAction">A delegate that is used to configure a <see cref="IConnection"/>.</param>
@@ -115,6 +115,18 @@ namespace ActiveMQ.Artemis.Client.Extensions.DependencyInjection
         public static IActiveMqBuilder ConfigureConnection(this IActiveMqBuilder builder, Action<IServiceProvider, IConnection> configureConnectionAction)
         {
             builder.Services.Configure<ActiveMqOptions>(builder.Name, options => options.ConnectionActions.Add(configureConnectionAction));
+            return builder;
+        }
+
+        /// <summary>
+        /// Adds an action to configure the broker topology.
+        /// </summary>
+        /// <param name="builder">The <see cref="IActiveMqBuilder"/>.</param>
+        /// <param name="configureTopologyAction">A delegate that can be used configure the broker topology.</param>
+        /// <returns>The <see cref="IActiveMqBuilder"/> that can be used to configure ActiveMQ Artemis Client.</returns>
+        public static IActiveMqBuilder ConfigureTopology(this IActiveMqBuilder builder, Func<IServiceProvider, ITopologyManager, Task> configureTopologyAction)
+        {
+            builder.Services.Configure<ActiveMqOptions>(builder.Name, options => options.ConfigureTopologyActions.Add(configureTopologyAction));
             return builder;
         }
 
