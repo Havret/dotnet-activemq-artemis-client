@@ -5,6 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using ActiveMQ.Artemis.Client.Extensions.DependencyInjection;
 using ActiveMQ.Artemis.Client.TestUtils;
+using NScenario;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -110,33 +111,69 @@ namespace ActiveMQ.Artemis.Client.Extensions.AspNetCore.IntegrationTests
         [Fact]
         public async Task Should_create_shared_durable_consumer()
         {
+            var scenario = TestScenarioFactory.Default(new XUnitOutputAdapter(_testOutputHelper));
+            
             var address = Guid.NewGuid().ToString();
             var queue = Guid.NewGuid().ToString();
-
             var dictionary = new ConcurrentDictionary<int, bool>();
-
-            await using var testFixture = await TestFixture.CreateAsync(_testOutputHelper, builder =>
+            
+            var testFixture1 = await scenario.Step("Register two shared durable consumers", async () =>
             {
-                builder.AddSharedDurableConsumer(address, queue, async (message, consumer, _, _) =>
+                return await TestFixture.CreateAsync(_testOutputHelper, builder =>
                 {
-                    dictionary.TryAdd(1, true);
-                    await consumer.AcceptAsync(message);
-                });
-                builder.AddSharedDurableConsumer(address, queue, async (message, consumer, _, _) =>
-                {
-                    dictionary.TryAdd(2, true);
-                    await consumer.AcceptAsync(message);
+                    builder.AddSharedDurableConsumer(address, queue, (_, _, _, _) =>
+                    {
+                        dictionary.TryAdd(1, true);
+                        return Task.CompletedTask;
+                    });
+                    builder.AddSharedDurableConsumer(address, queue, (_, _, _, _) =>
+                    {
+                        dictionary.TryAdd(2, true);
+                        return Task.CompletedTask;
+                    });
                 });
             });
 
-            await using var producer = await testFixture.Connection.CreateProducerAsync(address, RoutingType.Multicast, testFixture.CancellationToken);
-            await producer.SendAsync(new Message("foo"), testFixture.CancellationToken);
-            await producer.SendAsync(new Message("foo"), testFixture.CancellationToken);
+            await scenario.Step("Send two messages", async () =>
+            {
+                await using var producer = await testFixture1.Connection.CreateProducerAsync(address, RoutingType.Multicast, testFixture1.CancellationToken);
+                await producer.SendAsync(new Message("foo"), testFixture1.CancellationToken);
+                await producer.SendAsync(new Message("foo"), testFixture1.CancellationToken);
+            });
 
-            Assert.Equal(2, await Retry.RetryUntil(
-                () => Task.FromResult(dictionary.Keys.Count),
-                x => x == 2,
-                TimeSpan.FromMilliseconds(100)));
+            await scenario.Step("Verify that messages were distributed among two consumers", async () =>
+            {
+                Assert.Equal(2, await Retry.RetryUntil(
+                    func: () => Task.FromResult(dictionary.Keys.Count),
+                    until: x => x == 2,
+                    timeout: TimeSpan.FromMilliseconds(100)));
+            });
+
+            await scenario.Step("Close initial consumers without acknowledging messages", async () =>
+            {
+                await testFixture1.DisposeAsync();
+                dictionary.Clear();
+            });
+            
+            await using var testFixture2 = await scenario.Step("Register a new consumer", async () =>
+            {
+                return await TestFixture.CreateAsync(_testOutputHelper, builder =>
+                {
+                    builder.AddSharedDurableConsumer(address, queue, async (message, consumer, _, _) =>
+                    {
+                        dictionary.TryAdd(1, true);
+                        await consumer.AcceptAsync(message);
+                    });
+                });
+            });
+            
+            await scenario.Step("Verify that messages were redelivered to the new consumer - queue was durable", async () =>
+            {
+                Assert.Equal(1, await Retry.RetryUntil(
+                    func: () => Task.FromResult(dictionary.Keys.Count),
+                    until: x => x == 1,
+                    timeout: TimeSpan.FromMilliseconds(100)));
+            });
         }
     }
 }
