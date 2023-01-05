@@ -7,7 +7,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace ActiveMQ.Artemis.Client.Extensions.DependencyInjection
 {
-    internal class ConnectionProvider
+    public class ConnectionProvider
     {
         private readonly IServiceProvider _serviceProvider;
 
