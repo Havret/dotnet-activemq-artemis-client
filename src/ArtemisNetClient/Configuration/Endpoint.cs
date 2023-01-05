@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Security.Cryptography.X509Certificates;
 using ActiveMQ.Artemis.Client.Exceptions;
 using Amqp;
 
@@ -40,6 +41,47 @@ namespace ActiveMQ.Artemis.Client
         /// Gets the password that is used for SASL PLAIN profile.
         /// </summary>
         public string Password => Address.Password;
+
+        /// <summary>
+        /// Gets the client certificate to use for mutual authentication.
+        /// </summary>
+        public X509CertificateCollection ClientCertificates { get; private set; }
+
+        /// <summary>
+        /// Gets the trusted remote certificate authorities
+        /// </summary>
+        public X509CertificateCollection TrustedRemoteCertificateAuthorities { get; private set; }
+
+        /// <summary>
+        /// Skip remote certification validation against CA
+        /// </summary>
+        public bool BypassRemoteCertificateValidation { get; set; } = false;
+
+        public static Endpoint Create(string host, int port, X509CertificateCollection clientCertificates, X509CertificateCollection trustedRemoteCertificateAuthorities, bool bypassRemoteCertificateValidation = false)
+        {
+            var scheme = Scheme.Amqps;
+            var protocolScheme = GetScheme(scheme);
+
+            try
+            {
+                return new Endpoint(new Address(host, port, path: "/", scheme: protocolScheme))
+                {
+                    Scheme = scheme,
+                    ClientCertificates = clientCertificates,
+                    TrustedRemoteCertificateAuthorities = trustedRemoteCertificateAuthorities,
+                    BypassRemoteCertificateValidation = bypassRemoteCertificateValidation
+                };
+            }
+            catch (AmqpException e)
+            {
+                throw new CreateEndpointException(e.Error.Description, e.Error.Condition, e);
+            }
+            catch (Exception e)
+            {
+                throw new CreateEndpointException("Could not create endpoint", e);
+            }
+
+        }
 
         public static Endpoint Create(string host, int port, string user = null, string password = null, Scheme scheme = Scheme.Amqp)
         {
