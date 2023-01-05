@@ -15,7 +15,8 @@ jobs:
             ArtemisNetClient.Extensions.DependencyInjection,
             ArtemisNetClient.Extensions.Hosting,
             ArtemisNetClient.Extensions.App.Metrics,
-            ArtemisNetClient.Testing
+            ArtemisNetClient.Testing,
+            ArtemisNetClient.Extensions.CloudEvents
           ]
     steps:
       - uses: actions/checkout@v1
