@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.ComponentModel;
 using System.Threading;
 using System.Threading.Tasks;
 using ActiveMQ.Artemis.Client.Extensions.DependencyInjection;
@@ -71,6 +73,42 @@ namespace ActiveMQ.Artemis.Client.Extensions.AspNetCore.IntegrationTests
             
             await asyncCountdownEvent.WaitAsync();
             Assert.Equal(4, msgBag.Count);
+        }
+
+        [Fact]
+        public async Task Should_handle_consumer_exception_in_consumer_error_eventhandler()
+        {
+            var address = Guid.NewGuid().ToString();
+            async Task MessageHandler(Message msg, IConsumer consumer, IServiceProvider provider, CancellationToken cancellationToken)
+            {
+                await Task.FromException(new Exception());
+            }
+
+            // STEP 1: Configure producers and consumers
+            await using var testFixture = await TestFixture.CreateAsync(_testOutputHelper, addActiveMqHostedService: false, configureActiveMq: builder =>
+            {
+                builder.AddProducer<TestProducer>(address, RoutingType.Multicast);
+                builder.AddConsumer(address, RoutingType.Multicast, MessageHandler);
+            });
+
+            // STEP 2: Start the client
+            var activeMqClient = testFixture.Services.GetRequiredService<IActiveMqClient>();
+            var receivedErrorEvents = new List<Exception>();
+            activeMqClient.ConsumerError += delegate (object sender, ConsumerErrorEventArgs e)
+            {
+                receivedErrorEvents.Add(e.Exception);
+            };
+            await activeMqClient.StartAsync(CancellationToken.None);
+
+            // STEP 3: Send message which will throw exception
+            var testProducer = testFixture.Services.GetRequiredService<TestProducer>();
+
+            await testProducer.SendMessage("msg-1", CancellationToken.None);
+
+            // STEP 4: Stop the client
+            await activeMqClient.StopAsync(CancellationToken.None);
+
+            Assert.Single(receivedErrorEvents);
         }
 
         private class TestProducer

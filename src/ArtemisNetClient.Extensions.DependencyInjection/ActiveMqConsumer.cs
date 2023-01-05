@@ -30,7 +30,7 @@ namespace ActiveMQ.Artemis.Client.Extensions.DependencyInjection
             _handler = handler;
         }
 
-        public async Task StartAsync(CancellationToken cancellationToken)
+        public async Task StartAsync(CancellationToken cancellationToken, Action<Exception> consumerException)
         {
             _cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
             var token = _cts.Token;
@@ -52,7 +52,8 @@ namespace ActiveMQ.Artemis.Client.Extensions.DependencyInjection
                     catch (Exception exception)
                     {
                         _logger.LogError(exception, string.Empty);
-                        
+                        consumerException(exception);
+
                         if (exception is ConsumerClosedException)
                         {
                             // At this point the consumer is in non-recoverable state.

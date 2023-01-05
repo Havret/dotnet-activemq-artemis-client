@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -21,19 +22,22 @@ namespace ActiveMQ.Artemis.Client.Extensions.DependencyInjection
             _producerInitializers = producerInitializers;
             _requestReplyClientInitializers = requestReplyClientInitializers;
         }
-        
+
+        public event EventHandler<ConsumerErrorEventArgs> ConsumerError;
+        public event EventHandler<ProducerErrorEventArgs> ProducerError;
+
         public async Task StartAsync(CancellationToken cancellationToken)
         {
             foreach (var producer in _producerInitializers)
             {
-                await producer.StartAsync(cancellationToken).ConfigureAwait(false);
+                await producer.StartAsync(cancellationToken, ProducerExceptionHandler).ConfigureAwait(false);
             }
 
             foreach (var requestReplyClientInitializer in _requestReplyClientInitializers)
             {
                 await requestReplyClientInitializer.StartAsync(cancellationToken).ConfigureAwait(false);
             }
-            
+
             foreach (var activeMqTopologyManager in _topologyManagers)
             {
                 await activeMqTopologyManager.CreateTopologyAsync(cancellationToken).ConfigureAwait(false);
@@ -41,7 +45,7 @@ namespace ActiveMQ.Artemis.Client.Extensions.DependencyInjection
 
             foreach (var activeMqConsumer in _consumers)
             {
-                await activeMqConsumer.StartAsync(cancellationToken).ConfigureAwait(false);
+                await activeMqConsumer.StartAsync(cancellationToken, ConsumerExceptionHandler).ConfigureAwait(false);
             }
         }
 
@@ -56,10 +60,26 @@ namespace ActiveMQ.Artemis.Client.Extensions.DependencyInjection
             {
                 await producer.StopAsync().ConfigureAwait(false);
             }
-            
+
             foreach (var requestReplyClientInitializer in _requestReplyClientInitializers)
             {
                 await requestReplyClientInitializer.StopAsync().ConfigureAwait(false);
+            }
+        }
+
+        private void ConsumerExceptionHandler(Exception ex)
+        {
+            if (this.ConsumerError != null)
+            {
+                this.ConsumerError.Invoke(this, new ConsumerErrorEventArgs(ex));
+            }
+        }
+
+        private void ProducerExceptionHandler(Exception ex)
+        {
+            if (this.ProducerError != null)
+            {
+                this.ProducerError.Invoke(this, new ProducerErrorEventArgs(ex));
             }
         }
     }

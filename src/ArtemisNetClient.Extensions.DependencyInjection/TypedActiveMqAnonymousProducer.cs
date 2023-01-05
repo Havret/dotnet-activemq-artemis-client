@@ -20,7 +20,7 @@ namespace ActiveMQ.Artemis.Client.Extensions.DependencyInjection
             _sendObservable = sendObservable;
         }
 
-        public async ValueTask StartAsync(CancellationToken cancellationToken)
+        public async ValueTask StartAsync(CancellationToken cancellationToken, Action<Exception> producerException)
         {
             if (_producer != null)
             {
