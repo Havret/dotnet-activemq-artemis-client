@@ -44,6 +44,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Application.Tests", "sample
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Application", "samples\Testing\Application\Application.csproj", "{AAFC186E-C01E-4EFD-9F0C-883CEB44651D}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ArtemisNetClient.Extensions.CloudEvents", "src\ArtemisNetClient.Extensions.CloudEvents\ArtemisNetClient.Extensions.CloudEvents.csproj", "{76802FFA-12CF-41E3-836A-64270150D9F1}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ArtemisNetClient.Extensions.CloudEvents.UnitTests", "test\ArtemisNetClient.Extensions.CloudEvents.UnitTests\ArtemisNetClient.Extensions.CloudEvents.UnitTests.csproj", "{F8117A33-8F16-4E83-B799-A5D02B1A29CC}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -122,6 +126,14 @@ Global
 		{AAFC186E-C01E-4EFD-9F0C-883CEB44651D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{AAFC186E-C01E-4EFD-9F0C-883CEB44651D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{AAFC186E-C01E-4EFD-9F0C-883CEB44651D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{76802FFA-12CF-41E3-836A-64270150D9F1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{76802FFA-12CF-41E3-836A-64270150D9F1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{76802FFA-12CF-41E3-836A-64270150D9F1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{76802FFA-12CF-41E3-836A-64270150D9F1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F8117A33-8F16-4E83-B799-A5D02B1A29CC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F8117A33-8F16-4E83-B799-A5D02B1A29CC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F8117A33-8F16-4E83-B799-A5D02B1A29CC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F8117A33-8F16-4E83-B799-A5D02B1A29CC}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{78611D83-43E6-447B-814C-C73289AEDA30} = {4B33FA85-AAA6-4363-9C46-C5045A96E975}
@@ -137,5 +149,6 @@ Global
 		{6BFCCBDF-F794-470D-B551-958D6BE86CC1} = {6CD97B24-3150-4200-A898-0682800AEA80}
 		{E227D3D7-DAA7-43E0-A30B-3586CB618419} = {6BFCCBDF-F794-470D-B551-958D6BE86CC1}
 		{AAFC186E-C01E-4EFD-9F0C-883CEB44651D} = {6BFCCBDF-F794-470D-B551-958D6BE86CC1}
+		{F8117A33-8F16-4E83-B799-A5D02B1A29CC} = {4B33FA85-AAA6-4363-9C46-C5045A96E975}
 	EndGlobalSection
 EndGlobal
