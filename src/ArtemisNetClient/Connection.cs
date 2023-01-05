@@ -56,13 +56,13 @@ namespace ActiveMQ.Artemis.Client
             }
         }
 
-        public async Task<IConsumer> CreateConsumerAsync(ConsumerConfiguration configuration, CancellationToken cancellationToken)
+        public async Task<IConsumer> CreateConsumerAsync(ConsumerConfiguration configuration, CancellationToken cancellationToken, bool isBrowser = false)
         {
             CheckState();
 
             var session = await CreateSession(cancellationToken).ConfigureAwait(false);
             var consumerBuilder = new ConsumerBuilder(_loggerFactory, _transactionsManager, session);
-            return await consumerBuilder.CreateAsync(configuration, cancellationToken).ConfigureAwait(false);
+            return await consumerBuilder.CreateAsync(configuration, cancellationToken, isBrowser).ConfigureAwait(false);
         }
 
         public async Task<IProducer> CreateProducerAsync(ProducerConfiguration configuration, CancellationToken cancellationToken)
@@ -90,6 +90,16 @@ namespace ActiveMQ.Artemis.Client
             var session = await CreateSession(cancellationToken).ConfigureAwait(false);
             var requestReplyClientBuilder = new RequestReplyClientBuilder(_loggerFactory, session);
             return await requestReplyClientBuilder.CreateAsync(configuration, cancellationToken).ConfigureAwait(false);
+        }
+
+        public async Task<IBrowser> CreateBrowserAsync(ConsumerConfiguration configuration, CancellationToken cancellationToken)
+        {
+            CheckState();
+
+            var session = await CreateSession(cancellationToken).ConfigureAwait(false);
+            var consumerBuilder = new ConsumerBuilder(_loggerFactory, _transactionsManager, session);
+            var consumer = await consumerBuilder.CreateAsync(configuration, cancellationToken, isBrowser: true).ConfigureAwait(false);
+            return new Browser(consumer);
         }
 
         internal async Task<TransactionCoordinator> CreateTransactionCoordinator(CancellationToken cancellationToken)

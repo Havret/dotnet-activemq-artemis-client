@@ -14,14 +14,16 @@ namespace ActiveMQ.Artemis.Client.AutoRecovering
         private readonly ILogger<AutoRecoveringConsumer> _logger;
         private readonly ConsumerConfiguration _configuration;
         private readonly AsyncManualResetEvent _manualResetEvent = new AsyncManualResetEvent(true);
+        private readonly bool _isBrowser;
         private bool _closed;
         private volatile Exception _failureCause;
         private volatile IConsumer _consumer;
 
-        public AutoRecoveringConsumer(ILoggerFactory loggerFactory, ConsumerConfiguration configuration)
+        public AutoRecoveringConsumer(ILoggerFactory loggerFactory, ConsumerConfiguration configuration, bool isBrowser = false)
         {
             _logger = loggerFactory.CreateLogger<AutoRecoveringConsumer>();
             _configuration = configuration;
+            _isBrowser = isBrowser;
         }
 
         public async ValueTask<Message> ReceiveAsync(CancellationToken cancellationToken = default)
@@ -115,7 +117,7 @@ namespace ActiveMQ.Artemis.Client.AutoRecovering
         public async Task RecoverAsync(IConnection connection, CancellationToken cancellationToken)
         {
             var oldConsumer = _consumer;
-            _consumer = await connection.CreateConsumerAsync(_configuration, cancellationToken).ConfigureAwait(false);
+            _consumer = await connection.CreateConsumerAsync(_configuration, cancellationToken, isBrowser: _isBrowser).ConfigureAwait(false);
             await DisposeUnderlyingConsumerSafe(oldConsumer).ConfigureAwait(false);
             Log.ConsumerRecovered(_logger);
         }
