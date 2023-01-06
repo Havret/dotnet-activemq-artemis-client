@@ -492,5 +492,38 @@ namespace ActiveMQ.Artemis.Client.UnitTests
             
             Assert.Equal(correlationId, received.GetCorrelationId<T>());
         }
+        
+        [Fact]
+        public async Task Should_send_message_with_ContentType()
+        {
+            using var host = CreateOpenedContainerHost();
+            var messageProcessor = host.CreateMessageProcessor("a1");
+
+            await using var connection = await CreateConnection(host.Endpoint);
+            await using var producer = await connection.CreateProducerAsync("a1", RoutingType.Anycast);
+
+            var message = new Message("foo")
+            {
+                ContentType = "text/plain; charset=“utf-8”"
+            };
+            await producer.SendAsync(message, CancellationToken);
+
+            Assert.Equal("text/plain; charset=“utf-8”", messageProcessor.Dequeue(ShortTimeout).ContentType);
+        }
+        
+        [Fact]
+        public async Task Should_send_message_without_ContentType()
+        {
+            using var host = CreateOpenedContainerHost();
+            var messageProcessor = host.CreateMessageProcessor("a1");
+
+            await using var connection = await CreateConnection(host.Endpoint);
+            await using var producer = await connection.CreateProducerAsync("a1", RoutingType.Anycast);
+
+            var message = new Message("foo");
+            await producer.SendAsync(message, CancellationToken);
+
+            Assert.Null(messageProcessor.Dequeue(ShortTimeout).ContentType);
+        }
     }
 }
