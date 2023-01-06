@@ -144,6 +144,16 @@ namespace ActiveMQ.Artemis.Client
         }
 
         /// <summary>
+        /// The MIME type for the message’s body section. This can contain a charset parameter
+        /// defining the character encoding used: e.g., ’text/plain; charset=“utf-8”’.
+        /// </summary>
+        public string ContentType
+        {
+            get => Properties.ContentType;
+            set => Properties.ContentType = value;
+        }
+
+        /// <summary>
         /// The number of unsuccessful previous attempts to deliver this message.
         /// If this value is non-zero it can be taken as an indication that the delivery might be a duplicate.
         /// On first delivery, the value is zero.
