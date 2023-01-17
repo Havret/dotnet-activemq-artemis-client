@@ -24,6 +24,11 @@ namespace ActiveMQ.Artemis.Client.Extensions.DependencyInjection
         
         public async Task StartAsync(CancellationToken cancellationToken)
         {
+            foreach (var activeMqTopologyManager in _topologyManagers)
+            {
+                await activeMqTopologyManager.CreateTopologyAsync(cancellationToken).ConfigureAwait(false);
+            }
+            
             foreach (var producer in _producerInitializers)
             {
                 await producer.StartAsync(cancellationToken).ConfigureAwait(false);
@@ -32,11 +37,6 @@ namespace ActiveMQ.Artemis.Client.Extensions.DependencyInjection
             foreach (var requestReplyClientInitializer in _requestReplyClientInitializers)
             {
                 await requestReplyClientInitializer.StartAsync(cancellationToken).ConfigureAwait(false);
-            }
-            
-            foreach (var activeMqTopologyManager in _topologyManagers)
-            {
-                await activeMqTopologyManager.CreateTopologyAsync(cancellationToken).ConfigureAwait(false);
             }
 
             foreach (var activeMqConsumer in _consumers)
