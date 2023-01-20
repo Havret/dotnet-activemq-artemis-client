@@ -5,7 +5,7 @@ using Nito.AsyncEx;
 
 namespace ActiveMQ.Artemis.Client.Extensions.DependencyInjection.InternalUtils
 {
-    public class AsyncValueLazy<T> where T : class
+    internal class AsyncValueLazy<T> where T : class
     {
         private readonly AsyncLock _mutex = new AsyncLock();
         private readonly Func<CancellationToken, Task<T>> _factory;
