@@ -22,7 +22,7 @@ namespace ActiveMQ.Artemis.Client.Extensions.DependencyInjection
             return await namedConnection.Connection.GetValueAsync(cancellationToken).ConfigureAwait(false);
         }
 
-        public AsyncValueLazy<IConnection> GetConnection(string name)
+        internal AsyncValueLazy<IConnection> GetConnection(string name)
         {
             var namedConnection = _serviceProvider.GetServices<NamedConnection>().First(x => x.Name == name);
             return namedConnection.Connection;
