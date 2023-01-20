@@ -28,7 +28,11 @@ namespace ActiveMQ.Artemis.Client.Extensions.AspNetCore.IntegrationTests
             _cts = cts;
         }
 
-        public static async Task<TestFixture> CreateAsync(ITestOutputHelper testOutputHelper, Action<IActiveMqBuilder> configureActiveMq = null, Action<IServiceCollection> configureServices = null, bool addActiveMqHostedService = true)
+        public static async Task<TestFixture> CreateAsync(ITestOutputHelper testOutputHelper,
+            Action<IActiveMqBuilder> configureActiveMq = null,
+            Action<IServiceCollection> configureServices = null,
+            bool addActiveMqHostedService = true,
+            string connectionName = "my-test-artemis")
         {
             var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
             var endpoint = GetEndpoint();
@@ -41,10 +45,11 @@ namespace ActiveMQ.Artemis.Client.Extensions.AspNetCore.IntegrationTests
                                {
                                    services.AddSingleton<IServer>(serviceProvider => new TestServer(serviceProvider));
                                    configureServices?.Invoke(services);
-                                   configureActiveMq?.Invoke(services.AddActiveMq("my-test-artemis", endpoints).ConfigureConnectionFactory((provider, factory) =>
+                                   var activeMqBuilder = services.AddActiveMq(connectionName, endpoints).ConfigureConnectionFactory((provider, factory) =>
                                    {
                                        factory.LoggerFactory = provider.GetService<ILoggerFactory>();
-                                   }));
+                                   });
+                                   configureActiveMq?.Invoke(activeMqBuilder);
                                    if (addActiveMqHostedService)
                                    {
                                        services.AddActiveMqHostedService();    

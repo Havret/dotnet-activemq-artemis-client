@@ -30,7 +30,7 @@ namespace ActiveMQ.Artemis.Client.Extensions.DependencyInjection
 
             builder.Services.AddOptions<ActiveMqOptions>(name);
             builder.Services.TryAddSingleton<IActiveMqClient, ActiveMqClient>();
-            builder.Services.TryAddSingleton<ConnectionProvider>();
+            builder.Services.TryAddSingleton(provider => new ConnectionProvider(provider));
             builder.Services.TryAddTransient<ConnectionFactory>();
 
             builder.Services.AddSingleton(provider =>
@@ -612,7 +612,7 @@ namespace ActiveMQ.Artemis.Client.Extensions.DependencyInjection
 
         private static ValueTask<IConnection> GetConnection(this IServiceProvider serviceProvider, string name, CancellationToken cancellationToken)
         {
-            return serviceProvider.GetService<ConnectionProvider>().GetConnection(name, cancellationToken);
+            return serviceProvider.GetService<ConnectionProvider>().GetConnectionAsync(name, cancellationToken);
         }
 
         private static AsyncValueLazy<IConnection> GetConnection(this IServiceProvider serviceProvider, string name)
