@@ -4,8 +4,8 @@
   <ShortName>.NET Client for ActiveMQ Artemis</ShortName>
   <Description>Search .NET Client for ActiveMQ Artemis</Description>
   <InputEncoding>UTF-8</InputEncoding>
-  <Image width="16" height="16" type="image/x-icon">https://havret.github.io/dotnet-activemq-artemis-client/dotnet-activemq-artemis-client/img/favicon.ico</Image>
-  <Url type="text/html" method="get" template="https://havret.github.io/dotnet-activemq-artemis-client/dotnet-activemq-artemis-client/search?q={searchTerms}"/>
-  <Url type="application/opensearchdescription+xml" rel="self" template="https://havret.github.io/dotnet-activemq-artemis-client/dotnet-activemq-artemis-client/opensearch.xml" />
-  <moz:SearchForm>https://havret.github.io/dotnet-activemq-artemis-client/dotnet-activemq-artemis-client/</moz:SearchForm>
+  <Image width="16" height="16" type="image/x-icon">https://havret.github.io/dotnet-activemq-artemis-client/img/favicon.ico</Image>
+  <Url type="text/html" method="get" template="https://havret.github.io/dotnet-activemq-artemis-client/search?q={searchTerms}"/>
+  <Url type="application/opensearchdescription+xml" rel="self" template="https://havret.github.io/dotnet-activemq-artemis-client/opensearch.xml" />
+  <moz:SearchForm>https://havret.github.io/dotnet-activemq-artemis-client/</moz:SearchForm>
 </OpenSearchDescription>
