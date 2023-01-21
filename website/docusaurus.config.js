@@ -1,8 +1,8 @@
 module.exports = {
   title: '.NET Client for ActiveMQ Artemis',
   tagline: 'Unofficial ActiveMQ Artemis .NET Client for .NET Core and .NET Framework',
-  url: 'https://havret.github.io/dotnet-activemq-artemis-client',
-  baseUrl: '/dotnet-activemq-artemis-client/',
+  url: 'https://havret.github.io',
+  baseUrl: '/dotnet-activemq-artemis-client',
   favicon: 'img/favicon.ico',
   organizationName: 'havret', // Usually your GitHub org/user name.
   projectName: 'dotnet-activemq-artemis-client', // Usually your repo name.
@@ -78,16 +78,12 @@ module.exports = {
         docs: {
           path: '../docs',
           sidebarPath: require.resolve('./sidebars.js'),
+          routeBasePath: "/docs",
           // Please change this to your repo.
           editUrl:
             'https://github.com/Havret/dotnet-activemq-artemis-client/edit/master/website/',
         },
-        blog: {
-          showReadingTime: true,
-          // Please change this to your repo.
-          editUrl:
-            'https://github.com/facebook/docusaurus/edit/master/website/blog/',
-        },
+        blog: false,
         theme: {
           customCss: require.resolve('./src/css/custom.css'),
         },
