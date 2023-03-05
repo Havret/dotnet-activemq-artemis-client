@@ -25,7 +25,7 @@ For commercial support, contact<br/>
 
 ## Compatibility
 
-The library is tested against **ActiveMQ Artemis 2.27.1** ([Dec 1st, 2022](https://github.com/Havret/dotnet-activemq-artemis-client/issues/405)). Most of the features should work with older versions of the broker, but **Topology Management** uses API surface that was introduced in **ActiveMQ Artemis 2.14.0**.
+The library is tested against **ActiveMQ Artemis 2.28.0** ([Feb 3rd, 2023](https://github.com/Havret/dotnet-activemq-artemis-client/issues/428)). Most of the features should work with older versions of the broker, but **Topology Management** uses API surface that was introduced in **ActiveMQ Artemis 2.14.0**.
 
 ## Quickstart
 
