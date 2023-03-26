@@ -64,6 +64,7 @@ module.exports = {
       appId: 'RMXXLJY88T',
       apiKey: 'bdcaf022e9869ccbf8537bbc9bd7e75f',
       indexName: 'dotnet-activemq-artemis-client',
+      contextualSearch: false
     },
     announcementBar: {
       id: 'supportus',
