@@ -178,7 +178,7 @@ namespace ActiveMQ.Artemis.Client.Testing.Listener
         /// returned, the host continues to search for registered processors that matches
         /// the address exactly in the attach.
         /// </remarks>
-        public Func<ContainerHost, Attach, string>? AddressResolver
+        public Func<ContainerHost, Attach, string?> AddressResolver
         {
             get;
             set;

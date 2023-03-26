@@ -1,5 +1,4 @@
 using System.Collections.Concurrent;
-using System.Text.RegularExpressions;
 using ActiveMQ.Artemis.Client.Testing.Listener;
 using Amqp.Framing;
 using Amqp.Transactions;
@@ -9,9 +8,8 @@ namespace ActiveMQ.Artemis.Client.Testing;
 public class TestKit : IDisposable
 {
     private readonly ContainerHost _host;
-    private readonly ConcurrentDictionary<string, MessageSource> _messageSources = new(StringComparer.InvariantCultureIgnoreCase);
+    private readonly ConcurrentDictionary<string, List<SharedMessageSource>> _messageSources = new(StringComparer.InvariantCultureIgnoreCase);
     private readonly Dictionary<string, List<Action<Message>>> _messageSubscriptions = new(StringComparer.InvariantCultureIgnoreCase);
-
     public TestKit(Endpoint endpoint)
     {
         _host = new ContainerHost(endpoint.Address);
@@ -23,9 +21,9 @@ public class TestKit : IDisposable
 
     private string? AddressResolver(ContainerHost containerHost, Attach attach)
     {
-        if (attach.Role)
+        if (attach is { Role: true, Source: Source source })
         {
-            return ((Source) attach.Source).Address;
+            return source.Address;
         }
         if (attach.Target is Target target)
         {
@@ -42,13 +40,21 @@ public class TestKit : IDisposable
     private void OnMessage(Message message)
     {
         if (string.IsNullOrEmpty(message.To))
+        {
             return;
+        }
 
         var address = message.To;
 
-        if (_messageSources.TryGetValue(address, out var messageSource))
+        if (_messageSources.TryGetValue(address, out var messageSources))
         {
-            messageSource.Enqueue(message);
+            lock (messageSources)
+            {
+                foreach (var messageQueue in messageSources)
+                {
+                    messageQueue.Enqueue(message);
+                }
+            }
         }
 
         lock (_messageSubscriptions)
@@ -63,16 +69,26 @@ public class TestKit : IDisposable
         }
     }
 
-    private void OnMessageSource(string address, MessageSource messageSource)
+    private void OnMessageSource(string address, string queue, MessageSource messageSource)
     {
-        var parsedAddress = GetAddress(address);
-        _messageSources.TryAdd(parsedAddress, messageSource);
-    }
-    
-    private string GetAddress(string address)
-    {
-        var fqqnMatch = Regex.Match(address, "(.+)::(.+)");
-        return fqqnMatch.Success ? fqqnMatch.Groups[1].Value : address;
+        if (!_messageSources.TryGetValue(address, out var messageSources))
+        {
+            messageSources = new List<SharedMessageSource>();
+            _messageSources[address] = messageSources;
+        }
+
+        lock (messageSources)
+        {
+            var existingMessageSource = messageSources.FirstOrDefault(x => x.Queue == queue);
+            if (existingMessageSource != null)
+            {
+                existingMessageSource.AddMessageSource(messageSource);
+            }
+            else
+            {
+                messageSources.Add(new SharedMessageSource(messageSource, queue));
+            }
+        }
     }
 
     public ISubscription Subscribe(string address)
@@ -104,32 +120,30 @@ public class TestKit : IDisposable
 
     public async Task SendMessageAsync(string address, Message message)
     {
-        var messageSource = await GetMessageSourceAsync(address).ConfigureAwait(false);
-        if (messageSource != null)
+        var messageSources = GetMessageSources(address);
+        lock (messageSources)
         {
-            message.To = address;
-            messageSource.Enqueue(message);
-        }
-        else
-        {
-            throw new InvalidOperationException($"No consumer registered on address {address}");
+            if (messageSources.Count > 0)
+            {
+                foreach (var messageSource in messageSources)
+                {
+                    messageSource.Enqueue(message);
+                }
+            }
+            else
+            {
+                throw new InvalidOperationException($"No consumer registered on address {address}");
+            }
         }
     }
 
-    private async Task<MessageSource?> GetMessageSourceAsync(string address)
+    private IReadOnlyList<SharedMessageSource> GetMessageSources(string address)
     {
-        int delay = 1;
-        while (delay <= 10)
+        if (_messageSources.TryGetValue(address, out var messageSource))
         {
-            if (_messageSources.TryGetValue(address, out var messageSource))
-            {
-                return messageSource;
-            }
-
-            await Task.Delay(delay++).ConfigureAwait(false);
+            return messageSource;
         }
-
-        return null;
+        return Array.Empty<SharedMessageSource>();
     }
 
     public void Dispose()

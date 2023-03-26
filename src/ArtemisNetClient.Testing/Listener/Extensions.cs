@@ -45,4 +45,9 @@ internal static class Extensions
     {
         return ReflectionUtils.GetPropValue<string>(connection, "RemoteContainerId")!;
     }
+
+    public static ushort GetChannel(this ListenerSession session)
+    {
+        return ReflectionUtils.GetPropValue<ushort>(session, "Channel");
+    }
 }

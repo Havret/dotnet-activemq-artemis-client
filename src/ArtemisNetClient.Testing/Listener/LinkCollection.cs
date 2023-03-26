@@ -54,11 +54,15 @@ namespace ActiveMQ.Artemis.Client.Testing.Listener
             string fromContainer;
             string toContainer;
             string name;
+            uint linkHandle;
+            ushort sessionChannel;
 
             public Key(string containerId, ListenerLink link)
             {
                 this.name = link.Name;
-                var listenerConnection = ((ListenerConnection) link.Session.Connection);
+                this.linkHandle = link.Handle;
+                this.sessionChannel = ((ListenerSession) link.Session).GetChannel();
+                var listenerConnection = (ListenerConnection) link.Session.Connection;
                 string remoteId = listenerConnection.GetRemoteContainerId();
                 if (link.Role)
                 {
@@ -76,7 +80,9 @@ namespace ActiveMQ.Artemis.Client.Testing.Listener
             {
                 return string.Equals(this.fromContainer, other.fromContainer, StringComparison.Ordinal) &&
                     string.Equals(this.toContainer, other.toContainer, StringComparison.Ordinal) &&
-                    string.Equals(this.name, other.name, StringComparison.Ordinal);
+                    string.Equals(this.name, other.name, StringComparison.Ordinal) &&
+                    this.linkHandle == other.linkHandle &&
+                    this.sessionChannel == other.sessionChannel;
             }
 
             public override int GetHashCode()
@@ -84,6 +90,8 @@ namespace ActiveMQ.Artemis.Client.Testing.Listener
                 int hash = this.fromContainer.GetHashCode();
                 hash = hash * 31 + this.toContainer.GetHashCode();
                 hash = hash * 31 + this.name.GetHashCode();
+                hash = hash * 31 + this.linkHandle.GetHashCode();
+                hash = hash * 31 + this.sessionChannel.GetHashCode();
                 return hash;
             }
 
