@@ -1,3 +1,4 @@
+using System.Text.RegularExpressions;
 using Amqp.Framing;
 using Amqp.Listener;
 using Amqp.Transactions;
@@ -8,9 +9,9 @@ namespace ActiveMQ.Artemis.Client.Testing;
 internal class TestLinkProcessor : ILinkProcessor
 {
     private readonly Action<Message> _onMessage;
-    private readonly Action<string, MessageSource> _onMessageSource;
+    private readonly Action<string, string, MessageSource> _onMessageSource;
 
-    public TestLinkProcessor(Action<Message> onMessage, Action<string, MessageSource> onMessageSource)
+    public TestLinkProcessor(Action<Message> onMessage, Action<string, string, MessageSource> onMessageSource)
     {
         _onMessage = onMessage;
         _onMessageSource = onMessageSource;
@@ -22,12 +23,14 @@ internal class TestLinkProcessor : ILinkProcessor
         {
             if (source.Capabilities?.Contains(new Symbol("shared")) == true)
             {
-                attachContext.Attach.OfferedCapabilities = new[] {new Symbol("SHARED-SUBS")};
+                attachContext.Attach.OfferedCapabilities = new[] { new Symbol("SHARED-SUBS") };
             }
 
+            var (address, queue) = ParseAddressAndQueue(source, attachContext.Link);
+
             var messageSource = new MessageSource();
+            _onMessageSource(address, queue, messageSource);
             attachContext.Complete(new SourceLinkEndpoint(messageSource, attachContext.Link), 0);
-            _onMessageSource(source.Address, messageSource);
         }
         else if (attachContext.Attach.Target is Target)
         {
@@ -39,5 +42,16 @@ internal class TestLinkProcessor : ILinkProcessor
             var transactionProcessor = new TransactionProcessor();
             attachContext.Complete(new TargetLinkEndpoint(transactionProcessor, attachContext.Link), 30);
         }
+    }
+    
+    private (string address, string queue) ParseAddressAndQueue(Source input, ListenerLink listenerLink)
+    {
+        // FQQN match
+        if (Regex.Match(input.Address, "(.+)::(.+)") is { Success: true, Groups: { Count: 3 } groups })
+        {
+            return (address: groups[1].Value, queue: groups[2].Value);
+        }
+
+        return (address: input.Address, queue: listenerLink.Name);
     }
 }
