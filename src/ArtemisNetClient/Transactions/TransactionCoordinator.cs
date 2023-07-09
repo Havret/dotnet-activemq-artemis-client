@@ -43,16 +43,16 @@ namespace ActiveMQ.Artemis.Client.Transactions
             var tcs = (TaskCompletionSource<byte[]>) state;
             if (outcome.Descriptor.Code == MessageOutcomes.Declared.Descriptor.Code)
             {
-                tcs.SetResult(((Declared) outcome).TxnId);
+                tcs.TrySetResult(((Declared) outcome).TxnId);
             }
             else if (outcome.Descriptor.Code == MessageOutcomes.Rejected.Descriptor.Code)
             {
                 var rejected = (Rejected) outcome;
-                tcs.SetException(new TransactionException(rejected.Error?.Description, rejected.Error?.Condition));
+                tcs.TrySetException(new TransactionException(rejected.Error?.Description, rejected.Error?.Condition));
             }
             else
             {
-                tcs.SetCanceled();
+                tcs.TrySetCanceled();
             }
         }
 
@@ -61,16 +61,16 @@ namespace ActiveMQ.Artemis.Client.Transactions
             var tcs = (TaskCompletionSource<bool>) state;
             if (outcome.Descriptor.Code == MessageOutcomes.Accepted.Descriptor.Code)
             {
-                tcs.SetResult(true);
+                tcs.TrySetResult(true);
             }
             else if (outcome.Descriptor.Code == MessageOutcomes.Rejected.Descriptor.Code)
             {
                 var rejected = (Rejected) outcome;
-                tcs.SetException(new TransactionException(rejected.Error?.Description, rejected.Error?.Condition));
+                tcs.TrySetException(new TransactionException(rejected.Error?.Description, rejected.Error?.Condition));
             }
             else
             {
-                tcs.SetCanceled();
+                tcs.TrySetCanceled();
             }
         }
     }
