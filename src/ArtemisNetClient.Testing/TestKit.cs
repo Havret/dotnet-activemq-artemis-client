@@ -1,7 +1,7 @@
 using System.Collections.Concurrent;
 using System.Text.RegularExpressions;
+using ActiveMQ.Artemis.Client.Testing.Listener;
 using Amqp.Framing;
-using Amqp.Listener;
 using Amqp.Transactions;
 
 namespace ActiveMQ.Artemis.Client.Testing;
