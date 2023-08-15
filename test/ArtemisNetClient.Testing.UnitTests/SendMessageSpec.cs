@@ -183,38 +183,38 @@ public class SendMessageSpec
 
         await AssertReceivedAllMessagesWithTheSameGroupId(consumer1, 5);
         await AssertReceivedAllMessagesWithTheSameGroupId(consumer2, 5);
-    }
-    
-    private static async Task SendMessagesToGroup(TestKit testKit, string testAddress, string groupId, int count)
-    {
-        for (int i = 1; i <= count; i++)
-        {
-            await testKit.SendMessageAsync(testAddress, new Message(groupId)
-            {
-                GroupId = groupId,
-                GroupSequence = (uint) i
-            });
-        }
-    }
-    
-    private static async Task AssertReceivedAllMessagesWithTheSameGroupId(IConsumer consumer, int count)
-    {
-        var messages = new List<Message>();
-        try
+        
+        static async Task SendMessagesToGroup(TestKit testKit, string testAddress, string groupId, int count)
         {
             for (int i = 1; i <= count; i++)
             {
-                var message = await consumer.ReceiveAsync(new CancellationTokenSource(TimeSpan.FromSeconds(5)).Token);
-                Assert.Equal((uint) i, message.GroupSequence);
-                messages.Add(message);
+                await testKit.SendMessageAsync(testAddress, new Message(groupId)
+                {
+                    GroupId = groupId,
+                    GroupSequence = (uint) i
+                });
             }
         }
-        catch (Exception)
+        
+        static async Task AssertReceivedAllMessagesWithTheSameGroupId(IConsumer consumer, int count)
         {
-            // ignored
-        }
+            var messages = new List<Message>();
+            try
+            {
+                for (int i = 1; i <= count; i++)
+                {
+                    var message = await consumer.ReceiveAsync(new CancellationTokenSource(TimeSpan.FromSeconds(5)).Token);
+                    Assert.Equal((uint) i, message.GroupSequence);
+                    messages.Add(message);
+                }
+            }
+            catch (Exception)
+            {
+                // ignored
+            }
 
-        Assert.Single(messages.GroupBy(x => x.GroupId));
-        Assert.Equal(count, messages.Count);
+            Assert.Single(messages.GroupBy(x => x.GroupId));
+            Assert.Equal(count, messages.Count);
+        }
     }
 }

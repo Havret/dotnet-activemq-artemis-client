@@ -1,4 +1,5 @@
 using System.Text.RegularExpressions;
+using Amqp;
 using Amqp.Framing;
 using Amqp.Listener;
 using Amqp.Transactions;
@@ -9,9 +10,9 @@ namespace ActiveMQ.Artemis.Client.Testing;
 internal class TestLinkProcessor : ILinkProcessor
 {
     private readonly Action<Message> _onMessage;
-    private readonly Action<string, string, MessageSource> _onMessageSource;
+    private readonly Action<MessageSourceInfo, MessageSource> _onMessageSource;
 
-    public TestLinkProcessor(Action<Message> onMessage, Action<string, string, MessageSource> onMessageSource)
+    public TestLinkProcessor(Action<Message> onMessage, Action<MessageSourceInfo, MessageSource> onMessageSource)
     {
         _onMessage = onMessage;
         _onMessageSource = onMessageSource;
@@ -26,10 +27,9 @@ internal class TestLinkProcessor : ILinkProcessor
                 attachContext.Attach.OfferedCapabilities = new[] { new Symbol("SHARED-SUBS") };
             }
 
-            var (address, queue) = ParseAddressAndQueue(source, attachContext.Link);
-
+            var messageSourceInfo = GetMessageSourceInfo(source, attachContext.Link);
             var messageSource = new MessageSource();
-            _onMessageSource(address, queue, messageSource);
+            _onMessageSource(messageSourceInfo, messageSource);
             attachContext.Complete(new SourceLinkEndpoint(messageSource, attachContext.Link), 0);
         }
         else if (attachContext.Attach.Target is Target)
@@ -44,14 +44,33 @@ internal class TestLinkProcessor : ILinkProcessor
         }
     }
     
-    private (string address, string queue) ParseAddressAndQueue(Source input, ListenerLink listenerLink)
+    private static MessageSourceInfo GetMessageSourceInfo(Source source, ILink link)
     {
+        var filterExpression = GetFilterExpression(source);
+
         // FQQN match
-        if (Regex.Match(input.Address, "(.+)::(.+)") is { Success: true, Groups: { Count: 3 } groups })
+        if (Regex.Match(source.Address, "(.+)::(.+)") is { Success: true, Groups: { Count: 3 } groups })
         {
-            return (address: groups[1].Value, queue: groups[2].Value);
+            return new MessageSourceInfo( groups[1].Value,  groups[2].Value, FilterExpression: filterExpression);
         }
 
-        return (address: input.Address, queue: listenerLink.Name);
+        return new MessageSourceInfo(source.Address, link.Name, FilterExpression: filterExpression);
+    }
+
+    private static readonly Symbol _selectorFilterSymbol = new("apache.org:selector-filter:string");
+    
+    private static string? GetFilterExpression(Source source)
+    {
+        if (!source.FilterSet.TryGetValue(_selectorFilterSymbol, out var filterExpressionObj))
+        {
+            return null;
+        }
+
+        if (filterExpressionObj is DescribedValue { Value: string filterExpression })
+        {
+            return filterExpression;
+        }
+
+        return null;
     }
 }

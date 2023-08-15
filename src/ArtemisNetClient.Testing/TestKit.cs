@@ -69,24 +69,24 @@ public class TestKit : IDisposable
         }
     }
 
-    private void OnMessageSource(string address, string queue, MessageSource messageSource)
+    private void OnMessageSource(MessageSourceInfo info, MessageSource messageSource)
     {
-        if (!_messageSources.TryGetValue(address, out var messageSources))
+        if (!_messageSources.TryGetValue(info.Address, out var messageSources))
         {
             messageSources = new List<SharedMessageSource>();
-            _messageSources[address] = messageSources;
+            _messageSources[info.Address] = messageSources;
         }
 
         lock (messageSources)
         {
-            var existingMessageSource = messageSources.FirstOrDefault(x => x.Queue == queue);
+            var existingMessageSource = messageSources.FirstOrDefault(x => x.Info == info);
             if (existingMessageSource != null)
             {
                 existingMessageSource.AddMessageSource(messageSource);
             }
             else
             {
-                messageSources.Add(new SharedMessageSource(messageSource, queue));
+                messageSources.Add(new SharedMessageSource(info, messageSource));
             }
         }
     }
