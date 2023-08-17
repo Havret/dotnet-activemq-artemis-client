@@ -1,4 +1,5 @@
 using System.Data;
+using System.Text.RegularExpressions;
 using ActiveMQ.Artemis.Client.InternalUtilities;
 using ActiveMQ.Artemis.Client.Testing.Utils;
 
@@ -94,7 +95,25 @@ internal class SharedMessageSource
         }
 
         dataTable.Rows.Add(dataRow);
-
-        return dataTable.Select(Info.FilterExpression).Any();
+        
+        while (true)
+        {
+            try
+            {
+                return dataTable.Select(Info.FilterExpression).Any();
+            }
+            catch (EvaluateException e) when(e.Message.StartsWith("Cannot find column"))
+            {
+                var match = Regex.Match(e.Message, @"Cannot find column \[(\w+)\]\.");
+                if (match.Success)
+                {
+                    dataTable.Columns.Add(match.Groups[1].Value);
+                }
+                else
+                {
+                    throw;
+                }
+            }
+        }
     }
 }

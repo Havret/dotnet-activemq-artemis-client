@@ -197,6 +197,30 @@ public class FilterExpressionsSpec
         Assert.All(blueMessages, x => Assert.Equal("blue", x.GetBody<string>()));
     }
     
+    [Fact]
+    public async Task Should_filter_messages_when_property_used_in_filter_is_missing()
+    {
+        var endpoint = EndpointUtil.GetUniqueEndpoint();
+        using var testKit = new TestKit(endpoint);
+
+        var connectionFactory = new ConnectionFactory();
+        await using var connection = await connectionFactory.CreateAsync(endpoint);
+        
+        var address = "test_address";
+        await using var messageConsumer = await connection.CreateConsumerAsync(new ConsumerConfiguration
+        {
+            Address = address,
+            RoutingType = RoutingType.Multicast,
+            FilterExpression = "color IS NULL"
+        });
+
+        await testKit.SendMessageAsync(address, new Message("msg"));
+
+        var message = await messageConsumer.ReceiveAsync();
+        
+        Assert.Equal("msg", message.GetBody<string>());
+    }
+    
     static async Task<IReadOnlyList<Message>> ReceiveMessages(IConsumer consumer, int count)
     {
         var messages = new List<Message>();
