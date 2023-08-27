@@ -8,6 +8,8 @@ namespace ActiveMQ.Artemis.Client
     {
         private const string Amqp = "AMQP";
         private const string Amqps = "AMQPS";
+        private const string Ws = "WS";
+        private const string Wss = "WSS";
 
         private Endpoint(Address address)
         {
@@ -41,13 +43,18 @@ namespace ActiveMQ.Artemis.Client
         /// </summary>
         public string Password => Address.Password;
 
-        public static Endpoint Create(string host, int port, string user = null, string password = null, Scheme scheme = Scheme.Amqp)
+        /// <summary>
+        /// Gets the path of the endpoint.
+        /// </summary>
+        public string Path => Address.Path;
+
+        public static Endpoint Create(string host, int port, string user = null, string password = null, Scheme scheme = Scheme.Amqp, string path = "/")
         {
             var protocolScheme = GetScheme(scheme);
 
             try
             {
-                return new Endpoint(new Address(host, port, user, password, "/", protocolScheme))
+                return new Endpoint(new Address(host, port, user, password, path, protocolScheme))
                 {
                     Scheme = scheme
                 };
@@ -68,13 +75,16 @@ namespace ActiveMQ.Artemis.Client
             {
                 Scheme.Amqp => Amqp,
                 Scheme.Amqps => Amqps,
+                Scheme.Ws => Ws,
+                Scheme.Wss => Wss,
                 _ => throw new CreateEndpointException($"Protocol scheme {scheme.ToString()} is invalid.", ErrorCode.InvalidField)
             };
         }
 
+        /// <inheritdoc />
         public override string ToString()
         {
-            return $@"{Scheme.ToString().ToLower()}://{Host}:{Port.ToString()}";
+            return $@"{Scheme.ToString().ToLower()}://{Host}:{Port.ToString()}{Path}";
         }
     }
 }
