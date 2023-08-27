@@ -6,5 +6,6 @@ services:
     ports:
       - 5672:5672
       - 8161:8161
+      - 80:80
     volumes:
       - ./broker.xml:/artemis/amq/etc/broker.xml

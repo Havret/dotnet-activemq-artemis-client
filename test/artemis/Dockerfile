@@ -24,6 +24,8 @@ EXPOSE 8161 \
     # Port for MQTT
     1883 \
     #Port for STOMP
-    61613
+    61613 \
+    # Port for WS
+    80
 
 ENTRYPOINT ["/artemis/amq/bin/artemis", "run"]

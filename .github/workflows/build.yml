@@ -16,6 +16,7 @@ jobs:
       ARTEMIS_PASSWORD: "artemis"
       ARTEMIS_HOST: "localhost"
       ARTEMIS_PORT: 5672
+      ARTEMIS_WS_PORT: 80
     steps:
       - uses: actions/checkout@v1
       - name: Setup .NET Core

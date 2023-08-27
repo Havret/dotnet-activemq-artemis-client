@@ -34,7 +34,10 @@ namespace ActiveMQ.Artemis.Client.Builders
             cancellationToken.ThrowIfCancellationRequested();
             using var _ = cancellationToken.Register(() => _tcs.TrySetCanceled());
 
-            var connectionFactory = new Amqp.ConnectionFactory();
+            var connectionFactory = endpoint.Scheme is Scheme.Ws or Scheme.Wss
+                ? new Amqp.ConnectionFactory(new[] { new WebSocketTransportFactory() })
+                : new Amqp.ConnectionFactory();
+
             try
             {
                 var open = GetOpenFrame(endpoint);

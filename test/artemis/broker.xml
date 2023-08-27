@@ -172,6 +172,8 @@ under the License.
          <!-- MQTT Acceptor -->
          <acceptor name="mqtt">tcp://0.0.0.0:1883?tcpSendBufferSize=1048576;tcpReceiveBufferSize=1048576;protocols=MQTT;useEpoll=true</acceptor>
 
+         <acceptor name="amqp-ws-acceptor">tcp://0.0.0.0:80?protocols=AMQP</acceptor>
+
       </acceptors>
 
 

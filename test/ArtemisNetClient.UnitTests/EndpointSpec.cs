@@ -46,14 +46,16 @@ namespace ActiveMQ.Artemis.Client.UnitTests
             return new[]
             {
                 new object[] { Scheme.Amqp },
-                new object[] { Scheme.Amqps }
+                new object[] { Scheme.Amqps },
+                new object[] { Scheme.Ws },
+                new object[] { Scheme.Wss },
             };
         }
 
         [Fact]
         public void Throws_when_invalid_scheme_specified()
         {
-            var exception = Assert.Throws<CreateEndpointException>(() => Endpoint.Create("localhost", 5672, "guest", "guest", (Scheme) 999));
+            var exception = Assert.Throws<CreateEndpointException>(() => Endpoint.Create("localhost", 5672, "guest", "guest", scheme: (Scheme) 999));
             Assert.Equal(ErrorCode.InvalidField, exception.ErrorCode);
         }
 
@@ -67,10 +69,11 @@ namespace ActiveMQ.Artemis.Client.UnitTests
         {
             return new[]
             {
-                new object[] { Endpoint.Create("localhost", 5762), "amqp://localhost:5762" },
-                new object[] { Endpoint.Create("localhost", 5762, scheme: Scheme.Amqps), "amqps://localhost:5762" },
-                new object[] { Endpoint.Create("localhost", 5762, "admin", password: "secret"), "amqp://localhost:5762" },
-                new object[] { Endpoint.Create("localhost", 5762, "admin", password: "secret", Scheme.Amqps), "amqps://localhost:5762" }
+                new object[] { Endpoint.Create("localhost", 5762), "amqp://localhost:5762/" },
+                new object[] { Endpoint.Create("localhost", 5762, scheme: Scheme.Amqps), "amqps://localhost:5762/" },
+                new object[] { Endpoint.Create("localhost", 5762, "admin", password: "secret"), "amqp://localhost:5762/" },
+                new object[] { Endpoint.Create("localhost", 5762, "admin", password: "secret", scheme: Scheme.Amqps), "amqps://localhost:5762/" },
+                new object[] { Endpoint.Create("localhost", 80, "admin", password: "secret", scheme: Scheme.Wss, path: "/redirectMeToBrokerA"), "wss://localhost:80/redirectMeToBrokerA" },
             };
         }
     }
