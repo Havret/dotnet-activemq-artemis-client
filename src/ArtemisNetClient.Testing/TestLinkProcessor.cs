@@ -61,12 +61,9 @@ internal class TestLinkProcessor : ILinkProcessor
     
     private static string? GetFilterExpression(Source source)
     {
-        if (!source.FilterSet.TryGetValue(_selectorFilterSymbol, out var filterExpressionObj))
-        {
-            return null;
-        }
-
-        if (filterExpressionObj is DescribedValue { Value: string filterExpression })
+        if (source.FilterSet is { } filterSet
+            && filterSet.TryGetValue(_selectorFilterSymbol, out var filterExpressionObj)
+            && filterExpressionObj is DescribedValue { Value: string filterExpression })
         {
             return filterExpression;
         }
