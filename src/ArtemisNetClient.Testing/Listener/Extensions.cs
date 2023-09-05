@@ -24,11 +24,16 @@ internal static class Extensions
 
     public static void InitializeLinkEndpoint(this ListenerLink link, LinkEndpoint linkEndpoint, uint credit)
     {
-        var type = typeof(TargetLinkEndpoint);
-        var methodInfo = type.GetMethod("InitializeLinkEndpoint")!;
+        var type = typeof(ListenerLink);
+        var methodInfo = type.GetMethod("InitializeLinkEndpoint", BindingFlags.Instance | BindingFlags.NonPublic)!;
         methodInfo.Invoke(link, new object[] {linkEndpoint, credit});
     }
-
+    
+    public static void SetOnDispose(this ListenerLink link, Action<Amqp.Message, DeliveryState, bool, object> onDispose)
+    {
+        ReflectionUtils.SetFieldValue(link, "onDispose", onDispose);
+    }
+    
     public static void Dispose(this MessageContext messageContext, DeliveryState deliveryState)
     {
         var type = typeof(Context);

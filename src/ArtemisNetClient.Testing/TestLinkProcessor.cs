@@ -1,4 +1,5 @@
 using System.Text.RegularExpressions;
+using ActiveMQ.Artemis.Client.Testing.Listener;
 using Amqp;
 using Amqp.Framing;
 using Amqp.Listener;
@@ -30,7 +31,12 @@ internal class TestLinkProcessor : ILinkProcessor
             var messageSourceInfo = GetMessageSourceInfo(source, attachContext.Link);
             var messageSource = new MessageSource();
             _onMessageSource(messageSourceInfo, messageSource);
-            attachContext.Complete(new SourceLinkEndpoint(messageSource, attachContext.Link), 0);
+            attachContext.Link.InitializeLinkEndpoint(new SourceLinkEndpoint(messageSource, attachContext.Link), 0);
+            
+            // override OnDispose so it won't throw NRE when message is null
+            attachContext.Link.SetOnDispose((_, _, _, _) => { });
+            
+            attachContext.Link.CompleteAttach(attachContext.Attach, null);
         }
         else if (attachContext.Attach.Target is Target)
         {
