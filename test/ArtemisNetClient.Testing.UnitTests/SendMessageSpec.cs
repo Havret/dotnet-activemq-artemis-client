@@ -6,11 +6,26 @@ using ActiveMQ.Artemis.Client.Transactions;
 using Xunit;
 using System.Linq;
 using System.Threading;
+using ActiveMQ.Artemis.Client.TestUtils.Logging;
+using Amqp;
+using Microsoft.Extensions.Logging;
+using Xunit.Abstractions;
 
 namespace ActiveMQ.Artemis.Client.Testing.UnitTests;
 
 public class SendMessageSpec
 {
+
+    public SendMessageSpec(ITestOutputHelper output)
+    {
+        Trace.TraceLevel = TraceLevel.Information;
+        var logger = new XUnitLogger(output, "logger");
+        Trace.TraceListener += (_, format, args) =>
+        {
+            logger.LogTrace(format, args);
+        };
+    }
+
     [Fact]
     public async Task Should_send_message_to_given_address()
     {
@@ -215,6 +230,62 @@ public class SendMessageSpec
 
             Assert.Single(messages.GroupBy(x => x.GroupId));
             Assert.Equal(count, messages.Count);
+        }
+    }
+
+    [Fact]
+    public async Task Should_send_messages_to_multiple_transactional_consumers_attached_to_the_same_address()
+    {
+        var endpoint = EndpointUtil.GetUniqueEndpoint();
+        using var testKit = new TestKit(endpoint);
+
+        var connectionFactory = new ConnectionFactory();
+        await using var connection = await connectionFactory.CreateAsync(endpoint);
+        
+        var testAddress = "test_address";
+        var testQueue = "testQueue";
+        await using var consumer1 = await connection.CreateConsumerAsync(new ConsumerConfiguration
+        {
+            Address = testAddress,
+            Queue = testQueue,
+            Shared = true
+        });
+        await using var consumer2 = await connection.CreateConsumerAsync(new ConsumerConfiguration
+        {
+            Address = testAddress,
+            RoutingType = RoutingType.Multicast
+        });
+
+        await testKit.SendMessageAsync(testAddress, new Message("foo1"));
+        await testKit.SendMessageAsync(testAddress, new Message("foo2"));
+        
+        // Handle messages for consumer1
+        {
+            await using var transaction = new Transaction();
+            var msg1 = await consumer1.ReceiveAsync();
+            Assert.Equal("foo1", msg1.GetBody<string>());
+            await consumer1.AcceptAsync(msg1, transaction);
+            
+            var msg2 = await consumer1.ReceiveAsync();
+            Assert.Equal("foo2", msg2.GetBody<string>());
+            await consumer1.AcceptAsync(msg2, transaction);
+            
+            await transaction.CommitAsync();
+        }
+        
+        // Handle messages for consumer2
+        {
+            await using var transaction = new Transaction();
+            
+            var msg1 = await consumer2.ReceiveAsync();
+            Assert.Equal("foo1", msg1.GetBody<string>());
+            await consumer2.AcceptAsync(msg1, transaction);
+            
+            var msg2 = await consumer2.ReceiveAsync();
+            Assert.Equal("foo2", msg2.GetBody<string>());
+            await consumer2.AcceptAsync(msg2, transaction);
+            
+            await transaction.CommitAsync();
         }
     }
 }

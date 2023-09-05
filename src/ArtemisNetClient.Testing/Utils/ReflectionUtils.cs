@@ -19,4 +19,10 @@ internal static class ReflectionUtils
     {
         obj.GetType().GetProperty(propertyName)?.SetValue(obj, propertyValue, BindingFlags.Instance | BindingFlags.NonPublic, null, null, null);
     }
+
+    public static void SetFieldValue<T>(object obj, string fieldName, T fieldValue)
+    {
+        var field = obj.GetType().GetField(fieldName, BindingFlags.Instance | BindingFlags.NonPublic);
+        field?.SetValue(obj, fieldValue, BindingFlags.Instance | BindingFlags.NonPublic, null, null);
+    }
 }
