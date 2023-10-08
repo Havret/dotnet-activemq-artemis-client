@@ -17,15 +17,18 @@ namespace ActiveMQ.Artemis.Client.Builders
         private readonly ILoggerFactory _loggerFactory;
         private readonly Func<IMessageIdPolicy> _messageIdPolicyFactory;
         private readonly Func<string> _clientIdFactory;
+        private readonly SslSettings _sslSettings;
         private readonly TaskCompletionSource<bool> _tcs;
 
         public ConnectionBuilder(ILoggerFactory loggerFactory,
             Func<IMessageIdPolicy> messageIdPolicyFactory,
-            Func<string> clientIdFactory)
+            Func<string> clientIdFactory,
+            SslSettings sslSettings)
         {
             _loggerFactory = loggerFactory;
             _messageIdPolicyFactory = messageIdPolicyFactory;
             _clientIdFactory = clientIdFactory;
+            _sslSettings = sslSettings;
             _tcs = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
         }
 
@@ -37,6 +40,16 @@ namespace ActiveMQ.Artemis.Client.Builders
             var connectionFactory = endpoint.Scheme is Scheme.Ws or Scheme.Wss
                 ? new Amqp.ConnectionFactory(new[] { new WebSocketTransportFactory() })
                 : new Amqp.ConnectionFactory();
+            
+            if (_sslSettings != null)
+            {
+                connectionFactory.SSL.ClientCertificates = _sslSettings.ClientCertificates;
+                connectionFactory.SSL.Protocols = _sslSettings.Protocols;
+                connectionFactory.SSL.Protocols = _sslSettings.Protocols;
+                connectionFactory.SSL.CheckCertificateRevocation = _sslSettings.CheckCertificateRevocation;
+                connectionFactory.SSL.RemoteCertificateValidationCallback = _sslSettings.RemoteCertificateValidationCallback;
+                connectionFactory.SSL.LocalCertificateSelectionCallback = _sslSettings.LocalCertificateSelectionCallback;
+            }
 
             try
             {
