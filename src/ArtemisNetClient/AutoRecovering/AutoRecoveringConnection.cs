@@ -22,6 +22,7 @@ namespace ActiveMQ.Artemis.Client.AutoRecovering
         private readonly ILoggerFactory _loggerFactory;
         private readonly Func<IMessageIdPolicy> _messageIdPolicyFactory;
         private readonly Func<string> _clientIdFactory;
+        private readonly SslSettings _sslSettings;
         private readonly ILogger<AutoRecoveringConnection> _logger;
         private readonly Endpoint[] _endpoints;
         private readonly ChannelReader<ConnectCommand> _reader;
@@ -35,12 +36,14 @@ namespace ActiveMQ.Artemis.Client.AutoRecovering
             IEnumerable<Endpoint> endpoints,
             IRecoveryPolicy recoveryPolicy,
             Func<IMessageIdPolicy> messageIdPolicyFactory,
-            Func<string> clientIdFactory)
+            Func<string> clientIdFactory,
+            SslSettings sslSettings)
         {
             _logger = loggerFactory.CreateLogger<AutoRecoveringConnection>();
             _loggerFactory = loggerFactory;
             _messageIdPolicyFactory = messageIdPolicyFactory;
             _clientIdFactory = clientIdFactory;
+            _sslSettings = sslSettings;
             _endpoints = endpoints.ToArray();
 
             var channel = Channel.CreateUnbounded<ConnectCommand>();
@@ -175,7 +178,7 @@ namespace ActiveMQ.Artemis.Client.AutoRecovering
                 int retryCount = context.GetRetryCount();
                 var endpoint = GetNextEndpoint(retryCount);
                 context.SetEndpoint(endpoint);
-                var connectionBuilder = new ConnectionBuilder(_loggerFactory, _messageIdPolicyFactory, _clientIdFactory);
+                var connectionBuilder = new ConnectionBuilder(_loggerFactory, _messageIdPolicyFactory, _clientIdFactory, _sslSettings);
                 var connection = await connectionBuilder.CreateAsync(endpoint, ct).ConfigureAwait(false);
 
                 if (retryCount > 0)
