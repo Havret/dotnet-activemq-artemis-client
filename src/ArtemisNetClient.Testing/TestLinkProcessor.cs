@@ -64,16 +64,33 @@ internal class TestLinkProcessor : ILinkProcessor
     }
 
     private static readonly Symbol _selectorFilterSymbol = new("apache.org:selector-filter:string");
+    private static readonly Symbol _jmsSelectorSymbol = new("jms-selector");
     
     private static string? GetFilterExpression(Source source)
     {
-        if (source.FilterSet is { } filterSet
-            && filterSet.TryGetValue(_selectorFilterSymbol, out var filterExpressionObj)
-            && filterExpressionObj is DescribedValue { Value: string filterExpression })
+        if (source.FilterSet is { } filterSet &&
+            TryGetValue(filterSet, out var filterExpressionObj) &&
+            filterExpressionObj is DescribedValue { Value: string filterExpression })
         {
             return filterExpression;
         }
 
         return null;
+        
+        static bool TryGetValue(Map filterSet, out object filterExpressionObj)
+        {
+            if (filterSet.TryGetValue(_selectorFilterSymbol, out filterExpressionObj))
+            {
+                return true;
+            }
+
+            // ReSharper disable once ConvertIfStatementToReturnStatement
+            if (filterSet.TryGetValue(_jmsSelectorSymbol, out filterExpressionObj))
+            {
+                return true;
+            }
+
+            return false;
+        }
     }
 }

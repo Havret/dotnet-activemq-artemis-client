@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using ActiveMQ.Artemis.Client.TestUtils;
+using Apache.NMS;
+using Apache.NMS.AMQP;
 using Xunit;
 
 namespace ActiveMQ.Artemis.Client.Testing.UnitTests;
@@ -219,6 +221,42 @@ public class FilterExpressionsSpec
         var message = await messageConsumer.ReceiveAsync();
         
         Assert.Equal("msg", message.GetBody<string>());
+    }
+
+    [Fact]
+    public async Task Should_filter_message_for_nms_consumers()
+    {
+        var endpoint = EndpointUtil.GetUniqueEndpoint();
+        using var testKit = new TestKit(endpoint);
+
+        var nmsConnectionFactory = new NmsConnectionFactory(endpoint.ToString());
+        using var connection = await nmsConnectionFactory.CreateConnectionAsync(endpoint.User, endpoint.Password);
+        using var session = await connection.CreateSessionAsync();
+        await connection.StartAsync();
+
+        var address = "test_address";
+        
+        var topic = new NmsTopic(address);
+
+        using var redNmsMessageConsumer =  await session.CreateConsumerAsync(topic, "color = 'red'");
+        using var blueNmsMessageConsumer = await session.CreateConsumerAsync(topic, "color = 'blue'");
+   
+        
+        for (int i = 0; i < 2; i++)
+        {
+            await testKit.SendMessageAsync(address, new Message("red") { ApplicationProperties = { ["color"] = "red" } });
+            await testKit.SendMessageAsync(address, new Message("blue") { ApplicationProperties = { ["color"] = "blue" } });
+        }
+
+        var redMsg1 = await redNmsMessageConsumer.ReceiveAsync();
+        var redMsg2 = await redNmsMessageConsumer.ReceiveAsync();
+        var blueMsg1 = await blueNmsMessageConsumer.ReceiveAsync();
+        var blueMsg2 = await blueNmsMessageConsumer.ReceiveAsync();
+
+        Assert.Equal("red", ((ITextMessage) redMsg1).Text);
+        Assert.Equal("red", ((ITextMessage) redMsg2).Text);
+        Assert.Equal("blue", ((ITextMessage) blueMsg1).Text);
+        Assert.Equal("blue", ((ITextMessage) blueMsg2).Text);
     }
     
     static async Task<IReadOnlyList<Message>> ReceiveMessages(IConsumer consumer, int count)
