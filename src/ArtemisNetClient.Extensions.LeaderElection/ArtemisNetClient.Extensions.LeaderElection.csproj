@@ -3,8 +3,6 @@
   <PropertyGroup>
     <Summary>Leader Election support for ActiveMQ Artemis .NET Client</Summary>
     <Description>Leader Election support for ActiveMQ Artemis .NET Client.</Description>
-    <TargetFrameworks>net6.0;net5.0;netcoreapp3.1;netstandard2.0;netstandard2.1</TargetFrameworks>
-    <LangVersion>10</LangVersion>
     <PackageProjectUrl>https://havret.github.io/dotnet-activemq-artemis-client/</PackageProjectUrl>
     <PackageId>ArtemisNetClient.Extensions.LeaderElection</PackageId>
     <PackageLicenseUrl>https://github.com/Havret/activemq-artemis-extensions/blob/master/LICENSE</PackageLicenseUrl>

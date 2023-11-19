@@ -3,8 +3,6 @@
     <PropertyGroup>
         <Summary>Test Kit for ActiveMQ Artemis .NET Client</Summary>
         <Description>Test kit for ActiveMQ Artemis .NET Client.</Description>
-        <TargetFrameworks>net6.0;net5.0;netcoreapp3.1;netstandard2.0;netstandard2.1</TargetFrameworks>
-        <LangVersion>10</LangVersion>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <PackageProjectUrl>https://havret.github.io/dotnet-activemq-artemis-client/</PackageProjectUrl>
