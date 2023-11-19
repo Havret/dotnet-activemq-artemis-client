@@ -39,7 +39,7 @@ namespace ActiveMQ.Artemis.Client.Extensions.App.Metrics.IntegrationTests
                            webBuilder
                                .ConfigureServices(services =>
                                {
-                                   services.AddMetrics();
+                                   AppMetricsServiceCollectionExtensions.AddMetrics(services);
                                    services.AddSingleton<IServer>(serviceProvider => new TestServer(serviceProvider));
                                    configureServices?.Invoke(services);
                                    configureActiveMq?.Invoke(services.AddActiveMq( "my-test-artemis", endpoints).ConfigureConnectionFactory((provider, factory) =>
