@@ -266,6 +266,7 @@ namespace ActiveMQ.Artemis.Client.Extensions.DependencyInjection
                 {
                     Address = address,
                     Queue = queue,
+                    RoutingType = routingType,
                     Credit = consumerOptions.Credit,
                     FilterExpression = consumerOptions.FilterExpression,
                     NoLocalFilter = consumerOptions.NoLocalFilter,

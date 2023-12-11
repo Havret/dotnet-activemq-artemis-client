@@ -57,12 +57,6 @@ namespace ActiveMQ.Artemis.Client.Builders
                     nameof(configuration.NoLocalFilter));
             }
 
-            if (configuration.RoutingType.HasValue && !string.IsNullOrEmpty(configuration.Queue))
-            {
-                throw new ArgumentException($"Queue name cannot be explicitly set when {nameof(RoutingType)} provided. " +
-                                            $"If you want to attach to queue by name, do not set any {nameof(RoutingType)}.", nameof(configuration.Queue));
-            }
-
             if (!configuration.RoutingType.HasValue && string.IsNullOrWhiteSpace(configuration.Queue))
             {
                 throw new ArgumentNullException(nameof(configuration.Queue), "Cannot attach to queue when queue name not provided.");
@@ -79,13 +73,13 @@ namespace ActiveMQ.Artemis.Client.Builders
 
         private static string GetAddress(ConsumerConfiguration configuration)
         {
-            if (configuration.RoutingType.HasValue || configuration.Shared)
+            if (configuration is { Shared: false, Queue.Length: > 0 })
             {
-                return configuration.Address;
+                return CreateFullyQualifiedQueueName(configuration.Address, configuration.Queue);
             }
             else
             {
-                return CreateFullyQualifiedQueueName(configuration.Address, configuration.Queue);
+                return configuration.Address;
             }
         }
 
