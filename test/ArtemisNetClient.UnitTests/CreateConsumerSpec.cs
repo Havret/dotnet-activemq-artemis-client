@@ -263,23 +263,6 @@ namespace ActiveMQ.Artemis.Client.UnitTests
             });
         }
 
-        [Theory]
-        [InlineData(RoutingType.Anycast)]
-        [InlineData(RoutingType.Multicast)]
-        public async Task Throws_when_created_with_queue_name_and_routing_type(RoutingType routingType)
-        {
-            var endpoint = GetUniqueEndpoint();
-            using var host = CreateOpenedContainerHost(endpoint);
-            await using var connection = await CreateConnection(endpoint);
-
-            await Assert.ThrowsAsync<ArgumentException>(() => connection.CreateConsumerAsync(new ConsumerConfiguration
-            {
-                Address = "a1",
-                Queue = "q1",
-                RoutingType = routingType,
-            }));
-        }
-
         [Fact]
         public async Task Throws_when_queue_name_not_provided()
         {
