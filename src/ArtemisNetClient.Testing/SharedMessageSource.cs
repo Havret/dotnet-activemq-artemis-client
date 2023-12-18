@@ -23,9 +23,21 @@ internal class SharedMessageSource
         _messageSources.Add(messageSource);
     }
     
+    public void RemoveMessageSource(MessageSource messageSource)
+    {
+        _messageSources.Remove(messageSource);
+    }
+
+    public int MessageSourcesCount => _messageSources.Count;
+    
     public void Enqueue(Message message)
     {
         if (Info.FilterExpression != null && FilterExpressionMatches(message) == false)
+        {
+            return;
+        }
+
+        if (_messageSources.Count == 0)
         {
             return;
         }

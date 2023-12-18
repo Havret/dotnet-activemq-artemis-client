@@ -15,7 +15,7 @@ public class TestKit : IDisposable
         _host = new ContainerHost(endpoint.Address);
         _host.AddressResolver = AddressResolver;
         _host.Listeners[0].HandlerFactory = _ => new Handler();
-        _host.RegisterLinkProcessor(new TestLinkProcessor(OnMessage, OnMessageSource));
+        _host.RegisterLinkProcessor(new TestLinkProcessor(OnMessage, OnMessageSource, OnMessageSourceClosed));
         _host.Open();
     }
 
@@ -87,6 +87,29 @@ public class TestKit : IDisposable
             else
             {
                 messageSources.Add(new SharedMessageSource(info, messageSource));
+            }
+        }
+    }
+
+    private void OnMessageSourceClosed(MessageSourceInfo info, MessageSource messageSource)
+    {
+        if (!_messageSources.TryGetValue(info.Address, out var messageSources))
+        {
+            return;
+        }
+
+        lock (messageSources)
+        {
+            var existingMessageSource = messageSources.FirstOrDefault(x => x.Info == info);
+            if (existingMessageSource == null)
+            {
+                return;
+            }
+            
+            existingMessageSource.RemoveMessageSource(messageSource);
+            if (messageSources.Count == 0)
+            {
+                messageSources.Remove(existingMessageSource);
             }
         }
     }
