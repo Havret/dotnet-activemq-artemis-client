@@ -12,11 +12,15 @@ internal class TestLinkProcessor : ILinkProcessor
 {
     private readonly Action<Message> _onMessage;
     private readonly Action<MessageSourceInfo, MessageSource> _onMessageSource;
+    private readonly Action<MessageSourceInfo, MessageSource> _onMessageSourceClosed;
 
-    public TestLinkProcessor(Action<Message> onMessage, Action<MessageSourceInfo, MessageSource> onMessageSource)
+    public TestLinkProcessor(Action<Message> onMessage,
+        Action<MessageSourceInfo, MessageSource> onMessageSource,
+        Action<MessageSourceInfo, MessageSource> onMessageSourceClosed)
     {
         _onMessage = onMessage;
         _onMessageSource = onMessageSource;
+        _onMessageSourceClosed = onMessageSourceClosed;
     }
 
     public void Process(AttachContext attachContext)
@@ -35,6 +39,10 @@ internal class TestLinkProcessor : ILinkProcessor
             
             // override OnDispose so it won't throw NRE when message is null
             attachContext.Link.SetOnDispose((_, _, _, _) => { });
+            attachContext.Link.AddSafeClosed((_, _) =>
+            {
+                _onMessageSourceClosed(messageSourceInfo, messageSource);
+            });
             
             attachContext.Link.CompleteAttach(attachContext.Attach, null);
         }
