@@ -136,6 +136,10 @@ namespace ActiveMQ.Artemis.Client
             }
             if (_senderLink.IsDetaching() || _senderLink.IsClosed)
             {
+                if (_senderLink.Error != null)
+                {
+                    throw new ProducerClosedException(_senderLink.Error.Description, _senderLink.Error.Condition, null);
+                }
                 throw new ProducerClosedException();
             }
         }
