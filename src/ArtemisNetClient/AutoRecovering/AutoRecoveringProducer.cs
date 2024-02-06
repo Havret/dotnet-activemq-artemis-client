@@ -3,6 +3,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using ActiveMQ.Artemis.Client.Exceptions;
 using ActiveMQ.Artemis.Client.Transactions;
+using Amqp;
 using Microsoft.Extensions.Logging;
 
 namespace ActiveMQ.Artemis.Client.AutoRecovering
@@ -27,6 +28,13 @@ namespace ActiveMQ.Artemis.Client.AutoRecovering
                 {
                     await _producer.SendAsync(message, transaction, cancellationToken).ConfigureAwait(false);
                     return;
+                }
+                catch (ProducerClosedException e) when (e.ErrorCode == ErrorCode.UnauthorizedAccess)
+                {
+                    await TerminateAsync(e).ConfigureAwait(false);
+                    
+                    // Producer does not have have permissions to send on specified address 
+                    throw;
                 }
                 catch (ProducerClosedException)
                 {
