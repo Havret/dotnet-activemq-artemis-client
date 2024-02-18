@@ -18,17 +18,20 @@ namespace ActiveMQ.Artemis.Client.Builders
         private readonly Func<IMessageIdPolicy> _messageIdPolicyFactory;
         private readonly Func<string> _clientIdFactory;
         private readonly SslSettings _sslSettings;
+        private readonly TcpSettings _tcpSettings;
         private readonly TaskCompletionSource<bool> _tcs;
 
         public ConnectionBuilder(ILoggerFactory loggerFactory,
             Func<IMessageIdPolicy> messageIdPolicyFactory,
             Func<string> clientIdFactory,
-            SslSettings sslSettings)
+            SslSettings sslSettings,
+            TcpSettings tcpSettings)
         {
             _loggerFactory = loggerFactory;
             _messageIdPolicyFactory = messageIdPolicyFactory;
             _clientIdFactory = clientIdFactory;
             _sslSettings = sslSettings;
+            _tcpSettings = tcpSettings;
             _tcs = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
         }
 
@@ -49,6 +52,12 @@ namespace ActiveMQ.Artemis.Client.Builders
                 connectionFactory.SSL.CheckCertificateRevocation = _sslSettings.CheckCertificateRevocation;
                 connectionFactory.SSL.RemoteCertificateValidationCallback = _sslSettings.RemoteCertificateValidationCallback;
                 connectionFactory.SSL.LocalCertificateSelectionCallback = _sslSettings.LocalCertificateSelectionCallback;
+            }
+
+            if (_tcpSettings != null)
+            {
+                connectionFactory.TCP.KeepAlive.KeepAliveTime = _tcpSettings.KeepAliveTime;
+                connectionFactory.TCP.KeepAlive.KeepAliveInterval = _tcpSettings.KeepAliveInterval;
             }
 
             try

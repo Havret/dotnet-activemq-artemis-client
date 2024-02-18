@@ -19,6 +19,7 @@ namespace ActiveMQ.Artemis.Client
         private Func<IMessageIdPolicy> _messageIdPolicyFactory;
         private Func<string> _clientIdFactory;
         private SslSettings _sslSettings;
+        private TcpSettings _tcpSettings;
 
         public async Task<IConnection> CreateAsync(IEnumerable<Endpoint> endpoints, CancellationToken cancellationToken)
         {
@@ -31,13 +32,21 @@ namespace ActiveMQ.Artemis.Client
 
             if (AutomaticRecoveryEnabled)
             {
-                var autoRecoveringConnection = new AutoRecoveringConnection(LoggerFactory, endpointsList, RecoveryPolicy, MessageIdPolicyFactory, ClientIdFactory, _sslSettings);
+                var autoRecoveringConnection = new AutoRecoveringConnection(
+                    LoggerFactory,
+                    endpointsList,
+                    RecoveryPolicy,
+                    MessageIdPolicyFactory,
+                    ClientIdFactory,
+                    _sslSettings,
+                    _tcpSettings
+                );
                 await autoRecoveringConnection.InitAsync(cancellationToken).ConfigureAwait(false);
                 return autoRecoveringConnection;
             }
             else
             {
-                var connectionBuilder = new ConnectionBuilder(LoggerFactory, MessageIdPolicyFactory, ClientIdFactory, _sslSettings);
+                var connectionBuilder = new ConnectionBuilder(LoggerFactory, MessageIdPolicyFactory, ClientIdFactory, _sslSettings, _tcpSettings);
                 return await connectionBuilder.CreateAsync(endpointsList.First(), cancellationToken).ConfigureAwait(false);
             }
         }
@@ -69,5 +78,10 @@ namespace ActiveMQ.Artemis.Client
         /// Gets the SASL settings on the factory.
         /// </summary>
         public SslSettings SSL => _sslSettings ??= new SslSettings();
+
+        /// <summary>
+        /// Gets the TCP settings on the factory.
+        /// </summary>
+        public TcpSettings TCP => _tcpSettings ??= new TcpSettings();
     }
 }
