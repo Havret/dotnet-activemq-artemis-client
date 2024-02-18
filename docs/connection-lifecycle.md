@@ -61,3 +61,16 @@ else
 {
     // connection to the broker has been lost
 }
+
+## Maintaining Connection Stability with TCP Keep-Alive
+
+To enhance connection stability and prevent unexpected disconnections, consider configuring TCP Keep-Alive settings. This feature sends periodic signals to ensure the connection remains active, especially useful in unstable network environments.
+
+```csharp
+var factory = new ConnectionFactory();
+// Configure TCP Keep-Alive settings
+factory.TCP.KeepAliveTime = 30_000; // 30 seconds
+factory.TCP.KeepAliveInterval = 1000; // 1 second
+```
+
+By setting `KeepAliveTime` and `KeepAliveInterval`, you can help ensure that your application maintains a reliable connection to the broker, complementing the event-driven connection management strategies outlined above.
