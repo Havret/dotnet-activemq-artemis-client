@@ -56,8 +56,11 @@ namespace ActiveMQ.Artemis.Client.Builders
 
             if (_tcpSettings != null)
             {
-                connectionFactory.TCP.KeepAlive.KeepAliveTime = _tcpSettings.KeepAliveTime;
-                connectionFactory.TCP.KeepAlive.KeepAliveInterval = _tcpSettings.KeepAliveInterval;
+                connectionFactory.TCP.KeepAlive = new TcpKeepAliveSettings
+                {
+                    KeepAliveTime = _tcpSettings.KeepAliveTime,
+                    KeepAliveInterval = _tcpSettings.KeepAliveInterval
+                };
             }
 
             try

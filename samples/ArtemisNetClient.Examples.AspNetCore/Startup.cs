@@ -26,6 +26,8 @@ namespace ActiveMQ.Artemis.Client.Examples.AspNetCore
                         factory.RecoveryPolicy = RecoveryPolicyFactory.ExponentialBackoff(initialDelay: TimeSpan.FromSeconds(1), maxDelay: TimeSpan.FromSeconds(30), retryCount: 5);
                         factory.MessageIdPolicyFactory = MessageIdPolicyFactory.GuidMessageIdPolicy;
                         factory.AutomaticRecoveryEnabled = true;
+                        factory.TCP.KeepAliveTime = 1000 * 30; // 30 seconds
+                        factory.TCP.KeepAliveInterval = 1000; // 1 seconds 
                     })
                     .ConfigureConnection((_, connection) =>
                     {
