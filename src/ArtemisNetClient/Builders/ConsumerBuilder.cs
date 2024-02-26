@@ -12,6 +12,7 @@ namespace ActiveMQ.Artemis.Client.Builders
 {
     internal class ConsumerBuilder
     {
+        private readonly Symbol ATTACH_DISTRIBUTION_MODE_COPY = new Symbol("copy");
         private readonly ILoggerFactory _loggerFactory;
         private readonly TransactionsManager _transactionsManager;
         private readonly Session _session;
@@ -25,7 +26,7 @@ namespace ActiveMQ.Artemis.Client.Builders
             _tcs = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
         }
 
-        public async Task<IConsumer> CreateAsync(ConsumerConfiguration configuration, CancellationToken cancellationToken)
+        public async Task<IConsumer> CreateAsync(ConsumerConfiguration configuration, CancellationToken cancellationToken, bool isBrowser = false)
         {
             CheckConfiguration(configuration);
             cancellationToken.ThrowIfCancellationRequested();
@@ -38,6 +39,13 @@ namespace ActiveMQ.Artemis.Client.Builders
                 FilterSet = GetFilterSet(configuration.FilterExpression, configuration.NoLocalFilter),
                 Durable = GetTerminusDurability(configuration)
             };
+
+            if (isBrowser)
+            {
+                // set distribution mode to copy
+                // http://docs.oasis-open.org/amqp/core/v1.0/os/amqp-core-messaging-v1.0-os.html#doc-idp328592
+                source.DistributionMode = ATTACH_DISTRIBUTION_MODE_COPY;
+            }
 
             var receiverLink = new ReceiverLink(_session, GetReceiverName(configuration), source, OnAttached);
             receiverLink.AddClosedCallback(OnClosed);

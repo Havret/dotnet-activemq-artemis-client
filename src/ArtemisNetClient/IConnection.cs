@@ -25,11 +25,12 @@ namespace ActiveMQ.Artemis.Client
         /// </summary>
         bool IsOpened { get; }
         Task<ITopologyManager> CreateTopologyManagerAsync(CancellationToken cancellationToken = default); 
-        Task<IConsumer> CreateConsumerAsync(ConsumerConfiguration configuration, CancellationToken cancellationToken = default);
+        Task<IConsumer> CreateConsumerAsync(ConsumerConfiguration configuration, CancellationToken cancellationToken = default, bool isBrowser = false);
         Task<IProducer> CreateProducerAsync(ProducerConfiguration configuration, CancellationToken cancellationToken = default);
         Task<IAnonymousProducer> CreateAnonymousProducerAsync(AnonymousProducerConfiguration configuration, CancellationToken cancellationToken = default);
         Task<IRequestReplyClient> CreateRequestReplyClientAsync(RequestReplyClientConfiguration configuration, CancellationToken cancellationToken = default);
-        
+        Task<IBrowser> CreateBrowserAsync(ConsumerConfiguration configuration, CancellationToken cancellationToken = default);
+
         /// <summary>
         /// Raised when the connection is closed.
         /// </summary>
