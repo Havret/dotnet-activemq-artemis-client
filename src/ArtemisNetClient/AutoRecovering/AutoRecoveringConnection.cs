@@ -203,9 +203,9 @@ namespace ActiveMQ.Artemis.Client.AutoRecovering
             return new TopologyManager(configuration.Address, rpcClient);
         }
 
-        public async Task<IConsumer> CreateConsumerAsync(ConsumerConfiguration configuration, CancellationToken cancellationToken)
+        public async Task<IConsumer> CreateConsumerAsync(ConsumerConfiguration configuration, CancellationToken cancellationToken, bool isBrowser = false)
         {
-            var autoRecoveringConsumer = new AutoRecoveringConsumer(_loggerFactory, configuration);
+            var autoRecoveringConsumer = new AutoRecoveringConsumer(_loggerFactory, configuration, isBrowser);
             await PrepareRecoverable(autoRecoveringConsumer, cancellationToken).ConfigureAwait(false);
             return autoRecoveringConsumer;
         }
@@ -229,6 +229,13 @@ namespace ActiveMQ.Artemis.Client.AutoRecovering
             var autoRecoveringRpcClient = new AutoRecoveringRequestReplyClient(_loggerFactory, configuration);
             await PrepareRecoverable(autoRecoveringRpcClient, cancellationToken).ConfigureAwait(false);
             return autoRecoveringRpcClient;
+        }
+
+        public async Task<IBrowser> CreateBrowserAsync(ConsumerConfiguration configuration, CancellationToken cancellationToken)
+        {
+            var autoRecoveringConsumer = new AutoRecoveringConsumer(_loggerFactory, configuration, isBrowser: true);
+            await PrepareRecoverable(autoRecoveringConsumer, cancellationToken).ConfigureAwait(false);
+            return new Browser(autoRecoveringConsumer);
         }
 
         public event EventHandler<ConnectionClosedEventArgs> ConnectionClosed;
