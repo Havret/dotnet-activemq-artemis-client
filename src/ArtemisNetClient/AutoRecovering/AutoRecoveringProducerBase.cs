@@ -10,7 +10,7 @@ namespace ActiveMQ.Artemis.Client.AutoRecovering
     internal abstract class AutoRecoveringProducerBase : IRecoverable
     {
         protected readonly ILogger Logger;
-        private readonly AsyncManualResetEvent _manualResetEvent = new AsyncManualResetEvent(true);
+        private readonly AsyncManualResetEvent _manualResetEvent = new(true);
         private bool _closed;
         private Exception _failureCause;
 
@@ -78,6 +78,7 @@ namespace ActiveMQ.Artemis.Client.AutoRecovering
             _closed = true;
             _failureCause = exception;
             _manualResetEvent.Set();
+            Log.ProducerTerminated(Logger, exception);
             await DisposeResourceSafe(UnderlyingResource).ConfigureAwait(false);
         }
 
@@ -127,37 +128,42 @@ namespace ActiveMQ.Artemis.Client.AutoRecovering
 
         protected static class Log
         {
-            private static readonly Action<ILogger, Exception> _retryingProduceAsync = LoggerMessage.Define(
-                LogLevel.Trace,
+            private static readonly Action<ILogger, string, Exception> _retryingProduceAsync = LoggerMessage.Define<string>(
+                LogLevel.Warning,
                 0,
-                "Retrying send after Producer reestablished.");
+                "Retrying send to address {0} after Producer reestablished.");
 
             private static readonly Action<ILogger, Exception> _producerRecovered = LoggerMessage.Define(
-                LogLevel.Trace,
+                LogLevel.Information,
                 0,
                 "Producer recovered.");
 
             private static readonly Action<ILogger, Exception> _producerSuspended = LoggerMessage.Define(
-                LogLevel.Trace,
+                LogLevel.Warning,
                 0,
                 "Producer suspended.");
 
             private static readonly Action<ILogger, Exception> _producerResumed = LoggerMessage.Define(
-                LogLevel.Trace,
+                LogLevel.Information,
                 0,
                 "Producer resumed.");
+            
+            private static readonly Action<ILogger, Exception> _producerTerminated = LoggerMessage.Define(
+                LogLevel.Error,
+                0,
+                "Producer terminated.");
 
-            public static void RetryingSendAsync(ILogger logger)
+            public static void RetryingSendAsync(ILogger logger, string address)
             {
-                if (logger.IsEnabled(LogLevel.Trace))
+                if (logger.IsEnabled(LogLevel.Warning))
                 {
-                    _retryingProduceAsync(logger, null);
+                    _retryingProduceAsync(logger, address, null);
                 }
             }
 
             public static void ProducerRecovered(ILogger logger)
             {
-                if (logger.IsEnabled(LogLevel.Trace))
+                if (logger.IsEnabled(LogLevel.Information))
                 {
                     _producerRecovered(logger, null);
                 }
@@ -165,7 +171,7 @@ namespace ActiveMQ.Artemis.Client.AutoRecovering
 
             public static void ProducerSuspended(ILogger logger)
             {
-                if (logger.IsEnabled(LogLevel.Trace))
+                if (logger.IsEnabled(LogLevel.Warning))
                 {
                     _producerSuspended(logger, null);
                 }
@@ -173,9 +179,17 @@ namespace ActiveMQ.Artemis.Client.AutoRecovering
 
             public static void ProducerResumed(ILogger logger)
             {
-                if (logger.IsEnabled(LogLevel.Trace))
+                if (logger.IsEnabled(LogLevel.Information))
                 {
                     _producerResumed(logger, null);
+                }
+            }
+            
+            public static void ProducerTerminated(ILogger logger, Exception exception)
+            {
+                if (logger.IsEnabled(LogLevel.Error))
+                {
+                    _producerTerminated(logger, exception);
                 }
             }
         }

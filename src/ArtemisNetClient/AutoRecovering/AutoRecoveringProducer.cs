@@ -33,14 +33,14 @@ namespace ActiveMQ.Artemis.Client.AutoRecovering
                 {
                     await TerminateAsync(e).ConfigureAwait(false);
                     
-                    // Producer does not have have permissions to send on specified address 
+                    // Producer does not have permissions to send on specified address 
                     throw;
                 }
                 catch (ProducerClosedException)
                 {
                     HandleProducerClosed();
                     await WaitAsync(cancellationToken).ConfigureAwait(false);
-                    Log.RetryingSendAsync(Logger);
+                    Log.RetryingSendAsync(Logger, _configuration.Address);
                 }
             }
         }
@@ -60,7 +60,7 @@ namespace ActiveMQ.Artemis.Client.AutoRecovering
                 {
                     HandleProducerClosed();
                     Wait(cancellationToken);
-                    Log.RetryingSendAsync(Logger);
+                    Log.RetryingSendAsync(Logger, _configuration.Address);
                 }
             }
         }

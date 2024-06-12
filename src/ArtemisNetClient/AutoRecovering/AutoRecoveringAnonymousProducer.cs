@@ -32,7 +32,7 @@ namespace ActiveMQ.Artemis.Client.AutoRecovering
                 {
                     HandleProducerClosed();
                     await WaitAsync(cancellationToken).ConfigureAwait(false);
-                    Log.RetryingSendAsync(Logger);
+                    Log.RetryingSendAsync(Logger, address);
                 }
             }
         }
@@ -52,7 +52,7 @@ namespace ActiveMQ.Artemis.Client.AutoRecovering
                 {
                     HandleProducerClosed();
                     Wait(cancellationToken);
-                    Log.RetryingSendAsync(Logger);
+                    Log.RetryingSendAsync(Logger, address);
                 }
             }
         }
