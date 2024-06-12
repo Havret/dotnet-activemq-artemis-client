@@ -66,7 +66,14 @@ namespace ActiveMQ.Artemis.Client
 
         public string MessageId
         {
-            get => Properties.MessageId;
+            get
+            {
+                if (Properties.ObjectMessageId is string stringMessageId)
+                {
+                    return stringMessageId;
+                }
+                return Properties.ObjectMessageId?.ToString();
+            }
             set => Properties.MessageId = value;
         }
 
