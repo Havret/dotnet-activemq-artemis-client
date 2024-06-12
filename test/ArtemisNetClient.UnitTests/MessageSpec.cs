@@ -525,5 +525,15 @@ namespace ActiveMQ.Artemis.Client.UnitTests
 
             Assert.Null(messageProcessor.Dequeue(ShortTimeout).ContentType);
         }
+
+        [Fact]
+        public void Should_read_guid_MessageId_as_string_if_possible()
+        {
+            var messageId = Guid.NewGuid();
+            var message = new Message("foo");
+            message.SetMessageId(messageId);
+
+            Assert.Equal(messageId.ToString(), message.MessageId);
+        }
     }
 }
