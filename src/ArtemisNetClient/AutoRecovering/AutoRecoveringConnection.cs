@@ -78,7 +78,7 @@ namespace ActiveMQ.Artemis.Client.AutoRecovering
                    }, (result, _, context) =>
                    {
                        var retryCount = context.GetRetryCount();
-                       var endpoint =context.GetEndpoint();
+                       var endpoint = context.GetEndpoint();
                        if (result.Exception != null)
                        {
                            Log.FailedToEstablishConnection(_logger, endpoint, retryCount, result.Exception);
@@ -159,8 +159,12 @@ namespace ActiveMQ.Artemis.Client.AutoRecovering
         {
             if (args.ClosedByPeer)
             {
-                Log.ConnectionClosed(_logger, args.Error);
+                Log.ConnectionClosedByPeer(_logger, args.Error);
                 _writer.TryWrite(ConnectCommand.Instance);
+            }
+            else
+            {
+                Log.ConnectionClosed(_logger);
             }
 
             ConnectionClosed?.Invoke(sender, args);
@@ -182,12 +186,10 @@ namespace ActiveMQ.Artemis.Client.AutoRecovering
                 var endpoint = GetNextEndpoint(retryCount);
                 context.SetEndpoint(endpoint);
                 var connectionBuilder = new ConnectionBuilder(_loggerFactory, _messageIdPolicyFactory, _clientIdFactory, _sslSettings, _tcpSettings);
+                
+                Log.TryingToEstablishedConnection(_logger, endpoint, retryCount);
                 var connection = await connectionBuilder.CreateAsync(endpoint, ct).ConfigureAwait(false);
-
-                if (retryCount > 0)
-                {
-                    Log.ConnectionEstablished(_logger, endpoint, retryCount);
-                }
+                Log.ConnectionEstablished(_logger, endpoint, retryCount);
                 
                 return connection;
             }, ctx, cancellationToken);
@@ -298,15 +300,25 @@ namespace ActiveMQ.Artemis.Client.AutoRecovering
                 0,
                 "Main recovery loop threw unexpected exception.");
 
-            private static readonly Action<ILogger, string, Exception> _connectionClosed = LoggerMessage.Define<string>(
+            private static readonly Action<ILogger, string, Exception> _connectionClosedByPeer = LoggerMessage.Define<string>(
                 LogLevel.Warning,
                 0,
                 "Connection closed due to {error}. Reconnect scheduled.");
+            
+            private static readonly Action<ILogger, Exception> _connectionClosed = LoggerMessage.Define(
+                LogLevel.Information,
+                0,
+                "Connection closed. Reconnect won't be scheduled.");            
 
             private static readonly Action<ILogger, Exception> _connectionRecovered = LoggerMessage.Define(
                 LogLevel.Information,
                 0,
                 "Connection recovered.");
+
+            private static readonly Action<ILogger, string, int, Exception> _tryingToEstablishedConnection = LoggerMessage.Define<string, int>(
+                LogLevel.Information,
+                0,
+                "Trying to establish connection to {endpoint}. Attempt: {attempt}.");
 
             public static void ConnectionEstablished(ILogger logger, Endpoint endpoint, int attempt)
             {
@@ -332,11 +344,19 @@ namespace ActiveMQ.Artemis.Client.AutoRecovering
                 }
             }
 
-            public static void ConnectionClosed(ILogger logger, string error)
+            public static void ConnectionClosedByPeer(ILogger logger, string error)
             {
                 if (logger.IsEnabled(LogLevel.Warning))
                 {
-                    _connectionClosed(logger, error, null);
+                    _connectionClosedByPeer(logger, error, null);
+                }
+            }
+            
+            public static void ConnectionClosed(ILogger logger)
+            {
+                if (logger.IsEnabled(LogLevel.Information))
+                {
+                    _connectionClosed(logger, null);
                 }
             }
 
@@ -345,6 +365,14 @@ namespace ActiveMQ.Artemis.Client.AutoRecovering
                 if (logger.IsEnabled(LogLevel.Information))
                 {
                     _connectionRecovered(logger, null);
+                }
+            }
+            
+            public static void TryingToEstablishedConnection(ILogger logger, Endpoint endpoint, int attempt)
+            {
+                if (logger.IsEnabled(LogLevel.Information))
+                {
+                    _tryingToEstablishedConnection(logger, endpoint.ToString(), attempt, null);
                 }
             }
         }

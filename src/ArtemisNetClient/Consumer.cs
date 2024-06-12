@@ -35,11 +35,11 @@ namespace ActiveMQ.Artemis.Client
                 var message = new Message(m);
                 if (_writer.TryWrite(message))
                 {
-                    Log.MessageBuffered(_logger, message);
+                    Log.MessageBuffered(_logger, message, _receiverLink);
                 }
                 else
                 {
-                    Log.FailedToBufferMessage(_logger, message);
+                    Log.FailedToBufferMessage(_logger, message, _receiverLink);
                 }
             });
             _receiverLink.Closed += OnClosed;
@@ -51,7 +51,7 @@ namespace ActiveMQ.Artemis.Client
 
             try
             {
-                Log.ReceivingMessage(_logger);
+                Log.ReceivingMessage(_logger, _receiverLink);
                 return await _reader.ReadAsync(cancellationToken).ConfigureAwait(false);
             }
             catch (ChannelClosedException e) when (e.InnerException is ConsumerClosedException)
@@ -73,7 +73,7 @@ namespace ActiveMQ.Artemis.Client
                 ? (DeliveryState) new TransactionalState { Outcome = new Accepted(), TxnId = txnId }
                 : new Accepted();
             _receiverLink.Complete(message.InnerMessage, deliveryState);
-            Log.MessageAccepted(_logger, message);
+            Log.MessageAccepted(_logger, message, _receiverLink);
         }
 
         public void Reject(Message message, bool undeliverableHere)
@@ -81,7 +81,7 @@ namespace ActiveMQ.Artemis.Client
             CheckState();
             
             _receiverLink.Modify(message.InnerMessage, deliveryFailed: true, undeliverableHere: undeliverableHere);
-            Log.MessageRejected(_logger, message);
+            Log.MessageRejected(_logger, message, _receiverLink);
         }
 
         private void CheckState()
@@ -100,6 +100,7 @@ namespace ActiveMQ.Artemis.Client
         private void OnClosed(IAmqpObject sender, Error error)
         {
             var consumerClosedException = GetConsumerClosedException(error);
+            Log.ConsumerClosed(_logger, _receiverLink, consumerClosedException);
             _writer.TryComplete(consumerClosedException);
         }
 
@@ -139,68 +140,82 @@ namespace ActiveMQ.Artemis.Client
 
         private static class Log
         {
-            private static readonly Action<ILogger, object, Exception> _messageBuffered = LoggerMessage.Define<object>(
+            private static readonly Action<ILogger, object, string, Exception> _messageBuffered = LoggerMessage.Define<object, string>(
                 LogLevel.Trace,
                 0,
-                "Message buffered. MessageId: '{0}'.");
+                "Message buffered. MessageId: '{0}' ConsumerName: '{1}'.");
 
-            private static readonly Action<ILogger, object, Exception> _failedToBufferMessage = LoggerMessage.Define<object>(
+            private static readonly Action<ILogger, object, string, Exception> _failedToBufferMessage = LoggerMessage.Define<object, string>(
                 LogLevel.Warning,
                 0,
-                "Failed to buffer message. MessageId: '{0}'.");
+                "Failed to buffer message. MessageId: '{0}' ConsumerName: '{1}'.");
 
-            private static readonly Action<ILogger, Exception> _receivingMessage = LoggerMessage.Define(
+            private static readonly Action<ILogger, string, Exception> _receivingMessage = LoggerMessage.Define<string>(
                 LogLevel.Trace,
                 0,
-                "Receiving message.");
+                "Receiving message. ConsumerName: '{0}'.");
 
-            private static readonly Action<ILogger, object, Exception> _messageAccepted = LoggerMessage.Define<object>(
+            private static readonly Action<ILogger, object, string, Exception> _messageAccepted = LoggerMessage.Define<object, string>(
                 LogLevel.Trace,
                 0,
-                "Message accepted. MessageId: '{0}'.");
+                "Message accepted. MessageId: '{0}' ConsumerName: '{1}'.");
 
-            private static readonly Action<ILogger, object, Exception> _messageRejected = LoggerMessage.Define<object>(
+            private static readonly Action<ILogger, object, string, Exception> _messageRejected = LoggerMessage.Define<object, string>(
                 LogLevel.Trace,
                 0,
-                "Message rejected. MessageId: '{0}'.");
+                "Message rejected. MessageId: '{0}' ConsumerName: '{1}'.");
 
-            public static void MessageBuffered(ILogger logger, Message message)
+            private static readonly Action<ILogger, string, Exception> _consumerClosed = LoggerMessage.Define<string>(
+                LogLevel.Information,
+                0,
+                "Consumer closed. ConsumerName: '{0}'."
+            );
+
+            public static void MessageBuffered(ILogger logger, Message message, ReceiverLink receiverLink)
             {
                 if (logger.IsEnabled(LogLevel.Trace))
                 {
-                    _messageBuffered(logger, message.GetMessageId<object>(), null);
+                    _messageBuffered(logger, message.GetMessageId<object>(), receiverLink.Name, null);
                 }
             }
 
-            public static void FailedToBufferMessage(ILogger logger, Message message)
+            public static void FailedToBufferMessage(ILogger logger, Message message, ReceiverLink receiverLink)
             {
                 if (logger.IsEnabled(LogLevel.Warning))
                 {
-                    _failedToBufferMessage(logger, message.GetMessageId<object>(), null);
+                    _failedToBufferMessage(logger, message.GetMessageId<object>(), receiverLink.Name, null);
                 }
             }
 
-            public static void ReceivingMessage(ILogger logger)
+            public static void ReceivingMessage(ILogger logger, ReceiverLink receiverLink)
             {
                 if (logger.IsEnabled(LogLevel.Trace))
                 {
-                    _receivingMessage(logger, null);
+                    _receivingMessage(logger, receiverLink.Name, null);
                 }
             }
 
-            public static void MessageAccepted(ILogger logger, Message message)
+            public static void MessageAccepted(ILogger logger, Message message, ReceiverLink receiverLink)
             {
                 if (logger.IsEnabled(LogLevel.Trace))
                 {
-                    _messageAccepted(logger, message.GetMessageId<object>(), null);
+                    _messageAccepted(logger, message.GetMessageId<object>(), receiverLink.Name, null);
                 }
             }
 
-            public static void MessageRejected(ILogger logger, Message message)
+            public static void MessageRejected(ILogger logger, Message message, ReceiverLink receiverLink)
             {
                 if (logger.IsEnabled(LogLevel.Trace))
                 {
-                    _messageRejected(logger, message.GetMessageId<object>(), null);
+                    _messageRejected(logger, message.GetMessageId<object>(), receiverLink.Name, null);
+                }
+            }
+
+            public static void ConsumerClosed(ILogger logger, ReceiverLink receiverLink, ConsumerClosedException exception)
+            {
+                if (logger.IsEnabled(LogLevel.Information))
+                {
+                    _consumerClosed(logger, receiverLink.Name, exception);
                 }
             }
         }

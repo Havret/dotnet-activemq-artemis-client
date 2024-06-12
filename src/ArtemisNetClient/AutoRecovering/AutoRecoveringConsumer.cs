@@ -13,7 +13,7 @@ namespace ActiveMQ.Artemis.Client.AutoRecovering
     {
         private readonly ILogger<AutoRecoveringConsumer> _logger;
         private readonly ConsumerConfiguration _configuration;
-        private readonly AsyncManualResetEvent _manualResetEvent = new AsyncManualResetEvent(true);
+        private readonly AsyncManualResetEvent _manualResetEvent = new(true);
         private bool _closed;
         private volatile Exception _failureCause;
         private volatile IConsumer _consumer;
@@ -125,6 +125,7 @@ namespace ActiveMQ.Artemis.Client.AutoRecovering
             _closed = true;
             _failureCause = exception;
             _manualResetEvent.Set();
+            Log.ConsumerTerminated(_logger, exception);
             await DisposeUnderlyingConsumerSafe(_consumer).ConfigureAwait(false);
         }
 
@@ -161,28 +162,33 @@ namespace ActiveMQ.Artemis.Client.AutoRecovering
         private static class Log
         {
             private static readonly Action<ILogger, Exception> _retryingConsumeAsync = LoggerMessage.Define(
-                LogLevel.Trace,
+                LogLevel.Warning,
                 0,
                 "Retrying receive after Consumer reestablished.");
             
             private static readonly Action<ILogger, Exception> _consumerRecovered = LoggerMessage.Define(
-                LogLevel.Trace,
+                LogLevel.Information,
                 0,
                 "Consumer recovered.");
             
             private static readonly Action<ILogger, Exception> _consumerSuspended = LoggerMessage.Define(
-                LogLevel.Trace,
+                LogLevel.Warning,
                 0,
                 "Consumer suspended.");
             
             private static readonly Action<ILogger, Exception> _consumerResumed = LoggerMessage.Define(
-                LogLevel.Trace,
+                LogLevel.Information,
                 0,
                 "Consumer resumed.");
             
+            private static readonly Action<ILogger, Exception> _consumerTerminated = LoggerMessage.Define(
+                LogLevel.Error,
+                0,
+                "Consumer terminated.");
+            
             public static void RetryingReceiveAsync(ILogger logger)
             {
-                if (logger.IsEnabled(LogLevel.Trace))
+                if (logger.IsEnabled(LogLevel.Warning))
                 {
                     _retryingConsumeAsync(logger, null);    
                 }
@@ -190,7 +196,7 @@ namespace ActiveMQ.Artemis.Client.AutoRecovering
             
             public static void ConsumerRecovered(ILogger logger)
             {
-                if (logger.IsEnabled(LogLevel.Trace))
+                if (logger.IsEnabled(LogLevel.Information))
                 {
                     _consumerRecovered(logger, null);
                 }
@@ -198,7 +204,7 @@ namespace ActiveMQ.Artemis.Client.AutoRecovering
             
             public static void ConsumerSuspended(ILogger logger)
             {
-                if (logger.IsEnabled(LogLevel.Trace))
+                if (logger.IsEnabled(LogLevel.Warning))
                 {
                     _consumerSuspended(logger, null);
                 }
@@ -206,9 +212,17 @@ namespace ActiveMQ.Artemis.Client.AutoRecovering
             
             public static void ConsumerResumed(ILogger logger)
             {
-                if (logger.IsEnabled(LogLevel.Trace))
+                if (logger.IsEnabled(LogLevel.Information))
                 {
                     _consumerResumed(logger, null);
+                }
+            }
+            
+            public static void ConsumerTerminated(ILogger logger, Exception exception)
+            {
+                if (logger.IsEnabled(LogLevel.Error))
+                {
+                    _consumerTerminated(logger, exception);
                 }
             }
         }

@@ -135,28 +135,28 @@ internal class AutoRecoveringRequestReplyClient : IRequestReplyClient, IRecovera
     private static class Log
     {
         private static readonly Action<ILogger, Exception> _retryingSendAsync = LoggerMessage.Define(
-            LogLevel.Trace,
+            LogLevel.Warning,
             0,
             "Retrying send after RequestReplyClient reestablished.");
 
         private static readonly Action<ILogger, Exception> _requestReplyClientRecovered = LoggerMessage.Define(
-            LogLevel.Trace,
+            LogLevel.Information,
             0,
             "RequestReplyClient recovered.");
 
         private static readonly Action<ILogger, Exception> _requestReplyClientClientSuspended = LoggerMessage.Define(
-            LogLevel.Trace,
+            LogLevel.Warning,
             0,
             "RequestReplyClient suspended.");
 
         private static readonly Action<ILogger, Exception> _requestReplyClientClientResumed = LoggerMessage.Define(
-            LogLevel.Trace,
+            LogLevel.Information,
             0,
             "RequestReplyClient resumed.");
 
         public static void RetryingSendAsync(ILogger logger)
         {
-            if (logger.IsEnabled(LogLevel.Trace))
+            if (logger.IsEnabled(LogLevel.Warning))
             {
                 _retryingSendAsync(logger, null);
             }
@@ -164,7 +164,7 @@ internal class AutoRecoveringRequestReplyClient : IRequestReplyClient, IRecovera
 
         public static void RequestReplyClientRecovered(ILogger logger)
         {
-            if (logger.IsEnabled(LogLevel.Trace))
+            if (logger.IsEnabled(LogLevel.Information))
             {
                 _requestReplyClientRecovered(logger, null);
             }
@@ -172,7 +172,7 @@ internal class AutoRecoveringRequestReplyClient : IRequestReplyClient, IRecovera
 
         public static void RequestReplyClientSuspended(ILogger logger)
         {
-            if (logger.IsEnabled(LogLevel.Trace))
+            if (logger.IsEnabled(LogLevel.Warning))
             {
                 _requestReplyClientClientSuspended(logger, null);
             }
@@ -180,7 +180,7 @@ internal class AutoRecoveringRequestReplyClient : IRequestReplyClient, IRecovera
 
         public static void RequestReplyClientResumed(ILogger logger)
         {
-            if (logger.IsEnabled(LogLevel.Trace))
+            if (logger.IsEnabled(LogLevel.Information))
             {
                 _requestReplyClientClientResumed(logger, null);
             }
