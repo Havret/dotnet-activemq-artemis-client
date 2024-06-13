@@ -187,9 +187,9 @@ namespace ActiveMQ.Artemis.Client.AutoRecovering
                 context.SetEndpoint(endpoint);
                 var connectionBuilder = new ConnectionBuilder(_loggerFactory, _messageIdPolicyFactory, _clientIdFactory, _sslSettings, _tcpSettings);
                 
-                Log.TryingToEstablishedConnection(_logger, endpoint, retryCount);
+                Log.TryingToEstablishedConnection(_logger, endpoint, retryCount + 1);
                 var connection = await connectionBuilder.CreateAsync(endpoint, ct).ConfigureAwait(false);
-                Log.ConnectionEstablished(_logger, endpoint, retryCount);
+                Log.ConnectionEstablished(_logger, endpoint, retryCount + 1);
                 
                 return connection;
             }, ctx, cancellationToken);
