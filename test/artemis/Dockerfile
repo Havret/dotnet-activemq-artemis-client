@@ -4,7 +4,7 @@ FROM azul/zulu-openjdk-alpine:20-latest
 RUN mkdir /artemis
 WORKDIR /artemis
 
-RUN wget -O "artemis.tar" "https://dist.apache.org/repos/dist/dev/activemq/activemq-artemis/2.35.0/apache-artemis-2.35.0-bin.tar.gz"
+RUN wget -O "artemis.tar" "https://www.apache.org/dyn/closer.cgi?filename=activemq/activemq-artemis/2.35.0/apache-artemis-2.35.0-bin.tar.gz&action=download"
 RUN tar -xvf ./artemis.tar; \
     ln -s /artemis/apache-artemis-2.35.0/ ./current
 #WORKDIR /artemis/current
