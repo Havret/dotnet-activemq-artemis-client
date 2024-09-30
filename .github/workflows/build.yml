@@ -24,7 +24,7 @@ jobs:
         with:
           dotnet-version: "8.0.x"
       - name: Run ActiveMQ Artemis
-        run: docker-compose up -V -d
+        run: docker compose up -V -d
         working-directory: ./test/artemis
       - name: Build with dotnet
         run: dotnet build --configuration Release
