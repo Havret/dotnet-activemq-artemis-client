@@ -159,6 +159,33 @@ namespace ActiveMQ.Artemis.Client
             get => Properties.ContentType;
             set => Properties.ContentType = value;
         }
+        
+        /// <summary>
+        /// The <c>ContentEncoding</c> property serves as a modifier to the <c>Content-Type</c> header field. 
+        /// It indicates what additional content encodings have been applied to the application data. 
+        /// This helps define what decoding mechanisms must be applied to retrieve the media type referenced 
+        /// by the <c>Content-Type</c> field.
+        /// 
+        /// Primarily, <c>ContentEncoding</c> is used to allow documents to be compressed without losing 
+        /// the identity of their underlying content type. Content encodings are defined per Section 3.5 
+        /// of RFC 2616 and are registered with IANA as "Hypertext Transfer Protocol (HTTP) Parameters".
+        /// 
+        /// - <c>ContentEncoding</c> MUST NOT be set when the application-data section is other than data.
+        /// - Implementations MUST NOT use the identity encoding. Instead, this property should not be set 
+        ///   in such cases.
+        /// - The compress encoding SHOULD NOT be used unless necessary for compatibility with messages 
+        ///   sent through other protocols, such as HTTP or SMTP.
+        /// - Implementations SHOULD AVOID specifying multiple content encodings unless required for 
+        ///   compatibility with such protocols.
+        /// 
+        /// For further reference on valid content encodings, visit: 
+        /// http://www.iana.org/assignments/http-parameters/http-parameters.xml.
+        /// </summary>
+        public string ContentEncoding
+        {
+            get => Properties.ContentEncoding;
+            set => Properties.ContentEncoding = value;
+        }
 
         /// <summary>
         /// The number of unsuccessful previous attempts to deliver this message.
