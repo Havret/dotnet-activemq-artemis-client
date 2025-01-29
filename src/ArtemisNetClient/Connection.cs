@@ -125,7 +125,26 @@ namespace ActiveMQ.Artemis.Client
 
             if (!_closed)
             {
-                await _connection.CloseAsync().ConfigureAwait(false);
+                var tcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+                try
+                {
+                    _connection.AddClosedCallback((o, e) =>
+                    {
+                        if (e != null)
+                        {
+                            tcs.TrySetException(new AmqpException(e));
+                        }
+                        else
+                        {
+                            tcs.TrySetResult(null);
+                        }
+                    });
+                    _ = _connection.CloseAsync().ConfigureAwait(false);
+                }
+                catch (Exception exception)
+                {
+                    tcs.TrySetException(exception);
+                }
             }
 
             _disposed = true;
