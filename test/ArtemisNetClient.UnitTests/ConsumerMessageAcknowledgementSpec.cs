@@ -48,8 +48,12 @@ namespace ActiveMQ.Artemis.Client.UnitTests
             Assert.True(dispositionContext.Settled);
         }
 
-        [Fact]
-        public async Task Should_send_modified_disposition_frame_when_message_rejected()
+        [Theory]
+        [InlineData(false, false)]
+        [InlineData(false, true)]
+        [InlineData(true, false)]
+        [InlineData(true, true)]
+        public async Task Should_send_modified_disposition_frame_when_message_modified(bool deliveryFailed, bool undeliverableHere)
         {
             var endpoint = GetUniqueEndpoint();
             using var host = CreateOpenedContainerHost(endpoint);
@@ -60,10 +64,40 @@ namespace ActiveMQ.Artemis.Client.UnitTests
             
             messageSource.Enqueue(new Message("foo"));
             var message = await consumer.ReceiveAsync();
-            consumer.Reject(message);
+            consumer.Modify(message, deliveryFailed: deliveryFailed, undeliverableHere: undeliverableHere);
 
             var dispositionContext = messageSource.GetNextDisposition(Timeout);
             Assert.IsType<Modified>(dispositionContext.DeliveryState);
+            Assert.Equal(deliveryFailed, ((Modified)dispositionContext.DeliveryState).DeliveryFailed);
+            Assert.Equal(undeliverableHere, ((Modified)dispositionContext.DeliveryState).UndeliverableHere);
+            Assert.True(dispositionContext.Settled);
+        }
+
+        [Fact]
+        public async Task Should_send_rejected_disposition_frame_when_message_rejected()
+        {
+            var endpoint = GetUniqueEndpoint();
+            using var host = CreateOpenedContainerHost(endpoint);
+
+            var messageSource = host.CreateMessageSource("a1");
+            await using var connection = await CreateConnection(endpoint);
+            var consumer = await connection.CreateConsumerAsync("a1", RoutingType.Anycast);
+            
+            messageSource.Enqueue(new Message("foo"));
+            var message = await consumer.ReceiveAsync();
+
+            var condition = new Amqp.Types.Symbol("a condition");
+            var description = "an error description";
+            Error error = new(condition)
+            {
+                Description = description
+            };
+            consumer.Reject(message, error: error);
+
+            var dispositionContext = messageSource.GetNextDisposition(Timeout);
+            Assert.IsType<Rejected>(dispositionContext.DeliveryState);
+            Assert.Equal(condition, ((Rejected)dispositionContext.DeliveryState).Error.Condition);
+            Assert.Equal(description, ((Rejected)dispositionContext.DeliveryState).Error.Description);
             Assert.True(dispositionContext.Settled);
         }
     }
