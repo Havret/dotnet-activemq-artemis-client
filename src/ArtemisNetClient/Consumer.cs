@@ -76,11 +76,19 @@ namespace ActiveMQ.Artemis.Client
             Log.MessageAccepted(_logger, message, _receiverLink);
         }
 
-        public void Reject(Message message, bool undeliverableHere)
+        public void Modify(Message message, bool deliveryFailed, bool undeliverableHere)
         {
             CheckState();
-            
-            _receiverLink.Modify(message.InnerMessage, deliveryFailed: true, undeliverableHere: undeliverableHere);
+
+            _receiverLink.Modify(message.InnerMessage, deliveryFailed: deliveryFailed, undeliverableHere: undeliverableHere);
+            Log.MessageModified(_logger, message, _receiverLink);
+        }
+
+        public void Reject(Message message, Error error = null)
+        {
+            CheckState();
+
+            _receiverLink.Reject(message.InnerMessage, error: error);
             Log.MessageRejected(_logger, message, _receiverLink);
         }
 
@@ -160,6 +168,11 @@ namespace ActiveMQ.Artemis.Client
                 0,
                 "Message accepted. MessageId: '{0}' ConsumerName: '{1}'.");
 
+            private static readonly Action<ILogger, object, string, Exception> _messageModified = LoggerMessage.Define<object, string>(
+                LogLevel.Trace,
+                0,
+                "Message modified. MessageId: '{0}' ConsumerName: '{1}'.");
+
             private static readonly Action<ILogger, object, string, Exception> _messageRejected = LoggerMessage.Define<object, string>(
                 LogLevel.Trace,
                 0,
@@ -200,6 +213,14 @@ namespace ActiveMQ.Artemis.Client
                 if (logger.IsEnabled(LogLevel.Trace))
                 {
                     _messageAccepted(logger, message.GetMessageId<object>(), receiverLink.Name, null);
+                }
+            }
+
+            public static void MessageModified(ILogger logger, Message message, ReceiverLink receiverLink)
+            {
+                if (logger.IsEnabled(LogLevel.Trace))
+                {
+                    _messageModified(logger, message.GetMessageId<object>(), receiverLink.Name, null);
                 }
             }
 
