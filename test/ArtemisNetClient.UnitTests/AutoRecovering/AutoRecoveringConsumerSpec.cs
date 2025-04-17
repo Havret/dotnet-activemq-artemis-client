@@ -90,6 +90,24 @@ namespace ActiveMQ.Artemis.Client.UnitTests.AutoRecovering
             consumer.Reject(message);
 
             var dispositionContext = messageSource.GetNextDisposition(Timeout);
+            Assert.IsType<Rejected>(dispositionContext.DeliveryState);
+            Assert.True(dispositionContext.Settled);
+            
+            await DisposeUtil.DisposeAll(consumer, connection, host);
+        }
+
+        [Fact]
+        public async Task Should_be_able_to_modify_messages_when_connection_restored()
+        {
+            var (consumer, messageSource, host, connection) = await CreateReattachedConsumer();
+
+            messageSource.Enqueue(new Message("foo"));
+
+            var cts = new CancellationTokenSource(Timeout);
+            var message = await consumer.ReceiveAsync(cts.Token);
+            consumer.Modify(message, deliveryFailed: true, undeliverableHere: false);
+
+            var dispositionContext = messageSource.GetNextDisposition(Timeout);
             Assert.IsType<Modified>(dispositionContext.DeliveryState);
             Assert.True(dispositionContext.Settled);
             
