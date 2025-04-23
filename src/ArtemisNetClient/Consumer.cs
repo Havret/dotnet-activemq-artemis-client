@@ -84,11 +84,11 @@ namespace ActiveMQ.Artemis.Client
             Log.MessageModified(_logger, message, _receiverLink);
         }
 
-        public void Reject(Message message, Error error = null)
+        public void Reject(Message message)
         {
             CheckState();
 
-            _receiverLink.Reject(message.InnerMessage, error: error);
+            _receiverLink.Reject(message.InnerMessage);
             Log.MessageRejected(_logger, message, _receiverLink);
         }
 

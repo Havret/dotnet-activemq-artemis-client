@@ -4,7 +4,6 @@ using System.Threading.Tasks;
 using ActiveMQ.Artemis.Client.Exceptions;
 using ActiveMQ.Artemis.Client.Transactions;
 using Amqp;
-using Amqp.Framing;
 using Microsoft.Extensions.Logging;
 using Nito.AsyncEx;
 
@@ -71,11 +70,11 @@ namespace ActiveMQ.Artemis.Client.AutoRecovering
             _consumer.Modify(message, deliveryFailed, undeliverableHere);
         }
 
-        public void Reject(Message message, Error error = null)
+        public void Reject(Message message)
         {
             CheckState();
 
-            _consumer.Reject(message, error);
+            _consumer.Reject(message);
         }
 
         private void CheckState()
