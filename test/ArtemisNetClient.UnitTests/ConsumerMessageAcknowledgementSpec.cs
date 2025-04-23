@@ -86,18 +86,10 @@ namespace ActiveMQ.Artemis.Client.UnitTests
             messageSource.Enqueue(new Message("foo"));
             var message = await consumer.ReceiveAsync();
 
-            var condition = new Amqp.Types.Symbol("a condition");
-            var description = "an error description";
-            Error error = new(condition)
-            {
-                Description = description
-            };
-            consumer.Reject(message, error: error);
+            consumer.Reject(message);
 
             var dispositionContext = messageSource.GetNextDisposition(Timeout);
             Assert.IsType<Rejected>(dispositionContext.DeliveryState);
-            Assert.Equal(condition, ((Rejected)dispositionContext.DeliveryState).Error.Condition);
-            Assert.Equal(description, ((Rejected)dispositionContext.DeliveryState).Error.Description);
             Assert.True(dispositionContext.Settled);
         }
     }
