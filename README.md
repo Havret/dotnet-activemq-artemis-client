@@ -133,6 +133,16 @@ The following table shows what features are currently supported.
 ## Extensions
 There are several extensions available that make integration of .NET Client for ActiveMQ Artemis with ASP.NET Core based projects seamless.
 
+## ⚠️ Breaking Change in 3.0.0
+
+Version **3.0.0** introduces a **breaking change** to the `IConsumer` API.
+
+- The `Reject(Message message, bool undeliverableHere = false)` method has been **replaced** with two explicit methods:
+  - `Modify(Message message, bool deliveryFailed, bool undeliverableHere)`
+  - `Reject(Message message)`
+
+📄 **Please see the [3.0.0 Release Notes](https://github.com/Havret/dotnet-activemq-artemis-client/releases/tag/3.0.0) for detailed migration instructions.**
+
 ## License
 
 This project uses [MIT licence](https://github.com/Havret/dotnet-activemq-artemis-client/blob/master/LICENSE). Long story short - you are more than welcome to use it anywhere you like, completely free of charge and without oppressive obligations.
