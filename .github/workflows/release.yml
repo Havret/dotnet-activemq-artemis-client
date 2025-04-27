@@ -19,25 +19,31 @@ jobs:
             ArtemisNetClient.Extensions.CloudEvents
           ]
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v2
+      
       - name: Setup .NET Core
         uses: actions/setup-dotnet@v1
         with:
-          dotnet-version: "8.0.x"
+          dotnet-version: "8.x"
+          
       - name: Create NuGet Package
         run: dotnet pack -c Release /p:Version=${{ github.event.release.name }} /p:PackageReleaseNotes="See https://github.com/Havret/dotnet-activemq-artemis-client/releases/tag/${{ github.event.release.tag_name }}"
+      
       - name: Archive NuGet Package
-        uses: actions/upload-artifact@v1
+        uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.package }}
           path: ./src/${{ matrix.package }}/bin/Release/${{ matrix.package }}.${{ github.event.release.name }}.nupkg
+          
       - name: Archive NuGet Package With Symbols
-        uses: actions/upload-artifact@v1
+        uses: actions/upload-artifact@v4
         with:
-          name: ${{ matrix.package }}
+          name: ${{ matrix.package }}-symbols
           path: ./src/${{ matrix.package }}/bin/Release/${{ matrix.package }}.${{ github.event.release.name }}.snupkg
+          
       - name: Publish NuGet Package
         run: dotnet nuget push ./src/${{ matrix.package }}/bin/Release/${{ matrix.package }}.${{ github.event.release.name }}.nupkg --api-key ${{ secrets.nuget_api_key }} --source https://api.nuget.org/v3/index.json
+        
       - name: Upload NuGet Package
         uses: actions/upload-release-asset@v1
         env:
@@ -47,6 +53,7 @@ jobs:
           asset_path: ./src/${{ matrix.package }}/bin/Release/${{ matrix.package }}.${{ github.event.release.name }}.nupkg
           asset_name: ${{ matrix.package }}.${{ github.event.release.name }}.nupkg
           asset_content_type: application/zip
+          
       - name: NuGet Package With Symbols
         uses: actions/upload-release-asset@v1
         env:
