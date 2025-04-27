@@ -141,7 +141,7 @@ Version **3.0.0** introduces a **breaking change** to the `IConsumer` API.
   - `Modify(Message message, bool deliveryFailed, bool undeliverableHere)`
   - `Reject(Message message)`
 
-📄 **Please see the [3.0.0 Release Notes](https://github.com/Havret/dotnet-activemq-artemis-client/releases/tag/3.0.0) for detailed migration instructions.**
+📄 **Please see the [3.0.0 Release Notes](https://github.com/Havret/dotnet-activemq-artemis-client/releases/tag/v3.0.0) for detailed migration instructions.**
 
 ## License
 
