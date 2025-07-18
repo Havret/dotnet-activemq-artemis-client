@@ -1,0 +1,27 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <Summary>Microsoft.Extensions.Diagnostics.HealthChecks support for ActiveMQ Artemis .NET Client</Summary>
+    <Description>Microsoft.Extensions.Diagnostics.HealthChecks support for ActiveMQ Artemis .NET Client.</Description>
+    <PackageProjectUrl>https://havret.github.io/dotnet-activemq-artemis-client/</PackageProjectUrl>
+    <PackageId>ArtemisNetClient.Extensions.HealthCheck</PackageId>
+    <PackageLicenseUrl>https://github.com/Havret/activemq-artemis-extensions/blob/master/LICENSE</PackageLicenseUrl>
+    <RepositoryType>git</RepositoryType>
+    <RepositoryUrl>https://github.com/Havret/activemq-artemis-extensions</RepositoryUrl>
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+    <Authors>Havret</Authors>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <RootNamespace>ActiveMQ.Artemis.Client.Extensions.HealthCheck</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks" Version="8.0.18" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\ArtemisNetClient.Extensions.DependencyInjection\ArtemisNetClient.Extensions.DependencyInjection.csproj" />
+  </ItemGroup>
+
+</Project>

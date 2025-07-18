@@ -10,6 +10,8 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using ActiveMQ.Artemis.Client.Extensions.DependencyInjection;
 using ActiveMQ.Artemis.Client.Extensions.Hosting;
+using ActiveMQ.Artemis.Client.Extensions.HealthCheck;
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 
 namespace ActiveMQ.Artemis.Client.Examples.AspNetCore
 {
@@ -34,16 +36,20 @@ namespace ActiveMQ.Artemis.Client.Examples.AspNetCore
                         connection.ConnectionClosed += (_, args) =>
                         {
                             Console.WriteLine($"Connection closed: ClosedByPeer={args.ClosedByPeer}, Error={args.Error}");
+                            ArtemisHealthCheckService.ConnectionClosed(_, args, $"Connection closed: ClosedByPeer={args.ClosedByPeer}, Error={args.Error}");
                         };
                         connection.ConnectionRecovered += (_, args) =>
                         {
                             Console.WriteLine($"Connection recovered: Endpoint={args.Endpoint}");
+                            ArtemisHealthCheckService.ConnectionRecovered(_, args, $"Connection recovered: Endpoint={args.Endpoint}");
                         };
                         connection.ConnectionRecoveryError += (_, args) =>
                         {
                             Console.WriteLine($"Connection recovered error: Exception={args.Exception}");
+                            ArtemisHealthCheckService.ConnectionRecoveryError(_, args, $"Connection recovered error: Exception={args.Exception}");
                         };
                     })
+                    //.ConfigureConnection(ActiveMqHealthCheckExtensions.ConfigureConnection) Optionally configure health check connection events
                     .AddConsumer("a1", RoutingType.Multicast, "q1", async (message, consumer, token, serviceProvider) =>
                     {
                         Console.WriteLine("q1: " + message.GetBody<string>());
@@ -59,6 +65,9 @@ namespace ActiveMQ.Artemis.Client.Examples.AspNetCore
                     .EnableAddressDeclaration();
 
             services.AddActiveMqHostedService();
+
+            services.AddHealthChecks()
+                    .AddActiveMqHealthCheck("my-artemis-cluster");
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -70,6 +79,11 @@ namespace ActiveMQ.Artemis.Client.Examples.AspNetCore
             }
 
             app.UseRouting();
+
+            app.UseHealthChecks("/health", new HealthCheckOptions
+            {
+                Predicate = check => check.Tags.Contains("activemq")
+            });
 
             app.UseEndpoints(endpoints =>
             {
