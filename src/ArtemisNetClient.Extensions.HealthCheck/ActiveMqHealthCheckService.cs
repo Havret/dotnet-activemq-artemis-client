@@ -6,6 +6,9 @@ using Microsoft.Extensions.Diagnostics.HealthChecks;
 namespace ActiveMQ.Artemis.Client.Extensions.HealthCheck
 {
 
+    /// <summary>
+    /// Service for managing ActiveMQ Artemis health checks.
+    /// </summary>
     public class ArtemisHealthCheckService : IHealthCheck
     {
         private bool IsOpen = false;
@@ -19,7 +22,7 @@ namespace ActiveMQ.Artemis.Client.Extensions.HealthCheck
         {
             IsOpen = true;
             Description = "Connection is open";
-        }      
+        }
 
         /// <summary>
         /// Marks the connection as recovered and updates the description accordingly.

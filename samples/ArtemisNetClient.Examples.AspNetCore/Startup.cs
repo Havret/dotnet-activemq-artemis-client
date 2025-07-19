@@ -12,8 +12,7 @@ using ActiveMQ.Artemis.Client.Extensions.DependencyInjection;
 using ActiveMQ.Artemis.Client.Extensions.Hosting;
 using ActiveMQ.Artemis.Client.Extensions.HealthCheck;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
-using ActiveMQ.Artemis.Client.Extensions.HealthCheck;
-
+    
 namespace ActiveMQ.Artemis.Client.Examples.AspNetCore
 {
     public class Startup
