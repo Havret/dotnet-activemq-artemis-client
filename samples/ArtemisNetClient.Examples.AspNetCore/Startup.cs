@@ -21,7 +21,7 @@ namespace ActiveMQ.Artemis.Client.Examples.AspNetCore
         // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddActiveMq(name: "my-artemis-cluster", endpoints: new[] { Endpoint.Create(host: "localhost", port: 5672, "artemis", "artemis"), Endpoint.Create(host: "localhost", port: 5673, "artemis", "artemis") })
+            var activeMqBuilder = services.AddActiveMq(name: "my-artemis-cluster", endpoints: new[] { Endpoint.Create(host: "localhost", port: 5672, "artemis", "artemis"), Endpoint.Create(host: "localhost", port: 5673, "artemis", "artemis") })
                     .ConfigureConnectionFactory((provider, factory) =>
                     {
                         factory.LoggerFactory = provider.GetService<ILoggerFactory>();
@@ -35,17 +35,17 @@ namespace ActiveMQ.Artemis.Client.Examples.AspNetCore
                     {
                         connection.ConnectionClosed += (_, args) =>
                         {
-                            Console.WriteLine($"Connection closed: ClosedByPeer={args.ClosedByPeer}, Error={args.Error}");                            
+                            Console.WriteLine($"Connection closed: ClosedByPeer={args.ClosedByPeer}, Error={args.Error}");
                         };
                         connection.ConnectionRecovered += (_, args) =>
                         {
-                            Console.WriteLine($"Connection recovered: Endpoint={args.Endpoint}");                            
+                            Console.WriteLine($"Connection recovered: Endpoint={args.Endpoint}");
                         };
                         connection.ConnectionRecoveryError += (_, args) =>
                         {
-                            Console.WriteLine($"Connection recovered error: Exception={args.Exception}");                           
+                            Console.WriteLine($"Connection recovered error: Exception={args.Exception}");
                         };
-                    })                   
+                    })
                     .AddConsumer("a1", RoutingType.Multicast, "q1", async (message, consumer, token, serviceProvider) =>
                     {
                         Console.WriteLine("q1: " + message.GetBody<string>());
@@ -58,15 +58,16 @@ namespace ActiveMQ.Artemis.Client.Examples.AspNetCore
                     })
                     .AddProducer<MyTypedMessageProducer>("a1", RoutingType.Multicast)
                     .EnableQueueDeclaration()
-                    .EnableAddressDeclaration()
-                    .EnableHealthChecks(); // Enable health check integration
+                    .EnableAddressDeclaration();
+                    
 
             services.AddActiveMqHostedService();
 
+            // Add health checks for ActiveMQ Artemis
             services
              .AddHealthChecks()
-             .AddActiveMq("my-artemis-cluster", tags: new[] { "activemq" });
-           
+             .AddActiveMq(name: "my-artemis-cluster", activeMqBuilder: activeMqBuilder, tags: new[] { "activemq" });
+
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

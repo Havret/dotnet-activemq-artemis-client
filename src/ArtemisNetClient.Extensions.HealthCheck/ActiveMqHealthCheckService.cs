@@ -9,7 +9,7 @@ namespace ActiveMQ.Artemis.Client.Extensions.HealthCheck
     /// <summary>
     /// Service for managing ActiveMQ Artemis health checks.
     /// </summary>
-    public class ArtemisHealthCheckService : IHealthCheck
+    internal class ArtemisHealthCheckService : IHealthCheck
     {
         private bool IsOpen = false;
         private string Description = "Connection not established";
