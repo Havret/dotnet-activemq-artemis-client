@@ -33,7 +33,7 @@ namespace ActiveMQ.Artemis.Client.Extensions.DependencyInjection
             builder.Services.TryAddSingleton(provider => new ConnectionProvider(provider));
             builder.Services.TryAddTransient<ConnectionFactory>();
 
-            builder.Services.AddSingleton(provider =>
+            builder.Services.AddKeyedSingleton(serviceKey: name, (provider, _) =>
             {
                 var optionsFactory = provider.GetService<IOptionsFactory<ActiveMqOptions>>();
                 var activeMqOptions = optionsFactory.Create(name);
@@ -43,7 +43,7 @@ namespace ActiveMQ.Artemis.Client.Extensions.DependencyInjection
                 {
                     connectionFactoryAction(provider, connectionFactory);
                 }
-                return new NamedConnection(name, async token =>
+                return new LazyConnection(async token =>
                 {
                     var connection = await connectionFactory.CreateAsync(endpoints, token).ConfigureAwait(false);
                     foreach (var connectionAction in activeMqOptions.ConnectionActions)
