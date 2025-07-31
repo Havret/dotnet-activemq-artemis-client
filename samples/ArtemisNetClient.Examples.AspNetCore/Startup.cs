@@ -10,7 +10,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using ActiveMQ.Artemis.Client.Extensions.DependencyInjection;
 using ActiveMQ.Artemis.Client.Extensions.Hosting;
-using ActiveMQ.Artemis.Client.Extensions.HealthCheck;
+using ActiveMQ.Artemis.Client.Extensions.HealthChecks;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
     
 namespace ActiveMQ.Artemis.Client.Examples.AspNetCore
