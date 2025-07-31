@@ -1,9 +1,8 @@
-using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 
-namespace ActiveMQ.Artemis.Client.Extensions.HealthCheck
+namespace ActiveMQ.Artemis.Client.Extensions.HealthChecks
 {
 
     /// <summary>
