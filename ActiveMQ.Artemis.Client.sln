@@ -48,9 +48,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ArtemisNetClient.Extensions
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ArtemisNetClient.Extensions.CloudEvents.UnitTests", "test\ArtemisNetClient.Extensions.CloudEvents.UnitTests\ArtemisNetClient.Extensions.CloudEvents.UnitTests.csproj", "{F8117A33-8F16-4E83-B799-A5D02B1A29CC}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{827E0CD3-B72D-47B6-A68D-7590B98EB39B}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ArtemisNetClient.Extensions.HealthCheck", "src\ArtemisNetClient.Extensions.HealthCheck\ArtemisNetClient.Extensions.HealthCheck.csproj", "{1CDDD3D3-A55A-4010-89EE-C164F8828E8B}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ArtemisNetClient.Extensions.HealthChecks", "src\ArtemisNetClient.Extensions.HealthChecks\ArtemisNetClient.Extensions.HealthChecks.csproj", "{1CDDD3D3-A55A-4010-89EE-C164F8828E8B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -333,6 +331,5 @@ Global
 		{E227D3D7-DAA7-43E0-A30B-3586CB618419} = {6BFCCBDF-F794-470D-B551-958D6BE86CC1}
 		{AAFC186E-C01E-4EFD-9F0C-883CEB44651D} = {6BFCCBDF-F794-470D-B551-958D6BE86CC1}
 		{F8117A33-8F16-4E83-B799-A5D02B1A29CC} = {4B33FA85-AAA6-4363-9C46-C5045A96E975}
-		{1CDDD3D3-A55A-4010-89EE-C164F8828E8B} = {827E0CD3-B72D-47B6-A68D-7590B98EB39B}
 	EndGlobalSection
 EndGlobal

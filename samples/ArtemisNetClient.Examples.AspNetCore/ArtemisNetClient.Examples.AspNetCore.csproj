@@ -8,7 +8,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\ArtemisNetClient.Extensions.DependencyInjection\ArtemisNetClient.Extensions.DependencyInjection.csproj" />
     <ProjectReference Include="..\..\src\ArtemisNetClient.Extensions.Hosting\ArtemisNetClient.Extensions.Hosting.csproj" />
-    <ProjectReference Include="..\..\src\ArtemisNetClient.Extensions.HealthCheck\ArtemisNetClient.Extensions.HealthCheck.csproj" />
+    <ProjectReference Include="..\..\src\ArtemisNetClient.Extensions.HealthChecks\ArtemisNetClient.Extensions.HealthChecks.csproj" />
   </ItemGroup>
 
 </Project>

@@ -1,12 +1,8 @@
-using System;
-using System.Threading;
-using System.Threading.Tasks;
+using ActiveMQ.Artemis.Client.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
-using ActiveMQ.Artemis.Client.Extensions.DependencyInjection;
-using Microsoft.Extensions.Options;
 
-namespace ActiveMQ.Artemis.Client.Extensions.HealthCheck
+namespace ActiveMQ.Artemis.Client.Extensions.HealthChecks
 {
     /// <summary>
     /// Extension methods for adding ActiveMQ Artemis health checks to the application.
