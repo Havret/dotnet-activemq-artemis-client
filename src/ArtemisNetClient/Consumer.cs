@@ -67,10 +67,10 @@ namespace ActiveMQ.Artemis.Client
         public async ValueTask AcceptAsync(Message message, Transaction transaction, CancellationToken cancellationToken = default)
         {
             CheckState();
-            
+
             var txnId = await _transactionsManager.GetTxnIdAsync(transaction, cancellationToken).ConfigureAwait(false);
             var deliveryState = txnId != null
-                ? (DeliveryState) new TransactionalState { Outcome = new Accepted(), TxnId = txnId }
+                ? (DeliveryState)new TransactionalState { Outcome = new Accepted(), TxnId = txnId }
                 : new Accepted();
             _receiverLink.Complete(message.InnerMessage, deliveryState);
             Log.MessageAccepted(_logger, message, _receiverLink);
@@ -98,13 +98,13 @@ namespace ActiveMQ.Artemis.Client
             {
                 throw new ObjectDisposedException(nameof(Consumer));
             }
-            
+
             if (_receiverLink.IsDetaching() || _receiverLink.IsClosed)
             {
                 throw GetConsumerClosedException(_receiverLink.Error);
             }
         }
-        
+
         private void OnClosed(IAmqpObject sender, Error error)
         {
             var consumerClosedException = GetConsumerClosedException(error);
@@ -119,7 +119,6 @@ namespace ActiveMQ.Artemis.Client
 
         public async ValueTask DisposeAsync()
         {
-            _writer.TryComplete();
             if (_disposed)
             {
                 return;
@@ -130,17 +129,19 @@ namespace ActiveMQ.Artemis.Client
                 _receiverLink.Closed -= OnClosed;
                 if (_isDurable)
                 {
-                    await _receiverLink.DetachAsync().ConfigureAwait(false);    
+                    await _receiverLink.DetachAsync().ConfigureAwait(false);
                 }
                 else
                 {
-                    await _receiverLink.CloseAsync().ConfigureAwait(false);    
+                    await _receiverLink.CloseAsync().ConfigureAwait(false);
                 }
             }
 
+            _writer.TryComplete();
+
             if (!_receiverLink.Session.IsClosed)
             {
-                await _receiverLink.Session.CloseAsync().ConfigureAwait(false);    
+                await _receiverLink.Session.CloseAsync().ConfigureAwait(false);
             }
 
             _disposed = true;
