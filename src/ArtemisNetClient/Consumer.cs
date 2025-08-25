@@ -124,27 +124,31 @@ namespace ActiveMQ.Artemis.Client
                 return;
             }
 
-            if (!_receiverLink.IsClosed)
+            try
             {
-                _receiverLink.Closed -= OnClosed;
-                if (_isDurable)
+                if (!_receiverLink.IsClosed)
                 {
-                    await _receiverLink.DetachAsync().ConfigureAwait(false);
+                    _receiverLink.Closed -= OnClosed;
+                    if (_isDurable)
+                    {
+                        await _receiverLink.DetachAsync().ConfigureAwait(false);
+                    }
+                    else
+                    {
+                        await _receiverLink.CloseAsync().ConfigureAwait(false);
+                    }
                 }
-                else
+
+                if (!_receiverLink.Session.IsClosed)
                 {
-                    await _receiverLink.CloseAsync().ConfigureAwait(false);
+                    await _receiverLink.Session.CloseAsync().ConfigureAwait(false);
                 }
             }
-
-            _writer.TryComplete();
-
-            if (!_receiverLink.Session.IsClosed)
+            finally
             {
-                await _receiverLink.Session.CloseAsync().ConfigureAwait(false);
+                _writer.TryComplete();
+                _disposed = true;
             }
-
-            _disposed = true;
         }
 
         private static class Log
