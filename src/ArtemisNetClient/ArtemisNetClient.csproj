@@ -20,8 +20,8 @@
     <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0" PrivateAssets="All" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="AMQPNetLite" Version="2.4.5" />
-    <PackageReference Include="AMQPNetLite.WebSockets" Version="2.4.5" />
+    <PackageReference Include="AMQPNetLite" Version="2.5.0" />
+    <PackageReference Include="AMQPNetLite.WebSockets" Version="2.5.0" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="2.0.0" />
     <PackageReference Include="Nito.AsyncEx.Coordination" Version="5.1.0" />
     <PackageReference Include="Polly" Version="7.2.1" />
