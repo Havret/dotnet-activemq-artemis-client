@@ -27,7 +27,8 @@ namespace ActiveMQ.Artemis.Client.UnitTests
             var received = messageProcessor.Dequeue(Timeout);
 
             Assert.NotNull(received.CreationTime);
-            Assert.InRange(received.CreationTime.Value, before, after);
+            Assert.True(received.CreationTime.Value >= before, "CreationTime should be after 'before' timestamp");
+            Assert.True(received.CreationTime.Value <= after, "CreationTime should be before 'after' timestamp");
         }
 
         [Fact]
