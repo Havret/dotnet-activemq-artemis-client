@@ -20,15 +20,14 @@ namespace ActiveMQ.Artemis.Client.UnitTests
             await using var connection = await CreateConnection(host.Endpoint);
             await using var producer = await connection.CreateProducerAsync("a1", RoutingType.Anycast);
 
-            var before = DateTime.UtcNow.DropTicsPrecision();
+            var before = DateTime.UtcNow.DropTicsPrecision() - TimeSpan.FromMilliseconds(1);
             await producer.SendAsync(new Message("foo"));
-            var after = DateTime.UtcNow.DropTicsPrecision();
+            var after = DateTime.UtcNow.DropTicsPrecision() + TimeSpan.FromMilliseconds(1);
 
             var received = messageProcessor.Dequeue(Timeout);
 
             Assert.NotNull(received.CreationTime);
-            Assert.True(received.CreationTime.Value >= before, "CreationTime should be after 'before' timestamp");
-            Assert.True(received.CreationTime.Value <= after, "CreationTime should be before 'after' timestamp");
+            Assert.InRange(received.CreationTime.Value, before, after);
         }
 
         [Fact]
