@@ -54,6 +54,6 @@ public class ConnectionProviderSpec
             await connectionProvider.GetConnectionAsync("invalid-connection-name");
         });
 
-        Assert.Equal("There is connection registered with name invalid-connection-name", exception.Message);
+        Assert.Equal("There is no connection registered with name invalid-connection-name", exception.Message);
     }
 }

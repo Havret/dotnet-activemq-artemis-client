@@ -29,7 +29,7 @@ namespace ActiveMQ.Artemis.Client.UnitTests
 
         [Theory]
         [MemberData(nameof(ValidMessagePrioritiesData))]
-        public async Task Should_send_message_with_valid_priority(byte priority)
+        public async Task Should_send_message_with_valid_priority(byte? priority)
         {
             using var host = CreateOpenedContainerHost();
             var messageProcessor = host.CreateMessageProcessor("a1");
@@ -47,7 +47,7 @@ namespace ActiveMQ.Artemis.Client.UnitTests
             Assert.Equal(priority, received.Priority);
         }
 
-        public static TheoryData<byte?> ValidMessagePrioritiesData => new TheoryData<byte?> { default, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
+        public static TheoryData<byte?> ValidMessagePrioritiesData => [null, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
 
         [Fact]
         public void Throws_when_invalid_priority_assigned()
