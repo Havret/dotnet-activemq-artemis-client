@@ -46,5 +46,7 @@
         }
         
         public uint DeliveryCount => _innerHeader.HasField(4) ? _innerHeader.DeliveryCount : default;
+
+        public bool FirstAcquirer => _innerHeader.FirstAcquirer;
     }
 }
