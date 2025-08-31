@@ -14,8 +14,7 @@ namespace ActiveMQ.Artemis.Client.Extensions.HealthChecks
         /// </summary>
         /// <param name="builder">The <see cref="IHealthChecksBuilder"/> to add the health check to.</param>
         /// <param name="name">The name of the ActiveMQ connection to check.</param>
-        /// <param name="activeMqBuilder"></param>
-        /// <param name="connectionName">The name of the ActiveMQ connection configured with AddActiveMq.</param>
+        /// <param name="activeMqBuilder"></param>        
         /// <param name="tags">Optional tags for the health check.</param>
         /// <returns>The <see cref="IHealthChecksBuilder"/> for further configuration.</returns>
         public static IHealthChecksBuilder AddActiveMq(this IHealthChecksBuilder builder,

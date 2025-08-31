@@ -16,7 +16,8 @@ jobs:
             ArtemisNetClient.Extensions.Hosting,
             ArtemisNetClient.Extensions.App.Metrics,
             ArtemisNetClient.Testing,
-            ArtemisNetClient.Extensions.CloudEvents
+            ArtemisNetClient.Extensions.CloudEvents,
+            ArtemisNetClient.Extensions.HealthChecks
           ]
     steps:
       - uses: actions/checkout@v2
