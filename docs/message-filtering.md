@@ -193,9 +193,14 @@ FilterExpression = "color IN ('red', 'blue', 'green')"
 Use wildcards for string matching:
 
 ```csharp
-FilterExpression = "department LIKE 'sales%'"  // Starts with 'sales'
-FilterExpression = "email LIKE '%@example.com'"  // Ends with '@example.com'
-FilterExpression = "code LIKE 'A_B'"  // 'A', any character, then 'B'
+// Match departments starting with 'sales'
+FilterExpression = "department LIKE 'sales%'"
+
+// Match emails ending with '@example.com'
+FilterExpression = "email LIKE '%@example.com'"
+
+// Match code patterns: 'A', any character, then 'B' (e.g., 'AXB', 'A1B')
+FilterExpression = "code LIKE 'A_B'"
 ```
 
 ### Handling NULL Values
