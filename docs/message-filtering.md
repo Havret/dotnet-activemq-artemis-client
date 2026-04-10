@@ -28,7 +28,7 @@ Filter expressions use a SQL-92 syntax similar to JMS message selectors. The fol
 #### Comparison Operators
 
 - `=` - Equal to
-- `<>` or `!=` - Not equal to
+- `<>` - Not equal to
 - `>` - Greater than
 - `>=` - Greater than or equal to
 - `<` - Less than
@@ -46,6 +46,8 @@ Filter expressions use a SQL-92 syntax similar to JMS message selectors. The fol
 - `IN` - Set membership (e.g., `color IN ('red', 'blue', 'green')`)
 - `LIKE` - String pattern matching with wildcards (`%` for multiple characters, `_` for single character)
 - `IS NULL` / `IS NOT NULL` - Check for null values
+
+> **Note:** String comparisons in filter expressions are case-sensitive. For example, `color = 'Red'` will not match a message with `color` set to `'red'`.
 
 ### Predefined AMQP Message Properties
 
