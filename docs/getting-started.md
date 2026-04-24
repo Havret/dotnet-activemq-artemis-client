@@ -14,6 +14,8 @@ sidebar_label: Getting Started
 dotnet add package ArtemisNetClient
 ```
 
+If you are building an ASP.NET Core application or otherwise using `Microsoft.Extensions.DependencyInjection`, start with the [Dependency Injection](dependency-injection.md) guide instead. It covers `AddActiveMq`, hosted startup, typed producers, and consumer registration.
+
 ## API overview
 
 The API interfaces and classes are defined in the `ActiveMQ.Artemis.Client` namespace:

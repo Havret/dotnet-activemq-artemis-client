@@ -22,6 +22,8 @@ The central part of `ArtemisNetClient.Testing` is TestKit class. TestKit spins u
 
 Let's consider a very simple ASP.NET Core application that uses `ArtemisNetClient.Extensions.DependencyInjection` helper package to setup ArtemisNetClient and connect to the broker:
 
+If you are new to the DI package, read [Dependency Injection](dependency-injection.md) first. The sample below assumes the hosted startup model from that guide.
+
 ```csharp
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddActiveMqHostedService();
@@ -55,6 +57,8 @@ app.Run();
 // this is required so we can use WebApplicationFactory to run the test server
 public partial class Program { }
 ```
+
+The full minimal application lives in [samples/Testing/Application/Program.cs](https://github.com/Havret/dotnet-activemq-artemis-client/blob/master/samples/Testing/Application/Program.cs).
 
 This application has a single consumer attached to `foo` address using anycast routing type. On each message the app performs some logic and as a final step publishes a new message to a `bar` address.
 

@@ -1,6 +1,6 @@
 module.exports = {
   someSidebar: {
-    Introduction: ['getting-started'],
+    Introduction: ['getting-started', 'dependency-injection'],
     Features: [
       'message-payload',
       'message-durability',
