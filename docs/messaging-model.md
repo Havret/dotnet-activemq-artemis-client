@@ -17,5 +17,7 @@ When the address was created with *Anycast* routing type all messages send to th
 ## Further Reading
 The Apache ActiveMQ Artemis address model is described in detail (with examples using ArtemisNetClient) in [this](https://havret.io/activemq-artemis-address-model) article.
 
+If you use the dependency injection package, the same address, queue, and routing concepts show up in `AddConsumer`, `AddProducer`, and topology declaration APIs. See [Dependency Injection](dependency-injection.md) for the ASP.NET Core registration flow.
+
 ### Footnotes:
 [^anycast-message-distribution]: Messages will be distributed using Round-robin distribution algorithm.

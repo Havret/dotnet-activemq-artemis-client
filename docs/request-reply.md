@@ -46,43 +46,82 @@ await consumer.AcceptAsync(request);
 
 ##  Implementing request-reply with ArtemisNetClient.Extensions.DependencyInjection
 
+The dependency injection package exposes request-reply through `AddRequestReplyClient<TClient>`. For ASP.NET Core and hosted applications, pair it with `AddActiveMqHostedService()` so the underlying client is started automatically.
+
+For the full registration flow, see [Dependency Injection](dependency-injection.md).
+
 ### Request side
 
-DependencyInjection package provides a simple way of registering `IRequestReplyClient` in a DI container. 
-
 ```csharp
-public void ConfigureServices(IServiceCollection services)
-{
-    /*...*/ 
-    var endpoints = new[] { Endpoint.Create(host: "localhost", port: 5672, "guest", "guest") };
-    services.AddActiveMq("bookstore-cluster", endpoints)
-            .AddRequestReplyClient<MyRequestReplyClient>();
-    /*...*/
-}
-```
+var builder = WebApplication.CreateBuilder(args);
+builder.Services.AddActiveMqHostedService();
 
-`MyRequestReplyClient` is your custom class that expects the `IRequestReplyClient` to be injected via the constructor. Once you have your custom class, you can either expose the `IRequestReplyClient` directly or encapsulate sending logic inside of it:
+var endpoint = Endpoint.Create("localhost", 5672, "guest", "guest");
+var activeMq = builder.Services.AddActiveMq("bookstore-cluster", new[] { endpoint });
+activeMq.AddRequestReplyClient<BookstoreRequestClient>();
 
-```csharp
-public class MyRequestReplyClient
+public sealed class BookstoreRequestClient
 {
     private readonly IRequestReplyClient _requestReplyClient;
-    public MyRequestReplyClient(IRequestReplyClient requestReplyClient)
+
+    public BookstoreRequestClient(IRequestReplyClient requestReplyClient)
     {
         _requestReplyClient = requestReplyClient;
     }
 
-    public async Task<TResponse> SendAsync<TRequest, TResponse>(TRequest request, CancellationToken cancellationToken)
+    public Task<Message> SendAsync(string payload, CancellationToken cancellationToken)
     {
-        var serialized = JsonSerializer.Serialize(request);
-        var address = typeof(TRequest).Name;
-        var msg = new Message(serialized);
-        var response = await _requestReplyClient.SendAsync(address, msg, cancellationToken);
-        return JsonSerializer.Deserialize<TResponse>(response.GetBody<string>());
+        return _requestReplyClient.SendAsync(
+            "bookstore.requests",
+            RoutingType.Anycast,
+            new Message(payload),
+            cancellationToken);
     }
 }
 ```
 
 ### Response side
 
-TODO
+On the response side, use a consumer and reply to `message.ReplyTo`. The reply must copy the original `CorrelationId`.
+
+```csharp
+var builder = WebApplication.CreateBuilder(args);
+builder.Services.AddActiveMqHostedService();
+
+var endpoint = Endpoint.Create("localhost", 5672, "guest", "guest");
+var activeMq = builder.Services.AddActiveMq("bookstore-cluster", new[] { endpoint });
+
+activeMq.AddAnonymousProducer<ReplyProducer>();
+activeMq.AddConsumer(
+    address: "bookstore.requests",
+    routingType: RoutingType.Anycast,
+    handler: async (message, consumer, serviceProvider, cancellationToken) =>
+    {
+        var replyProducer = serviceProvider.GetRequiredService<ReplyProducer>();
+
+        await replyProducer.SendAsync(
+            message.ReplyTo,
+            new Message("accepted")
+            {
+                CorrelationId = message.CorrelationId
+            },
+            cancellationToken);
+
+        await consumer.AcceptAsync(message);
+    });
+
+public sealed class ReplyProducer
+{
+    private readonly IAnonymousProducer _producer;
+
+    public ReplyProducer(IAnonymousProducer producer)
+    {
+        _producer = producer;
+    }
+
+    public Task SendAsync(string address, Message message, CancellationToken cancellationToken)
+    {
+        return _producer.SendAsync(address, message, cancellationToken);
+    }
+}
+```

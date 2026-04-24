@@ -5,14 +5,15 @@
     <Description>Microsoft.Extensions.DependencyInjection support for ActiveMQ Artemis .NET Client.</Description>
     <PackageProjectUrl>https://havret.github.io/dotnet-activemq-artemis-client/</PackageProjectUrl>
     <PackageId>ArtemisNetClient.Extensions.DependencyInjection</PackageId>
-    <PackageLicenseUrl>https://github.com/Havret/activemq-artemis-extensions/blob/master/LICENSE</PackageLicenseUrl>
+    <PackageLicenseUrl>https://github.com/Havret/dotnet-activemq-artemis-client/blob/master/LICENSE</PackageLicenseUrl>
     <RepositoryType>git</RepositoryType>
-    <RepositoryUrl>https://github.com/Havret/activemq-artemis-extensions</RepositoryUrl>
+    <RepositoryUrl>https://github.com/Havret/dotnet-activemq-artemis-client</RepositoryUrl>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
     <IncludeSymbols>true</IncludeSymbols>
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
     <Authors>Havret</Authors>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
     <RootNamespace>ActiveMQ.Artemis.Client.Extensions.DependencyInjection</RootNamespace>
   </PropertyGroup>
 
@@ -26,7 +27,11 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\ArtemisNetClient\ArtemisNetClient.csproj"/>
+    <None Include="README.md" Pack="true" PackagePath="\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\ArtemisNetClient\ArtemisNetClient.csproj" />
   </ItemGroup>
 
 </Project>

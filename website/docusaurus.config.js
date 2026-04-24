@@ -41,6 +41,10 @@ module.exports = {
             {
               label: 'Get Started',
               to: 'docs/getting-started',
+            },
+            {
+              label: 'Dependency Injection',
+              to: 'docs/dependency-injection',
             }
           ],
         },

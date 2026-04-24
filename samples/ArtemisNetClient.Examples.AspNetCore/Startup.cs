@@ -46,12 +46,12 @@ namespace ActiveMQ.Artemis.Client.Examples.AspNetCore
                             Console.WriteLine($"Connection recovered error: Exception={args.Exception}");
                         };
                     })
-                    .AddConsumer("a1", RoutingType.Multicast, "q1", async (message, consumer, token, serviceProvider) =>
+                    .AddConsumer("a1", RoutingType.Multicast, "q1", async (message, consumer, serviceProvider, token) =>
                     {
                         Console.WriteLine("q1: " + message.GetBody<string>());
                         await consumer.AcceptAsync(message);
                     })
-                    .AddConsumer("a1", RoutingType.Multicast, "q2", async (message, consumer, token, serviceProvider) =>
+                    .AddConsumer("a1", RoutingType.Multicast, "q2", async (message, consumer, serviceProvider, token) =>
                     {
                         Console.WriteLine("q2: " + message.GetBody<string>());
                         await consumer.AcceptAsync(message);
