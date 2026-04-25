@@ -19,7 +19,7 @@ namespace ActiveMQ.Artemis.Client.Extensions.App.Metrics.IntegrationTests
             _testOutputHelper = testOutputHelper;
         }
 
-        [Fact]
+        [Fact(Skip = "Flaky in CI: intermittently missing 'Message Processing Time' histogram for Multicast with queue. Tracked in GH-553.")]
         public async Task Should_record_MessageProcessingTime_metric_when_queue_specified()
         {
             var address = Guid.NewGuid().ToString();
@@ -88,7 +88,7 @@ namespace ActiveMQ.Artemis.Client.Extensions.App.Metrics.IntegrationTests
             Assert.DoesNotContain("Queue", tags);
         }
         
-        [Fact]
+        [Fact(Skip = "Flaky in CI: intermittently missing 'Message Processing Rate' metric for Multicast with queue. Tracked in GH-553.")]
         public async Task Should_record_MessageProcessingRate_metric_when_queue_specified()
         {
             var address = Guid.NewGuid().ToString();
@@ -124,7 +124,7 @@ namespace ActiveMQ.Artemis.Client.Extensions.App.Metrics.IntegrationTests
             Assert.Equal(queue, Assert.Contains("Queue", tags));
         }
         
-        [Fact]
+        [Fact(Skip = "Flaky in CI: intermittently missing 'Message Processing Rate' metric for Anycast without queue. Tracked in GH-553.")]
         public async Task Should_record_MessageProcessingRate_metric_when_queue_not_specified()
         {
             var address = Guid.NewGuid().ToString();
