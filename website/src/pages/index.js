@@ -12,7 +12,7 @@ const features = [
     imageUrl: 'img/dot-net-core.svg',
     description: (
       <>
-        .NET ActiveMQ Artemis Client is .NET Standard 2.0 compliant and can be used in any .NET Core application.
+        .NET Client for Apache Artemis is .NET Standard 2.0 compliant and can be used in any .NET Core application.
       </>
     ),
   },
@@ -21,7 +21,7 @@ const features = [
     imageUrl: 'img/undraw_synchronize_ccxk.svg',
     description: (
       <>
-        .NET ActiveMQ Artemis Client was designed from the ground up to be fully asynchronous.
+        .NET Client for Apache Artemis was designed from the ground up to be fully asynchronous.
       </>
     ),
   },
@@ -30,7 +30,7 @@ const features = [
     imageUrl: 'img/undraw_To_the_stars_qhyy.svg',
     description: (
       <>
-        .NET ActiveMQ Artemis Client is a very lightweight wrapper around AmqpNetLite and as such introduces very little overhead.
+        .NET Client for Apache Artemis is a very lightweight wrapper around AmqpNetLite and as such introduces very little overhead.
       </>
     ),
   },
@@ -57,7 +57,7 @@ function Home() {
   return (
     <Layout
       title={siteConfig.title}
-      description="Unofficial ActiveMQ Artemis .NET Client for .NET Core and .NET Framework">
+      description="Unofficial Apache Artemis .NET Client for .NET Core and .NET Framework">
       <header className={classnames('hero hero--primary', styles.heroBanner)}>
         <div className="container">
           <h1 className="hero__title">{siteConfig.title}</h1>

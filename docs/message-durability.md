@@ -4,7 +4,7 @@ title: Message Durability Modes
 sidebar_label: Message Durability
 ---
 
-ActiveMQ Artemis supports two types of durability modes for messages: `durable` and `nondurable`. By default each message sent by the client using `SendAsync` method is durable. That means that the broker actually has to persist the message on the disk before the confirmation frame (ack) will be sent back to the client. The confirmation frame is what we can *await* for.
+Artemis supports two types of durability modes for messages: `durable` and `nondurable`. By default each message sent by the client using `SendAsync` method is durable. That means that the broker actually has to persist the message on the disk before the confirmation frame (ack) will be sent back to the client. The confirmation frame is what we can *await* for.
 
 ```csharp
 await producer.SendAsync(new Message("foo")

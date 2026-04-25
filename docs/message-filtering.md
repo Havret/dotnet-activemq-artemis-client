@@ -4,7 +4,7 @@ title: Message Filtering
 sidebar_label: Message Filtering
 ---
 
-Message filtering allows consumers to selectively receive messages based on specific criteria. **ActiveMQ Artemis Client** supports two types of filtering: filter expressions and the NoLocal filter.
+Message filtering allows consumers to selectively receive messages based on specific criteria. The .NET client supports two types of filtering: filter expressions and the NoLocal filter.
 
 ## Filter Expressions
 
@@ -51,7 +51,7 @@ Filter expressions use a SQL-92 syntax similar to JMS message selectors. The fol
 
 ### Predefined AMQP Message Properties
 
-ActiveMQ Artemis provides access to standard AMQP message properties through predefined identifiers:
+Artemis provides access to standard AMQP message properties through predefined identifiers:
 
 #### AMQPriority
 

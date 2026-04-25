@@ -4,7 +4,7 @@ title: Transactions
 sidebar_label: Transactions
 ---
 
-ActiveMQ Artemis provides several guarantees regarding reliable message delivery and processing. In [Message Durability Modes](message-durability.md) section, you may learn how to send a single message so it won't be lost in transit.
+Artemis provides several guarantees regarding reliable message delivery and processing. In [Message Durability Modes](message-durability.md) section, you may learn how to send a single message so it won't be lost in transit.
 
 If you need stronger guarantees that span over multiple messages you need to use transactions.
 
