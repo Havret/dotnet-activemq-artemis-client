@@ -17,6 +17,9 @@
     "react-dom": "18.2.0",
     "trim": ">=1.0.1"
   },
+  "resolutions": {
+    "webpack": "5.96.1"
+  },
   "browserslist": {
     "production": [
       ">0.2%",
