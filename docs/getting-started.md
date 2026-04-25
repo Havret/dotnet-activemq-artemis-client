@@ -4,11 +4,11 @@ title: Getting started
 sidebar_label: Getting Started
 ---
 
-.NET ActiveMQ Artemis Client is a lightweight library built on top of [AmqpNetLite](http://azure.github.io/amqpnetlite/). The main goal of this project is to provide a simple API that allows fully leverage Apache ActiveMQ Artemis capabilities in .NET World.
+.NET Client for Apache Artemis is a lightweight library built on top of [AmqpNetLite](http://azure.github.io/amqpnetlite/). The main goal of this project is to provide a simple API that fully leverages Apache Artemis capabilities in .NET.
 
 ## Installation
 
-.NET ActiveMQ Artemis Client is distributed via [NuGet](https://www.nuget.org/packages/ArtemisNetClient). You can add ActiveMQ.Artemis.Client NuGet package using dotnet CLI:
+.NET Client for Apache Artemis is distributed via [NuGet](https://www.nuget.org/packages/ArtemisNetClient). You can add the ActiveMQ.Artemis.Client NuGet package using dotnet CLI:
 
 ```
 dotnet add package ArtemisNetClient
@@ -49,9 +49,9 @@ Endpoint.Create(
 * `user` and `password` parameters determine if authentication (AMQP SASL)  should be performed after the transport is established. When `user` and `password` are absent, the library skips SASL negotiation altogether. 
 * `scheme` parameter defines if a secure channel (TLS/SSL) should be established.
 
-To open a connection to an ActiveMQ Artemis node, first instantiate a `ConnectionFactory` object. `ConnectionFactory` provides an asynchronous connection creation method that accepts `Endpoint` object.
+To open a connection to an Artemis node, first instantiate a `ConnectionFactory` object. `ConnectionFactory` provides an asynchronous connection creation method that accepts `Endpoint` object.
 
-The following snippet connects to an ActiveMQ Artemis node on `localhost` on port `5672` as a `guest` user using `guest` as a password via the insecure channel (AMQP).
+The following snippet connects to an Artemis node on `localhost` on port `5672` as a `guest` user using `guest` as a password via the insecure channel (AMQP).
 
 ```csharp
 var connectionFactory = new ConnectionFactory();

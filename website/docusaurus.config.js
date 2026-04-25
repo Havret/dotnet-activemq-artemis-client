@@ -1,6 +1,6 @@
 module.exports = {
-  title: '.NET Client for ActiveMQ Artemis',
-  tagline: 'Unofficial ActiveMQ Artemis .NET Client for .NET Core and .NET Framework',
+  title: '.NET Client for Apache Artemis',
+  tagline: 'Unofficial Apache Artemis .NET Client for .NET Core and .NET Framework',
   url: 'https://havret.github.io',
   baseUrl: '/dotnet-activemq-artemis-client',
   favicon: 'img/favicon.ico',
@@ -8,7 +8,7 @@ module.exports = {
   projectName: 'dotnet-activemq-artemis-client', // Usually your repo name.
   themeConfig: {
     navbar: {
-      title: '.NET Client for ActiveMQ Artemis',
+      title: '.NET Client for Apache Artemis',
       logo: {
         alt: 'My Site Logo',
         src: 'img/logo.svg',
@@ -73,7 +73,7 @@ module.exports = {
     announcementBar: {
       id: 'supportus',
       content:
-        '⭐️ If you like .NET Client for ActiveMQ Artemis, give it a star on <a target="_blank" rel="noopener noreferrer" href="https://github.com/Havret/dotnet-activemq-artemis-client">GitHub</a>! ⭐️',
+        '⭐️ If you like .NET Client for Apache Artemis, give it a star on <a target="_blank" rel="noopener noreferrer" href="https://github.com/Havret/dotnet-activemq-artemis-client">GitHub</a>! ⭐️',
     },
   },
   presets: [

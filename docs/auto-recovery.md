@@ -4,7 +4,7 @@ title: Automatic Recovery From Network Failures
 sidebar_label: Automatic Recovery
 ---
 
-A network connection between clients and ActiveMQ Artemis nodes can fail. The client library supports the automatic recovery of connections, producers, and consumers. Automatic recovery is enabled by default.
+A network connection between clients and Artemis nodes can fail. The client library supports the automatic recovery of connections, producers, and consumers. Automatic recovery is enabled by default.
 
 Automatic recovery is controlled by `IRecoveryPolicy` interface:
 
@@ -16,7 +16,7 @@ public interface IRecoveryPolicy
 }
 ```
 
-This interface defines how long the delay should last between subsequent recovery attempts if recovery fails due to an exception (e.g. ActiveMQ Artemis node is still not reachable), and how many recovery attempts will be made before terminal exception will be signaled.
+This interface defines how long the delay should last between subsequent recovery attempts if recovery fails due to an exception (e.g. an Artemis node is still not reachable), and how many recovery attempts will be made before terminal exception will be signaled.
 
 You can subscribe to this occurrence using `IConnection.ConnectionRecoveryError` event:
 
@@ -35,7 +35,7 @@ To retry indefinite amount of times `RetryCount` should return `int.MaxValue`.
 
 :::tip
 
-If the initial connection to an ActiveMQ Artemis node fails, automatic connection recovery will kick in as well. It may be problematic in some scenarios, as `ConnectionFactory.CreateAsync` won't signal any issues until the recovery policy gives up. If your recovery policy is configured to try to recover forever it may even never happen. That means you would be asynchronously waiting for the result of `CreateAsync` forever. To address this issue you can pass `CancellationToken` to `CreateAsync`. This allows you to arbitrarily break the operation at any point.
+If the initial connection to an Artemis node fails, automatic connection recovery will kick in as well. It may be problematic in some scenarios, as `ConnectionFactory.CreateAsync` won't signal any issues until the recovery policy gives up. If your recovery policy is configured to try to recover forever it may even never happen. That means you would be asynchronously waiting for the result of `CreateAsync` forever. To address this issue you can pass `CancellationToken` to `CreateAsync`. This allows you to arbitrarily break the operation at any point.
 
 :::
 
@@ -147,7 +147,7 @@ var connection = await connectionFactory.CreateAsync(endpoint);
 
 ## Failover
 
-To provide high availability your typical ActiveMQ Artemis cluster configuration should contain at least 2 nodes: a master and a slave. For most of the time, only the master node is operational and it handles all of the requests. When the master goes down, however, failover occurs and the slave node becomes active.
+To provide high availability your typical Artemis cluster configuration should contain at least 2 nodes: a master and a slave. For most of the time, only the master node is operational and it handles all of the requests. When the master goes down, however, failover occurs and the slave node becomes active.
 
 To handle this scenario with the client library you need to use `ConnectionFactory.CreateAsync` overload that accepts `IEnumerable<Endpoint>`. This way when the connection to the first node is lost, the auto-recovery mechanism will try to reconnect to the second node. The endpoints are selected in a round-robin fashion using the original sequence with which the connection was created.
 

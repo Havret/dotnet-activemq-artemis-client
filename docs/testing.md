@@ -4,7 +4,7 @@ title: Testing
 sidebar_label: Testing
 ---
 
-Automated testing is a crucial and intrinsic part of the software development cycle. .NET Client for ActiveMQ Artemis comes with a dedicated package `ArtemisNetClient.Testing` that will help you to test the messaging-dependent part of your application with ease in a controlled but realistic environment. 
+Automated testing is a crucial and intrinsic part of the software development cycle. .NET Client for Apache Artemis comes with a dedicated package `ArtemisNetClient.Testing` that will help you to test the messaging-dependent part of your application with ease in a controlled but realistic environment. 
 
 ## Installation
 

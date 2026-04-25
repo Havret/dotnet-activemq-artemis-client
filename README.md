@@ -1,12 +1,12 @@
-# .NET Client for Apache ActiveMQ Artemis
+# .NET Client for Apache Artemis
 
 [![Build](https://github.com/Havret/dotnet-activemq-artemis-client/actions/workflows/build.yml/badge.svg)](https://github.com/Havret/dotnet-activemq-artemis-client/actions/workflows/build.yml)
 
-Unofficial [Apache ActiveMQ Artemis](https://activemq.apache.org/components/artemis/) .NET Client for .NET Core and .NET Framework.
+Unofficial [Apache Artemis](https://artemis.apache.org/components/artemis/) .NET Client for .NET Core and .NET Framework.
 
-Apache ActiveMQ Artemis is an open-source project to build a multi-protocol, embeddable, very high performance, clustered, asynchronous messaging system.
+Apache Artemis is an open-source project to build a multi-protocol, embeddable, very high performance, clustered, asynchronous messaging system.
 
-This lightweight .NET client library built on top of [AmqpNetLite](http://azure.github.io/amqpnetlite/) tries to fully leverage Apache ActiveMQ Artemis capabilities.
+This lightweight .NET client library built on top of [AmqpNetLite](http://azure.github.io/amqpnetlite/) tries to fully leverage Apache Artemis capabilities.
 
 |NuGet|Status|
 |------|-------------|
@@ -25,7 +25,7 @@ For commercial support, contact<br/>
 
 ## Compatibility
 
-The library is tested against **ActiveMQ Artemis 2.30.0** ([Jul 26th, 2023](https://github.com/Havret/dotnet-activemq-artemis-client/issues/453)). Most of the features should work with older versions of the broker, but **Topology Management** uses API surface that was introduced in **ActiveMQ Artemis 2.14.0**.
+The library is tested against **Artemis 2.30.0** ([Jul 26th, 2023](https://github.com/Havret/dotnet-activemq-artemis-client/issues/453)). Most of the features should work with older versions of the broker, but **Topology Management** uses API surface that was introduced in **Artemis 2.14.0**.
 
 ## Quickstart
 
@@ -90,7 +90,7 @@ Detailed documentation is available on [the project website](https://havret.gith
 ## Running the tests
 The tests are grouped in two categories:
 - Unit Tests that don't require any infrastructure to run
-- Integration Tests that require Apache ActiveMQ Artemis 
+- Integration Tests that require Apache Artemis 
 
 You can run the unit tests suite with the following command:
 
@@ -98,7 +98,7 @@ You can run the unit tests suite with the following command:
 dotnet test --filter "FullyQualifiedName!~IntegrationTests"
 ```
 
-Integration tests can be run with Apache ActiveMQ Artemis server hosted on a Docker container. 
+Integration tests can be run with an Apache Artemis server hosted in a Docker container. 
 
 ### Spinning up the necessary infrastructure
 This assumes docker and docker-compose are properly setup.
@@ -145,7 +145,7 @@ The following table shows what features are currently supported.
 |[Request-reply](https://havret.github.io/dotnet-activemq-artemis-client/docs/request-reply)|✔|Request-reply can be implemented with `IRequestReplyClient`.|
 
 ## Extensions
-There are several extensions available that make integration of .NET Client for ActiveMQ Artemis with ASP.NET Core based projects seamless.
+There are several extensions available that make integration of .NET Client for Apache Artemis with ASP.NET Core based projects seamless.
 
 - `ArtemisNetClient.Extensions.DependencyInjection`: registers connections, consumers, producers, request-reply clients, and topology configuration in `IServiceCollection`. Start here for ASP.NET Core. See [Dependency Injection](docs/dependency-injection.md).
 - `ArtemisNetClient.Extensions.Hosting`: starts Artemis registrations through `IHostedService`. Used together with the DI package in hosted apps.
