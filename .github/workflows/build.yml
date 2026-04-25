@@ -9,7 +9,7 @@ on:
       - master
 
 jobs:
-  linux:
+  build:
     runs-on: ubuntu-latest
     env:
       ARTEMIS_USERNAME: "artemis"
@@ -22,7 +22,7 @@ jobs:
       - name: Setup .NET Core
         uses: actions/setup-dotnet@v1
         with:
-          dotnet-version: "8.0.x"
+          dotnet-version: 10.0.x
       - name: Run ActiveMQ Artemis
         run: docker compose up -V -d
         working-directory: ./test/artemis
@@ -30,15 +30,3 @@ jobs:
         run: dotnet build --configuration Release
       - name: Test with dotnet
         run: dotnet test --configuration Release
-  windows:
-    runs-on: windows-latest
-    steps:
-      - uses: actions/checkout@v1
-      - name: Setup .NET Core
-        uses: actions/setup-dotnet@v1
-        with:
-          dotnet-version: "8.0.x"
-      - name: Build with dotnet
-        run: dotnet build --configuration Release
-      - name: Test with dotnet
-        run: dotnet test --filter "FullyQualifiedName!~IntegrationTests"
