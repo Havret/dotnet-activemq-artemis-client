@@ -71,14 +71,6 @@ function Home() {
               to={useBaseUrl('docs/getting-started')}>
               Get Started
             </Link>
-            <Link
-              className={classnames(
-                'button button--outline button--secondary button--lg',
-                styles.getStarted,
-              )}
-              to={useBaseUrl('docs/dependency-injection')}>
-              ASP.NET Core & DI
-            </Link>
           </div>
         </div>
       </header>
