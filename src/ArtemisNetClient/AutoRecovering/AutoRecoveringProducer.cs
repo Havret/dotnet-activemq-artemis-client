@@ -23,10 +23,11 @@ namespace ActiveMQ.Artemis.Client.AutoRecovering
             while (true)
             {
                 CheckState();
+                var producer = _producer;
 
                 try
                 {
-                    await _producer.SendAsync(message, transaction, cancellationToken).ConfigureAwait(false);
+                    await producer.SendAsync(message, transaction, cancellationToken).ConfigureAwait(false);
                     return;
                 }
                 catch (ProducerClosedException e) when (e.ErrorCode == ErrorCode.UnauthorizedAccess)
@@ -42,6 +43,12 @@ namespace ActiveMQ.Artemis.Client.AutoRecovering
                     await WaitAsync(cancellationToken).ConfigureAwait(false);
                     Log.RetryingSendAsync(Logger, _configuration.Address);
                 }
+                catch (ObjectDisposedException) when (!ReferenceEquals(producer, _producer))
+                {
+                    HandleProducerClosed();
+                    await WaitAsync(cancellationToken).ConfigureAwait(false);
+                    Log.RetryingSendAsync(Logger, _configuration.Address);
+                }
             }
         }
 
@@ -50,13 +57,20 @@ namespace ActiveMQ.Artemis.Client.AutoRecovering
             while (true)
             {
                 CheckState();
+                var producer = _producer;
 
                 try
                 {
-                    _producer.Send(message, cancellationToken);
+                    producer.Send(message, cancellationToken);
                     return;
                 }
                 catch (ProducerClosedException)
+                {
+                    HandleProducerClosed();
+                    Wait(cancellationToken);
+                    Log.RetryingSendAsync(Logger, _configuration.Address);
+                }
+                catch (ObjectDisposedException) when (!ReferenceEquals(producer, _producer))
                 {
                     HandleProducerClosed();
                     Wait(cancellationToken);

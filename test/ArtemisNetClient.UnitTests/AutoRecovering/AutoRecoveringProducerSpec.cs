@@ -112,7 +112,7 @@ namespace ActiveMQ.Artemis.Client.UnitTests.AutoRecovering
             Assert.Throws<ProducerClosedException>(() => producer.Send(new Message("foo"), cts.Token));
         }
 
-        [Fact(Skip = "Flaky in CI: intermittent ObjectDisposedException (ProducerBase) when send is invoked before connection restoration. Tracked in GH-554.")]
+        [Fact]
         public async Task Should_be_able_to_Send_message_when_Send_invoked_before_connection_restored()
         {
             var endpoint = GetUniqueEndpoint();
