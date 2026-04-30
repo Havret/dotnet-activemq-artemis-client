@@ -30,11 +30,11 @@ namespace ActiveMQ.Artemis.Client.AutoRecovering
                     await producer.SendAsync(message, transaction, cancellationToken).ConfigureAwait(false);
                     return;
                 }
-                catch (ProducerClosedException e) when (e.ErrorCode == ErrorCode.UnauthorizedAccess)
+                catch (ProducerClosedException e) when (IsTerminalProducerException(e))
                 {
                     await TerminateAsync(e).ConfigureAwait(false);
-                    
-                    // Producer does not have permissions to send on specified address 
+
+                    // Producer cannot be recovered for terminal broker-side close reasons.
                     throw;
                 }
                 catch (ProducerClosedException)
@@ -64,6 +64,13 @@ namespace ActiveMQ.Artemis.Client.AutoRecovering
                     producer.Send(message, cancellationToken);
                     return;
                 }
+                catch (ProducerClosedException e) when (IsTerminalProducerException(e))
+                {
+                    TerminateAsync(e).GetAwaiter().GetResult();
+
+                    // Producer cannot be recovered for terminal broker-side close reasons.
+                    throw;
+                }
                 catch (ProducerClosedException)
                 {
                     HandleProducerClosed();
@@ -77,6 +84,11 @@ namespace ActiveMQ.Artemis.Client.AutoRecovering
                     Log.RetryingSendAsync(Logger, _configuration.Address);
                 }
             }
+        }
+
+        private static bool IsTerminalProducerException(ProducerClosedException exception)
+        {
+            return exception.ErrorCode is ErrorCode.UnauthorizedAccess or ErrorCode.NotFound;
         }
 
         protected override IAsyncDisposable UnderlyingResource => _producer;
