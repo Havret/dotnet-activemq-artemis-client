@@ -3,6 +3,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using ActiveMQ.Artemis.Client.Exceptions;
 using ActiveMQ.Artemis.Client.Transactions;
+using Amqp;
 using Microsoft.Extensions.Logging;
 
 namespace ActiveMQ.Artemis.Client.AutoRecovering
@@ -28,6 +29,13 @@ namespace ActiveMQ.Artemis.Client.AutoRecovering
                     await _producer.SendAsync(address, routingType, message, transaction, cancellationToken).ConfigureAwait(false);
                     return;
                 }
+                catch (ProducerClosedException e) when (e.ErrorCode is ErrorCode.UnauthorizedAccess)
+                {
+                    await TerminateAsync(e).ConfigureAwait(false);
+
+                    // Producer cannot be recovered when broker denies authorization.
+                    throw;
+                }
                 catch (ProducerClosedException)
                 {
                     HandleProducerClosed();
@@ -47,6 +55,13 @@ namespace ActiveMQ.Artemis.Client.AutoRecovering
                 {
                     _producer.Send(address, routingType, message, cancellationToken);
                     return;
+                }
+                catch (ProducerClosedException e) when (e.ErrorCode is ErrorCode.UnauthorizedAccess)
+                {
+                    TerminateAsync(e).GetAwaiter().GetResult();
+
+                    // Producer cannot be recovered when broker denies authorization.
+                    throw;
                 }
                 catch (ProducerClosedException)
                 {
