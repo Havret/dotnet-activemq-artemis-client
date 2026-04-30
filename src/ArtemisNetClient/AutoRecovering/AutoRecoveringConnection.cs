@@ -31,6 +31,7 @@ namespace ActiveMQ.Artemis.Client.AutoRecovering
         private readonly ConcurrentHashSet<IRecoverable> _recoverables = new();
         private readonly CancellationTokenSource _recoveryCancellationToken = new();
         private readonly AsyncRetryPolicy<IConnection> _connectionRetryPolicy;
+        private readonly IRecoveryPolicy _recoveryPolicy;
         private readonly Task _recoveryLoopTask;
 
         public AutoRecoveringConnection(ILoggerFactory loggerFactory,
@@ -54,6 +55,7 @@ namespace ActiveMQ.Artemis.Client.AutoRecovering
             _writer = channel.Writer;
 
             _connectionRetryPolicy = CreateConnectionRetryPolicy(recoveryPolicy);
+            _recoveryPolicy = recoveryPolicy;
 
             _recoveryLoopTask = StartRecoveryLoop();
         }
@@ -90,14 +92,24 @@ namespace ActiveMQ.Artemis.Client.AutoRecovering
         {
             return Task.Run(async () =>
             {
+                int attempt = 0;
                 try
                 {
                     while (true)
                     {
                         await _reader.ReadAsync(_recoveryCancellationToken.Token).ConfigureAwait(false);
+                        while (_reader.TryRead(out _)) { } // drain duplicates - each recoverable also signals on connection loss
 
                         if (!IsOpened)
                         {
+                            if (attempt > 0)
+                            {
+                                var delay = _recoveryPolicy.GetDelay(attempt);
+                                if (delay > TimeSpan.Zero)
+                                    await Task.Delay(delay, _recoveryCancellationToken.Token).ConfigureAwait(false);
+                            }
+                            attempt++;
+
                             await DisposeInnerConnection().ConfigureAwait(false);
 
                             foreach (var recoverable in _recoverables.Values)
@@ -129,10 +141,21 @@ namespace ActiveMQ.Artemis.Client.AutoRecovering
                         }
                         else
                         {
-                            // If the connection is already opened it means that there may be some suspended recoverables that need to be resumed
+                            // Connection is open, but a link was closed - try to re-establish it
+                            attempt = 0;
+
                             foreach (var recoverable in _recoverables.Values)
                             {
-                                recoverable.Resume();
+                                try
+                                {
+                                    await recoverable.RecoverAsync(_connection, _recoveryCancellationToken.Token).ConfigureAwait(false);
+                                    recoverable.Resume();
+                                }
+                                catch (Exception e)
+                                {
+                                    _recoverables.Remove(recoverable);
+                                    await recoverable.TerminateAsync(e).ConfigureAwait(false);
+                                }
                             }
                         }
                     }
