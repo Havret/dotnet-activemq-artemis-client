@@ -215,7 +215,7 @@ namespace ActiveMQ.Artemis.Client.UnitTests.AutoRecovering
         [Fact]
         public async Task Should_not_retry_SendAsync_when_producer_link_closed_with_not_found()
         {
-            var host = CreateOpenedContainerHost();
+            using var host = CreateOpenedContainerHost();
             var linkProcessor = host.CreateTestLinkProcessor();
 
             ListenerLink producerLink = null;
@@ -247,7 +247,7 @@ namespace ActiveMQ.Artemis.Client.UnitTests.AutoRecovering
         [Fact]
         public async Task Should_not_retry_Send_when_producer_link_closed_with_not_found()
         {
-            var host = CreateOpenedContainerHost();
+            using var host = CreateOpenedContainerHost();
             var linkProcessor = host.CreateTestLinkProcessor();
 
             ListenerLink producerLink = null;
