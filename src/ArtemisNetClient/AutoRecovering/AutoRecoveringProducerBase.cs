@@ -80,6 +80,7 @@ namespace ActiveMQ.Artemis.Client.AutoRecovering
             _manualResetEvent.Set();
             Log.ProducerTerminated(Logger, exception);
             await DisposeResourceSafe(UnderlyingResource).ConfigureAwait(false);
+            Closed?.Invoke(this);
         }
 
         public async ValueTask DisposeAsync()
