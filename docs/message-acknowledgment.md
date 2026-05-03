@@ -4,11 +4,11 @@ title: Message Acknowledgment
 sidebar_label: Message Acknowledgment
 ---
 
-After receiving a message, the consumer must signal the broker with the outcome of message processing. The client supports four acknowledgment modes that map directly to AMQP 1.0 delivery outcomes: **Accept**, **Reject**, **Modify**, and implicit **Release** (on consumer close without acknowledgment).
+After receiving a message, the consumer must signal the broker with the outcome of message processing. The client supports four acknowledgment modes: **Accept**, **Reject**, **Modify**, and handling of unacknowledged messages on consumer close. Unsettled deliveries are eligible for redelivery when the consumer is closed or disposed (exact behavior depends on whether the consumer is durable or non-durable).
 
 ## Accept
 
-`AcceptAsync` tells the broker that the message was successfully processed. The broker removes the message from the queue.
+`AcceptAsync` tells the broker that the message was successfully processed. For destructive queues (the default), the broker removes the message from the queue. Note that broker or queue settings, such as non-destructive queues, can change this retention and redelivery behavior.
 
 ```csharp
 var message = await consumer.ReceiveAsync();
@@ -20,7 +20,7 @@ await consumer.AcceptAsync(message);
 
 ## Reject
 
-`Reject` tells the broker that the message cannot be processed. The broker moves the message to the Dead Letter Queue (DLQ).
+`Reject` tells the broker that the message cannot be processed. Depending on the dead-letter configuration of the queue or address, Artemis may route the message to the Dead Letter Queue (DLQ).
 
 ```csharp
 var message = await consumer.ReceiveAsync();
@@ -35,7 +35,7 @@ Artemis must have a dead letter address configured for the queue, otherwise the 
 
 ## Modify
 
-`Modify` releases the message back to the queue with additional hints for the broker. It accepts two flags:
+`Modify` returns the message to the queue with additional hints for the broker. It accepts two flags:
 
 - `deliveryFailed` — when `true`, the broker increments the message's delivery count. This is useful when you want to track how many times a message has been retried.
 - `undeliverableHere` — when `true`, the broker will not redeliver the message to this consumer. If another consumer is available on the same queue, the message will be dispatched there instead.
@@ -73,16 +73,16 @@ consumer.Modify(message, deliveryFailed: false, undeliverableHere: true);
 
 This is useful when you want to hand off the message to another consumer without recording a failed delivery attempt.
 
-## Release (implicit)
+## Unacknowledged messages on consumer close
 
-If a consumer is disposed without acknowledging a message, the broker automatically releases the message back to the queue. The delivery count is not incremented. The message becomes available for redelivery to any consumer.
+If a consumer is closed or disposed without acknowledging a message, the message is not settled. For non-durable consumers, unsettled messages become eligible for redelivery to other consumers. For durable consumers, the broker preserves the unsettled state and may resume delivery when the consumer reconnects. In either case, the message will be redelivered rather than lost.
 
 ```csharp
 {
     await using var consumer = await connection.CreateConsumerAsync("a1", RoutingType.Anycast);
     var message = await consumer.ReceiveAsync();
     // consumer disposed here without AcceptAsync/Reject/Modify
-    // message is released back to the queue
+    // message is not acknowledged and will be redelivered
 }
 ```
 
