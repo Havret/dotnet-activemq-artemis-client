@@ -35,7 +35,7 @@ Choose the infrastructure that matches what you're testing:
 
 ## Core Unit Tests — Base Class
 
-All core unit test classes inherit from `ActiveMQNetSpec`:
+Unit test classes that need in-process AMQP infrastructure inherit from `ActiveMQNetSpec`; pure model tests (no AMQP, no broker) do not need a base class at all:
 
 ```csharp
 public class MyFeatureSpec : ActiveMQNetSpec
@@ -66,18 +66,11 @@ The base class provides:
 
 ## TestKit Unit Tests — No Base Class
 
-TestKit specs do not inherit from `ActiveMQNetSpec`. Set up AMQP tracing in the constructor and use `EndpointUtil` directly:
+TestKit specs do not inherit from `ActiveMQNetSpec`. Use `EndpointUtil` directly to get a unique endpoint, and use `TestKit` directly for the in-process broker:
 
 ```csharp
 public class MyTestKitSpec
 {
-    public MyTestKitSpec(ITestOutputHelper output)
-    {
-        Trace.TraceLevel = TraceLevel.Information;
-        var logger = new XUnitLogger(output, "logger");
-        Trace.TraceListener += (_, format, args) => logger.LogTrace(format, args);
-    }
-
     [Fact]
     public async Task Should_do_something()
     {
@@ -88,6 +81,21 @@ public class MyTestKitSpec
         await using var connection = await connectionFactory.CreateAsync(endpoint);
         // ...
     }
+}
+```
+
+If you need AMQP frame-level tracing (e.g., to diagnose link-attach sequences), set it up in the constructor — but only when you have an `ITestOutputHelper` and actually need it:
+
+```csharp
+public class MyTestKitSpec
+{
+    public MyTestKitSpec(ITestOutputHelper output)
+    {
+        Trace.TraceLevel = TraceLevel.Information;
+        var logger = new XUnitLogger(output, "logger");
+        Trace.TraceListener += (_, format, args) => logger.LogTrace(format, args);
+    }
+    // ...
 }
 ```
 
@@ -172,17 +180,24 @@ var linkProcessor = host.CreateTestLinkProcessor();
 linkProcessor.SetHandler(_ => true); // suppress Attach frames
 ```
 
-`TestContainerHost` implements `IDisposable` — always declare it with `using var`:
+`TestContainerHost` implements `IDisposable` — prefer `using var` so it is disposed automatically when the test ends, unless you need to dispose it at a specific point mid-test (e.g., to simulate a broker outage):
 
 ```csharp
+// Preferred — automatic cleanup
 using var host = CreateOpenedContainerHost(endpoint);
+
+// When you need to control the disposal point
+var host = CreateOpenedContainerHost(endpoint);
+// ... use host ...
+host.Dispose(); // simulate broker going down
+// ... verify recovery behaviour ...
 ```
 
 ---
 
 ## Resource Management
 
-- `TestContainerHost` → `using var` (synchronous `IDisposable`)
+- `TestContainerHost` → prefer `using var` (synchronous `IDisposable`); omit `using` only when you need to dispose at a specific point mid-test
 - `IConnection` → `await using var` (asynchronous `IAsyncDisposable`)
 - `IProducer` / `IConsumer` → `await using var` when you want automatic cleanup; declare without `await using` when you need to `DisposeAsync()` mid-test
 
@@ -341,7 +356,7 @@ When writing a new unit test, verify:
 - [ ] Test class uses the right infrastructure (inherits `ActiveMQNetSpec`, uses `TestKit`, or has no base class)
 - [ ] Constructor injects `ITestOutputHelper` when the class inherits `ActiveMQNetSpec`
 - [ ] Core and TestKit test methods are `async Task`; pure model methods may be synchronous
-- [ ] `TestContainerHost` uses `using var`; connections/producers/consumers use `await using var`
+- [ ] `TestContainerHost` uses `using var` (or explicit `Dispose()` only when disposal point matters); connections/producers/consumers use `await using var`
 - [ ] Event waits use `TaskCompletionSource` (async) or `ManualResetEvent` / `CountdownEvent` (sync inside `TestHandler`)
 - [ ] Negative assertions use `ShortTimeout` (100 ms), not `Timeout`
 - [ ] Assertions use plain xUnit — no third-party assertion libraries
