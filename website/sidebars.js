@@ -5,6 +5,7 @@ module.exports = {
       'message-payload',
       'message-durability',
       'message-priority',
+      'message-acknowledgment',
       'consumer-credit',
       'message-filtering',
       'connection-lifecycle',
