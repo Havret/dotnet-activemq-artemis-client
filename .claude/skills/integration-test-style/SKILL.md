@@ -14,7 +14,7 @@ This skill describes the required style for all integration tests in this reposi
 - Files use the `*Spec.cs` suffix (BDD-style), e.g. `MessageAcknowledgementSpec.cs`
 - Core tests live in `test/ArtemisNetClient.IntegrationTests/`
 - Extension tests live in their own `*.IntegrationTests/` project
-- Subtopics go in subdirectories (e.g. `TopologyManagement/FilterExpressionsSpec.cs`)
+- Subtopics go in subdirectories (e.g. `TopologyManagement/CreateAddressSpec.cs`)
 
 ---
 
@@ -39,12 +39,18 @@ The base class provides:
 ## Test Method Conventions
 
 - Every test is `async Task` — no synchronous tests
-- Use `[Fact]` only — no `[Theory]`
+- Use `[Fact]` for most tests; use `[Theory]` with `[InlineData]` or `[MemberData]` when the same behaviour must be verified across a set of inputs
 - Method names read as sentences: `Should_acknowledge_message`, `Should_send_message_with_priority`
 
 ```csharp
 [Fact]
 public async Task Should_do_something_meaningful()
+{
+    // ...
+}
+
+[Theory, InlineData(RoutingType.Anycast), InlineData(RoutingType.Multicast)]
+public async Task Should_behave_the_same_for_all_routing_types(RoutingType routingType)
 {
     // ...
 }
@@ -205,7 +211,7 @@ When writing a new integration test, verify:
 - [ ] File is named `*Spec.cs`
 - [ ] Class inherits `ActiveMQNetIntegrationSpec` (or uses `TestFixture` for DI tests)
 - [ ] Constructor injects `ITestOutputHelper` and passes it to `base(output)`
-- [ ] All test methods are `async Task` with `[Fact]`
+- [ ] All test methods are `async Task` with `[Fact]` or `[Theory]`
 - [ ] All broker resource names use `Guid.NewGuid().ToString()`
 - [ ] All disposables use `await using var`
 - [ ] `CancellationToken` from the base class is passed to every receive call
