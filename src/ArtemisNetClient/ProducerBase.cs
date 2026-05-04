@@ -59,7 +59,10 @@ namespace ActiveMQ.Artemis.Client
             }
             else if (link.IsDetaching() || link.IsClosed)
             {
-                tcs.TrySetException(new ProducerClosedException());
+                var error = link.Error;
+                tcs.TrySetException(error != null
+                    ? new ProducerClosedException(error.Description, error.Condition, null)
+                    : new ProducerClosedException());
             }
             else if (outcome.Descriptor.Code == MessageOutcomes.Rejected.Descriptor.Code)
             {
