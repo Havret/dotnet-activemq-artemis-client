@@ -116,7 +116,6 @@ namespace ActiveMQ.Artemis.Client.AutoRecovering
                                 }
                                 catch (Exception e)
                                 {
-                                    _recoverables.Remove(recoverable);
                                     await recoverable.TerminateAsync(e).ConfigureAwait(false);
                                 }
                             }
