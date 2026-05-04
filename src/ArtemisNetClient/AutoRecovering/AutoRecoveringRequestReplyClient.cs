@@ -105,11 +105,13 @@ internal class AutoRecoveringRequestReplyClient : IRequestReplyClient, IRecovera
         _failureCause = exception;
         _manualResetEvent.Set();
         await DisposeUnderlyingRpcClientSafe(_requestReplyClient).ConfigureAwait(false);
+        Closed?.Invoke(this);
     }
 
     public async ValueTask DisposeAsync()
     {
         await DisposeUnderlyingRpcClient(_requestReplyClient).ConfigureAwait(false);
+        Closed?.Invoke(this);
     }
 
     private async Task DisposeUnderlyingRpcClientSafe(IRequestReplyClient requestReplyClient)

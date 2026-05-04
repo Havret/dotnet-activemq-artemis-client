@@ -134,6 +134,7 @@ namespace ActiveMQ.Artemis.Client.AutoRecovering
             _manualResetEvent.Set();
             Log.ConsumerTerminated(_logger, exception);
             await DisposeUnderlyingConsumerSafe(_consumer).ConfigureAwait(false);
+            Closed?.Invoke(this);
         }
 
         public async ValueTask DisposeAsync()
