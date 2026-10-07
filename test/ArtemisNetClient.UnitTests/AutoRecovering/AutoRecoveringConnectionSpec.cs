@@ -2,6 +2,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 using ActiveMQ.Artemis.Client.AutoRecovering.RecoveryPolicy;
+using ActiveMQ.Artemis.Client.Exceptions;
 using ActiveMQ.Artemis.Client.InternalUtilities;
 using ActiveMQ.Artemis.Client.UnitTests.Utils;
 using Amqp.Handler;
@@ -198,6 +199,79 @@ namespace ActiveMQ.Artemis.Client.UnitTests.AutoRecovering
 
             Assert.True(connectionRecovered.WaitOne(Timeout));
             Assert.True(connectionClosed.WaitOne(Timeout));
+        }
+
+        [Fact]
+        public async Task Should_create_anonymous_producer_once_connection_recovered_when_requested_during_outage()
+        {
+            var endpoint = GetUniqueEndpoint();
+            var host1 = CreateOpenedContainerHost(endpoint);
+            await using var connection = await CreateConnection(endpoint);
+            await DisposeHostAndWaitUntilConnectionNotified(host1, connection);
+
+            var createProducerTask = connection.CreateAnonymousProducerAsync(CancellationToken);
+
+            using var host2 = CreateOpenedContainerHost(endpoint);
+            await using var producer = await createProducerTask;
+
+            // TestLinkEndpoint settles messages on anonymous links, so a completed send proves the link works
+            await producer.SendAsync("a1", new Message("foo"), CancellationToken);
+        }
+
+        [Fact]
+        public async Task Should_create_anonymous_producer_once_connection_recovered_when_connection_lost_during_creation()
+        {
+            var endpoint = GetUniqueEndpoint();
+            var host1 = CreateContainerHostThatWillNeverSendAttachFrameBack(endpoint);
+            await using var connection = await CreateConnection(endpoint);
+
+            var createProducerTask = connection.CreateAnonymousProducerAsync(CancellationToken);
+            await DisposeHostAndWaitUntilConnectionNotified(host1, connection);
+
+            using var host2 = CreateOpenedContainerHost(endpoint);
+            await using var producer = await createProducerTask;
+
+            await producer.SendAsync("a1", new Message("foo"), CancellationToken);
+        }
+
+        [Fact]
+        public async Task Should_cancel_anonymous_producer_creation_requested_during_outage()
+        {
+            var host = CreateOpenedContainerHost();
+            await using var connection = await CreateConnection(host.Endpoint);
+            await DisposeHostAndWaitUntilConnectionNotified(host, connection);
+
+            using var cts = new CancellationTokenSource(ShortTimeout);
+            await Assert.ThrowsAnyAsync<OperationCanceledException>(() => connection.CreateAnonymousProducerAsync(cts.Token));
+        }
+
+        [Fact]
+        public async Task Throws_on_attempt_to_create_anonymous_producer_when_connection_disposed_during_outage()
+        {
+            var host = CreateOpenedContainerHost();
+            var connection = await CreateConnection(host.Endpoint);
+            await DisposeHostAndWaitUntilConnectionNotified(host, connection);
+
+            var createProducerTask = connection.CreateAnonymousProducerAsync(CancellationToken);
+            await connection.DisposeAsync();
+
+            await Assert.ThrowsAsync<ObjectDisposedException>(() => createProducerTask);
+        }
+
+        [Fact]
+        public async Task Throws_on_attempt_to_create_anonymous_producer_when_connection_recovery_failed()
+        {
+            var host = CreateOpenedContainerHost();
+            var connectionFactory = CreateConnectionFactory();
+            connectionFactory.RecoveryPolicy = RecoveryPolicyFactory.ConstantBackoff(TimeSpan.FromMilliseconds(500), retryCount: 2);
+            await using var connection = await connectionFactory.CreateAsync(host.Endpoint);
+            await DisposeHostAndWaitUntilConnectionNotified(host, connection);
+
+            var createProducerTask = connection.CreateAnonymousProducerAsync(CancellationToken);
+
+            var exception = await Assert.ThrowsAsync<ConnectionClosedException>(() => createProducerTask);
+            Assert.NotNull(exception.InnerException);
+            await Assert.ThrowsAsync<ConnectionClosedException>(() => connection.CreateAnonymousProducerAsync(CancellationToken));
         }
 
         private static (TestContainerHost host, AutoResetEvent connected) CreateHost()
