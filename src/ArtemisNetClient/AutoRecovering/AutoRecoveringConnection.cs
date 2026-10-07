@@ -11,6 +11,7 @@ using ActiveMQ.Artemis.Client.InternalUtilities;
 using ActiveMQ.Artemis.Client.MessageIdPolicy;
 using Amqp;
 using Microsoft.Extensions.Logging;
+using Nito.AsyncEx;
 using Polly;
 using Polly.Retry;
 
@@ -32,6 +33,9 @@ namespace ActiveMQ.Artemis.Client.AutoRecovering
         private readonly CancellationTokenSource _recoveryCancellationToken = new();
         private readonly AsyncRetryPolicy<IConnection> _connectionRetryPolicy;
         private readonly Task _recoveryLoopTask;
+        private readonly AsyncManualResetEvent _connectionOpened = new(true);
+        private Exception _failureCause;
+        private bool _disposed;
 
         public AutoRecoveringConnection(ILoggerFactory loggerFactory,
             IEnumerable<Endpoint> endpoints,
@@ -120,6 +124,8 @@ namespace ActiveMQ.Artemis.Client.AutoRecovering
                                 }
                             }
 
+                            // Must be set before subscribing, so that a connection that is already closed resets it again
+                            _connectionOpened.Set();
                             _connection.ConnectionClosed += OnConnectionClosed;
 
                             Log.ConnectionRecovered(_logger);
@@ -139,10 +145,14 @@ namespace ActiveMQ.Artemis.Client.AutoRecovering
                 catch (OperationCanceledException)
                 {
                     // expected when recovery cancellation token is set.
+                    _connectionOpened.Set();
                 }
                 catch (Exception e)
                 {
                     Log.MainRecoveryLoopException(_logger, e);
+
+                    _failureCause = e;
+                    _connectionOpened.Set();
 
                     foreach (var recoverable in _recoverables.Values)
                     {
@@ -156,6 +166,8 @@ namespace ActiveMQ.Artemis.Client.AutoRecovering
 
         private void OnConnectionClosed(object sender, ConnectionClosedEventArgs args)
         {
+            _connectionOpened.Reset();
+
             if (args.ClosedByPeer)
             {
                 Log.ConnectionClosedByPeer(_logger, args.Error);
@@ -238,10 +250,39 @@ namespace ActiveMQ.Artemis.Client.AutoRecovering
 
         private async Task PrepareRecoverable(IRecoverable recoverable, CancellationToken cancellationToken)
         {
-            await recoverable.RecoverAsync(_connection, cancellationToken).ConfigureAwait(false);
+            while (true)
+            {
+                await _connectionOpened.WaitAsync(cancellationToken).ConfigureAwait(false);
+                CheckState();
+
+                var connection = _connection;
+                try
+                {
+                    await recoverable.RecoverAsync(connection, cancellationToken).ConfigureAwait(false);
+                    break;
+                }
+                catch (Exception) when (!connection.IsOpened && !cancellationToken.IsCancellationRequested)
+                {
+                    // The connection was lost while the recoverable was being created, retry once it is recovered
+                }
+            }
+
             _recoverables.Add(recoverable);
             recoverable.Closed += OnRecoverableClosed;
             recoverable.RecoveryRequested += OnRecoveryRequested;
+        }
+
+        private void CheckState()
+        {
+            if (_disposed)
+            {
+                throw new ObjectDisposedException(nameof(Connection));
+            }
+
+            if (_failureCause != null)
+            {
+                throw new ConnectionClosedException("The Connection was closed due to an unrecoverable error.", _failureCause);
+            }
         }
 
         private void OnRecoverableClosed(IRecoverable recoverable)
@@ -258,6 +299,7 @@ namespace ActiveMQ.Artemis.Client.AutoRecovering
 
         public async ValueTask DisposeAsync()
         {
+            _disposed = true;
             _recoveryCancellationToken.Cancel();
             await _recoveryLoopTask.ConfigureAwait(false);
             await Task.WhenAll(_recoverables.Values.Select(async x => await x.DisposeAsync().ConfigureAwait(false))).ConfigureAwait(false);
