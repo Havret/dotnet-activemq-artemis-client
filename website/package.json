@@ -9,12 +9,12 @@
     "deploy": "docusaurus deploy"
   },
   "dependencies": {
-    "@docusaurus/core": "3.10.0",
-    "@docusaurus/preset-classic": "3.10.0",
-    "classnames": "2.3.2",
-    "immer": "9.0.18",
-    "react": "18.2.0",
-    "react-dom": "18.2.0",
+    "@docusaurus/core": "3.10.2",
+    "@docusaurus/preset-classic": "3.10.2",
+    "classnames": "2.5.1",
+    "immer": "11.1.21",
+    "react": "19.3.0",
+    "react-dom": "19.3.0",
     "trim": ">=1.0.1"
   },
   "resolutions": {
