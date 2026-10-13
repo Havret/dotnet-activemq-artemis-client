@@ -55,7 +55,16 @@ namespace ActiveMQ.Artemis.Client.UnitTests.AutoRecovering
         [Fact]
         public async Task Should_terminate_anonymous_producer_on_Send_when_link_closed_with_unauthorized_access()
         {
-            using var host = CreateOpenedContainerHost();
+            // The client replies to the broker's detach only after it has processed it
+            var producerDetached = new ManualResetEvent(false);
+            var testHandler = new TestHandler(@event =>
+            {
+                if (@event.Id == EventId.LinkRemoteClose)
+                {
+                    producerDetached.Set();
+                }
+            });
+            using var host = CreateOpenedContainerHost(handler: testHandler);
             var linkProcessor = host.CreateTestLinkProcessor();
 
             ListenerLink producerLink = null;
@@ -76,6 +85,9 @@ namespace ActiveMQ.Artemis.Client.UnitTests.AutoRecovering
             {
                 // ignored
             }
+
+            // CloseAsync throws without waiting for the client, wait until the client has seen the detach
+            Assert.True(producerDetached.WaitOne(Timeout));
 
             var exception = Assert.Throws<ProducerClosedException>(() =>
                 producer.Send("a1", null, new Message("foo"), CancellationToken));

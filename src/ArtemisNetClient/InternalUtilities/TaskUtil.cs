@@ -18,7 +18,16 @@ namespace ActiveMQ.Artemis.Client.InternalUtilities
             {
                 if (tcs.TrySetCanceled())
                 {
-                    cleanup?.Invoke();
+                    try
+                    {
+                        cleanup?.Invoke();
+                    }
+                    catch (Exception)
+                    {
+                        // Cleanup is best effort. This callback may run on a timer thread (e.g. CancelAfter),
+                        // where an unhandled exception would crash the process. E.g. SenderLink.Cancel throws
+                        // when the message has already left the outgoing queue.
+                    }
                 }
             }) : default;
             return (tcs, ctr);
