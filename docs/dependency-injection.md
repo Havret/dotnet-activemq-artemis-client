@@ -79,7 +79,7 @@ public sealed class OrderEventsProducer
 
 :::important
 
-If you register ArtemisNetClient services with `AddActiveMq` but do not start them with `AddActiveMqHostedService`, your consumers and typed producers will not be started automatically.
+If you register ArtemisNetClient services with `AddActiveMq` but do not start them with `AddActiveMqHostedService`, your consumers will not be started and the topology will not be declared automatically. Typed producers and request-reply clients are created on first use.
 
 This split is intentional. Hosted applications usually want `AddActiveMqHostedService`, while advanced scenarios can control startup manually through `IActiveMqClient`.
 
@@ -272,6 +272,31 @@ activeMq
 Each `AddActiveMq(name, endpoints)` call registers one logical connection. Use different names when your application needs separate clusters or credentials.
 
 Keep the registrations for one connection on the returned builder so the consumers, producers, topology configuration, and observers all stay attached to the intended connection.
+
+## Starting without waiting for the broker
+
+By default, the host startup waits until the client has started. When the broker is unavailable and automatic recovery is enabled, the application does not start until the broker becomes reachable.
+
+To start the application regardless of the broker, set `WaitUntilStarted` to `false`:
+
+```csharp
+builder.Services.AddActiveMqHostedService(new ActiveMqHostedServiceOptions
+{
+    WaitUntilStarted = false
+});
+```
+
+The client then starts in the background:
+
+- Consumers are attached once the connection is established.
+- Typed producers and request-reply clients wait for the connection, or until the passed `CancellationToken` is cancelled. With automatic recovery disabled, they throw the connection error instead.
+- Startup failures are logged and do not stop the host.
+
+:::tip
+
+Pair this mode with `ArtemisNetClient.Extensions.HealthChecks` to report the connection as unhealthy until it is established.
+
+:::
 
 ## Manual startup and shutdown
 
