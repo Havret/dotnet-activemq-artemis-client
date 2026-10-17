@@ -65,7 +65,14 @@ internal class AutoRecoveringRequestReplyClient : IRequestReplyClient, IRecovera
         var oldRpcClient = _requestReplyClient;
         _requestReplyClient = await connection.CreateRequestReplyClientAsync(_configuration, cancellationToken).ConfigureAwait(false);
         await DisposeUnderlyingRpcClientSafe(oldRpcClient).ConfigureAwait(false);
-        Log.RequestReplyClientRecovered(_logger);
+        if (oldRpcClient == null)
+        {
+            Log.RequestReplyClientCreated(_logger);
+        }
+        else
+        {
+            Log.RequestReplyClientRecovered(_logger);
+        }
     }
 
     public void Suspend()
@@ -141,6 +148,11 @@ internal class AutoRecoveringRequestReplyClient : IRequestReplyClient, IRecovera
             0,
             "Retrying send after RequestReplyClient reestablished.");
 
+        private static readonly Action<ILogger, Exception> _requestReplyClientCreated = LoggerMessage.Define(
+            LogLevel.Information,
+            0,
+            "RequestReplyClient created.");
+
         private static readonly Action<ILogger, Exception> _requestReplyClientRecovered = LoggerMessage.Define(
             LogLevel.Information,
             0,
@@ -161,6 +173,14 @@ internal class AutoRecoveringRequestReplyClient : IRequestReplyClient, IRecovera
             if (logger.IsEnabled(LogLevel.Warning))
             {
                 _retryingSendAsync(logger, null);
+            }
+        }
+
+        public static void RequestReplyClientCreated(ILogger logger)
+        {
+            if (logger.IsEnabled(LogLevel.Information))
+            {
+                _requestReplyClientCreated(logger, null);
             }
         }
 
