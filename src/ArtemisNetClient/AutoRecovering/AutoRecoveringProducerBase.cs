@@ -40,7 +40,14 @@ namespace ActiveMQ.Artemis.Client.AutoRecovering
             var underlyingResource = UnderlyingResource;
             await RecoverUnderlyingProducer(connection, cancellationToken).ConfigureAwait(false);
             await DisposeResourceSafe(underlyingResource).ConfigureAwait(false);
-            Log.ProducerRecovered(Logger);
+            if (underlyingResource == null)
+            {
+                Log.ProducerCreated(Logger);
+            }
+            else
+            {
+                Log.ProducerRecovered(Logger);
+            }
         }
 
         protected void HandleProducerClosed()
@@ -134,6 +141,11 @@ namespace ActiveMQ.Artemis.Client.AutoRecovering
                 0,
                 "Retrying send to address {0} after Producer reestablished.");
 
+            private static readonly Action<ILogger, Exception> _producerCreated = LoggerMessage.Define(
+                LogLevel.Information,
+                0,
+                "Producer created.");
+
             private static readonly Action<ILogger, Exception> _producerRecovered = LoggerMessage.Define(
                 LogLevel.Information,
                 0,
@@ -159,6 +171,14 @@ namespace ActiveMQ.Artemis.Client.AutoRecovering
                 if (logger.IsEnabled(LogLevel.Warning))
                 {
                     _retryingProduceAsync(logger, address, null);
+                }
+            }
+
+            public static void ProducerCreated(ILogger logger)
+            {
+                if (logger.IsEnabled(LogLevel.Information))
+                {
+                    _producerCreated(logger, null);
                 }
             }
 
