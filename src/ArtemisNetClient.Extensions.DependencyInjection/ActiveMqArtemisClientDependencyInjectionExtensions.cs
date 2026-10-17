@@ -532,8 +532,7 @@ namespace ActiveMQ.Artemis.Client.Extensions.DependencyInjection
         /// <returns>The <see cref="IActiveMqBuilder"/> that can be used to configure ActiveMQ Artemis Client.</returns>
         public static IActiveMqBuilder AddAnonymousProducer<TProducer>(this IActiveMqBuilder builder, ServiceLifetime producerLifetime = ServiceLifetime.Transient) where TProducer : class
         {
-            var anonymousProducerConfiguration = new AnonymousProducerConfiguration();
-            return builder.AddAnonymousProducer<TProducer>(anonymousProducerConfiguration, producerLifetime);
+            return builder.AddAnonymousProducer<TProducer>(serviceKey: null, producerLifetime);
         }
 
         /// <summary>
@@ -547,6 +546,36 @@ namespace ActiveMQ.Artemis.Client.Extensions.DependencyInjection
         /// <returns>The <see cref="IActiveMqBuilder"/> that can be used to configure ActiveMQ Artemis Client.</returns>
         public static IActiveMqBuilder AddAnonymousProducer<TProducer>(this IActiveMqBuilder builder, ProducerOptions producerOptions, ServiceLifetime producerLifetime = ServiceLifetime.Transient) where TProducer : class
         {
+            return builder.AddAnonymousProducer<TProducer>(serviceKey: null, producerOptions, producerLifetime);
+        }
+
+        /// <summary>
+        /// Adds the <see cref="IAnonymousProducer"/> and configures a binding between the <typeparam name="TProducer" /> registered with the specified service key and named <see cref="IProducer"/> instance.
+        /// </summary>
+        /// <param name="builder">The <see cref="IActiveMqBuilder"/>.</param>
+        /// <param name="serviceKey">The key with which to register the <typeparam name="TProducer" /> in the container.</param>
+        /// <param name="producerLifetime">The lifetime with which to register the <typeparam name="TProducer" /> in the container.</param>
+        /// <typeparam name="TProducer">The type of the typed producer. The type specified will be registered in the service collection as
+        /// a transient keyed service by default.</typeparam>
+        /// <returns>The <see cref="IActiveMqBuilder"/> that can be used to configure ActiveMQ Artemis Client.</returns>
+        public static IActiveMqBuilder AddAnonymousProducer<TProducer>(this IActiveMqBuilder builder, object serviceKey, ServiceLifetime producerLifetime = ServiceLifetime.Transient) where TProducer : class
+        {
+            var anonymousProducerConfiguration = new AnonymousProducerConfiguration();
+            return builder.AddAnonymousProducer<TProducer>(anonymousProducerConfiguration, producerLifetime, serviceKey);
+        }
+
+        /// <summary>
+        /// Adds the <see cref="IAnonymousProducer"/> and configures a binding between the <typeparam name="TProducer" /> registered with the specified service key and named <see cref="IProducer"/> instance.
+        /// </summary>
+        /// <param name="builder">The <see cref="IActiveMqBuilder"/>.</param>
+        /// <param name="serviceKey">The key with which to register the <typeparam name="TProducer" /> in the container.</param>
+        /// <param name="producerOptions">The <see cref="IAnonymousProducer"/> configuration.</param>
+        /// <param name="producerLifetime">The lifetime with which to register the <typeparam name="TProducer" /> in the container.</param>
+        /// <typeparam name="TProducer">The type of the typed producer. The type specified will be registered in the service collection as
+        /// a transient keyed service by default.</typeparam>
+        /// <returns>The <see cref="IActiveMqBuilder"/> that can be used to configure ActiveMQ Artemis Client.</returns>
+        public static IActiveMqBuilder AddAnonymousProducer<TProducer>(this IActiveMqBuilder builder, object serviceKey, ProducerOptions producerOptions, ServiceLifetime producerLifetime = ServiceLifetime.Transient) where TProducer : class
+        {
             var anonymousProducerConfiguration = new AnonymousProducerConfiguration
             {
                 MessagePriority = producerOptions.MessagePriority,
@@ -554,21 +583,22 @@ namespace ActiveMQ.Artemis.Client.Extensions.DependencyInjection
                 MessageIdPolicy = producerOptions.MessageIdPolicy,
                 SetMessageCreationTime = producerOptions.SetMessageCreationTime
             };
-            return builder.AddAnonymousProducer<TProducer>(anonymousProducerConfiguration, producerLifetime);
+            return builder.AddAnonymousProducer<TProducer>(anonymousProducerConfiguration, producerLifetime, serviceKey);
         }
 
-        private static IActiveMqBuilder AddAnonymousProducer<TProducer>(this IActiveMqBuilder builder, AnonymousProducerConfiguration producerConfiguration, ServiceLifetime producerLifetime) where TProducer : class
+        private static IActiveMqBuilder AddAnonymousProducer<TProducer>(this IActiveMqBuilder builder, AnonymousProducerConfiguration producerConfiguration, ServiceLifetime producerLifetime, object serviceKey) where TProducer : class
         {
-            if (builder.Services.Any(x => x.ServiceType == typeof(TProducer)))
+            if (builder.Services.Any(x => x.ServiceType == typeof(TProducer) && Equals(x.ServiceKey, serviceKey)))
             {
                 var message =
-                    $"There has already been registered Anonymous Producer with the type '{typeof(TProducer).FullName}'. " +
+                    $"There has already been registered Anonymous Producer with the type '{typeof(TProducer).FullName}'" +
+                    (serviceKey != null ? $" and the service key '{serviceKey}'. " : ". ") +
                     "Typed Anonymous Producer must be unique. " +
-                    "Consider using inheritance to create multiple unique types with the same API surface.";
+                    "Consider using a different service key or inheritance to create multiple unique types with the same API surface.";
                 throw new InvalidOperationException(message);
             }
 
-            builder.Services.AddSingleton(provider =>
+            builder.Services.AddKeyedSingleton(serviceKey, (provider, _) =>
             {
                 var sendObservable = provider.GetServices<SendObservable>().Single(x => x.Name == builder.Name);
                 var logger = provider.GetService<ILogger<TypedActiveMqAnonymousProducer<TProducer>>>();
@@ -578,9 +608,9 @@ namespace ActiveMQ.Artemis.Client.Extensions.DependencyInjection
                     return await connection.CreateAnonymousProducerAsync(producerConfiguration, token).ConfigureAwait(false);
                 }, sendObservable);
             });
-            builder.Services.AddSingleton<IActiveMqProducer>(provider => provider.GetRequiredService<TypedActiveMqAnonymousProducer<TProducer>>());
-            builder.Services.Add(ServiceDescriptor.Describe(typeof(TProducer),
-                provider => ActivatorUtilities.CreateInstance<TProducer>(provider, provider.GetRequiredService<TypedActiveMqAnonymousProducer<TProducer>>()),
+            builder.Services.AddSingleton<IActiveMqProducer>(provider => provider.GetRequiredKeyedService<TypedActiveMqAnonymousProducer<TProducer>>(serviceKey));
+            builder.Services.Add(ServiceDescriptor.DescribeKeyed(typeof(TProducer), serviceKey,
+                (provider, _) => ActivatorUtilities.CreateInstance<TProducer>(provider, provider.GetRequiredKeyedService<TypedActiveMqAnonymousProducer<TProducer>>(serviceKey)),
                 producerLifetime));
             return builder;
         }

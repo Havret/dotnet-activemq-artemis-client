@@ -175,6 +175,20 @@ public sealed class ReplyProducer
 }
 ```
 
+### Keyed anonymous producers
+
+To use the same anonymous producer type with multiple connections, register it on each builder with a different service key and resolve it as a keyed service. Each registration gets its own long-lived `IAnonymousProducer` bound to that builder's connection. It is started, stopped, and recovered like any other producer.
+
+```csharp
+builder.Services.AddActiveMq("broker-a", brokerAEndpoints)
+    .AddAnonymousProducer<CommandProducer>(serviceKey: "broker-a");
+
+builder.Services.AddActiveMq("broker-b", brokerBEndpoints)
+    .AddAnonymousProducer<CommandProducer>(serviceKey: "broker-b");
+
+var commandProducer = serviceProvider.GetRequiredKeyedService<CommandProducer>("broker-b");
+```
+
 ## Request-reply
 
 `AddRequestReplyClient<TClient>` registers a typed wrapper over `IRequestReplyClient`.
@@ -271,7 +285,7 @@ activeMq
 
 Each `AddActiveMq(name, endpoints)` call registers one logical connection. Use different names when your application needs separate clusters or credentials.
 
-Keep the registrations for one connection on the returned builder so the consumers, producers, topology configuration, and observers all stay attached to the intended connection.
+Keep the registrations for one connection on the returned builder so the consumers, producers, topology configuration, and observers all stay attached to the intended connection. To reuse an anonymous producer type across connections, register it with a [service key](#keyed-anonymous-producers).
 
 ## Manual startup and shutdown
 

@@ -2,6 +2,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 using ActiveMQ.Artemis.Client.Extensions.DependencyInjection;
+using ActiveMQ.Artemis.Client.TestUtils;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 using Xunit.Abstractions;
@@ -80,15 +81,110 @@ namespace ActiveMQ.Artemis.Client.Extensions.AspNetCore.IntegrationTests
             Assert.Equal((byte?) 9, msg.Priority);
         }
 
+        [Fact]
+        public async Task Should_register_keyed_anonymous_producers_with_the_same_type_for_different_connections()
+        {
+            var address1 = Guid.NewGuid().ToString();
+            var address2 = Guid.NewGuid().ToString();
+
+            await using var testFixture = await TestFixture.CreateAsync(_testOutputHelper, connectionName: "broker-a", configureServices: services =>
+            {
+                services.AddActiveMq("broker-b", new[] { EndpointUtil.GetEndpoint() })
+                        .AddAnonymousProducer<TestProducer>(serviceKey: "broker-b");
+            }, configureActiveMq: activeMqBuilder =>
+            {
+                activeMqBuilder.AddAnonymousProducer<TestProducer>(serviceKey: "broker-a");
+            });
+
+            var consumer1 = await testFixture.Connection.CreateConsumerAsync(address1, RoutingType.Anycast, testFixture.CancellationToken);
+            var consumer2 = await testFixture.Connection.CreateConsumerAsync(address2, RoutingType.Anycast, testFixture.CancellationToken);
+
+            var testProducer1 = testFixture.Services.GetRequiredKeyedService<TestProducer>("broker-a");
+            var testProducer2 = testFixture.Services.GetRequiredKeyedService<TestProducer>("broker-b");
+            await testProducer1.SendMessage(address1, RoutingType.Anycast, "foo1", testFixture.CancellationToken);
+            await testProducer2.SendMessage(address2, RoutingType.Anycast, "foo2", testFixture.CancellationToken);
+
+            Assert.NotEqual(testProducer1.Producer, testProducer2.Producer);
+            Assert.Equal("foo1", (await consumer1.ReceiveAsync(testFixture.CancellationToken)).GetBody<string>());
+            Assert.Equal("foo2", (await consumer2.ReceiveAsync(testFixture.CancellationToken)).GetBody<string>());
+        }
+
+        [Fact]
+        public async Task Should_reuse_underlying_producer_for_keyed_anonymous_producer()
+        {
+            await using var testFixture = await TestFixture.CreateAsync(_testOutputHelper, activeMqBuilder => { activeMqBuilder.AddAnonymousProducer<TestProducer>(serviceKey: "broker-a"); });
+
+            var testProducer1 = testFixture.Services.GetRequiredKeyedService<TestProducer>("broker-a");
+            var testProducer2 = testFixture.Services.GetRequiredKeyedService<TestProducer>("broker-a");
+
+            Assert.NotEqual(testProducer1, testProducer2);
+            Assert.Equal(testProducer1.Producer, testProducer2.Producer);
+        }
+
+        [Fact]
+        public async Task Should_bind_keyed_anonymous_producer_to_its_connection()
+        {
+            var sendObserver = new TestSendObserver();
+            var address = Guid.NewGuid().ToString();
+
+            await using var testFixture = await TestFixture.CreateAsync(_testOutputHelper, connectionName: "broker-a", configureServices: services =>
+            {
+                services.AddSingleton(sendObserver);
+                services.AddActiveMq("broker-b", new[] { EndpointUtil.GetEndpoint() })
+                        .AddAnonymousProducer<TestProducer>(serviceKey: "broker-b")
+                        .AddSendObserver<TestSendObserver>();
+            }, configureActiveMq: activeMqBuilder =>
+            {
+                activeMqBuilder.AddAnonymousProducer<TestProducer>(serviceKey: "broker-a");
+            });
+
+            var testProducerA = testFixture.Services.GetRequiredKeyedService<TestProducer>("broker-a");
+            await testProducerA.SendMessage(address, RoutingType.Anycast, "foo1", testFixture.CancellationToken);
+
+            Assert.False(sendObserver.PreSendCalled);
+
+            var testProducerB = testFixture.Services.GetRequiredKeyedService<TestProducer>("broker-b");
+            await testProducerB.SendMessage(address, RoutingType.Anycast, "foo2", testFixture.CancellationToken);
+
+            Assert.True(sendObserver.PreSendCalled);
+        }
+
+        [Fact]
+        public async Task Throws_when_keyed_producer_with_the_same_type_and_key_registered_twice()
+        {
+            var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => TestFixture.CreateAsync(_testOutputHelper, activeMqBuilder =>
+            {
+                activeMqBuilder.AddAnonymousProducer<TestProducer>(serviceKey: "broker-a");
+                activeMqBuilder.AddAnonymousProducer<TestProducer>(serviceKey: "broker-a");
+            }));
+
+            Assert.Contains($"There has already been registered Anonymous Producer with the type '{typeof(TestProducer).FullName}' and the service key 'broker-a'", exception.Message);
+        }
+
+        [Fact]
+        public async Task Should_register_keyed_and_non_keyed_producers_with_the_same_type()
+        {
+            await using var testFixture = await TestFixture.CreateAsync(_testOutputHelper, activeMqBuilder =>
+            {
+                activeMqBuilder.AddAnonymousProducer<TestProducer>();
+                activeMqBuilder.AddAnonymousProducer<TestProducer>(serviceKey: "broker-a");
+            });
+
+            var testProducer = testFixture.Services.GetRequiredService<TestProducer>();
+            var keyedTestProducer = testFixture.Services.GetRequiredKeyedService<TestProducer>("broker-a");
+
+            Assert.NotEqual(testProducer.Producer, keyedTestProducer.Producer);
+        }
+
         private class TestProducer
         {
-            private readonly IAnonymousProducer _producer;
+            public IAnonymousProducer Producer { get; }
 
-            public TestProducer(IAnonymousProducer producer) => _producer = producer;
+            public TestProducer(IAnonymousProducer producer) => Producer = producer;
 
             public Task SendMessage(string address, RoutingType routingType, string text, CancellationToken cancellationToken)
             {
-                return _producer.SendAsync(address, routingType, new Message(text), cancellationToken);
+                return Producer.SendAsync(address, routingType, new Message(text), cancellationToken);
             }
         }
 
@@ -117,6 +213,13 @@ namespace ActiveMQ.Artemis.Client.Extensions.AspNetCore.IntegrationTests
         {
             public IAnonymousProducer Producer { get; }
             public TestProducer2(IAnonymousProducer producer) => Producer = producer;
+        }
+
+        private class TestSendObserver : ISendObserver
+        {
+            public bool PreSendCalled { get; private set; }
+            public void PreSend(string address, RoutingType? routingType, Message message) => PreSendCalled = true;
+            public void PostSend(string address, RoutingType? routingType, Message message) { }
         }
     }
 }

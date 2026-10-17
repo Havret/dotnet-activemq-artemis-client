@@ -124,7 +124,14 @@ namespace ActiveMQ.Artemis.Client.AutoRecovering
             var oldConsumer = _consumer;
             _consumer = await connection.CreateConsumerAsync(_configuration, cancellationToken).ConfigureAwait(false);
             await DisposeUnderlyingConsumerSafe(oldConsumer).ConfigureAwait(false);
-            Log.ConsumerRecovered(_logger);
+            if (oldConsumer == null)
+            {
+                Log.ConsumerCreated(_logger);
+            }
+            else
+            {
+                Log.ConsumerRecovered(_logger);
+            }
         }
 
         public async Task TerminateAsync(Exception exception)
@@ -173,7 +180,12 @@ namespace ActiveMQ.Artemis.Client.AutoRecovering
                 LogLevel.Warning,
                 0,
                 "Retrying receive after Consumer reestablished.");
-            
+
+            private static readonly Action<ILogger, Exception> _consumerCreated = LoggerMessage.Define(
+                LogLevel.Information,
+                0,
+                "Consumer created.");
+
             private static readonly Action<ILogger, Exception> _consumerRecovered = LoggerMessage.Define(
                 LogLevel.Information,
                 0,
@@ -202,6 +214,14 @@ namespace ActiveMQ.Artemis.Client.AutoRecovering
                 }
             }
             
+            public static void ConsumerCreated(ILogger logger)
+            {
+                if (logger.IsEnabled(LogLevel.Information))
+                {
+                    _consumerCreated(logger, null);
+                }
+            }
+
             public static void ConsumerRecovered(ILogger logger)
             {
                 if (logger.IsEnabled(LogLevel.Information))
