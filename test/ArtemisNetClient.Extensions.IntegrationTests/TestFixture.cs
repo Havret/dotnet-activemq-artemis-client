@@ -32,7 +32,9 @@ namespace ActiveMQ.Artemis.Client.Extensions.AspNetCore.IntegrationTests
             Action<IActiveMqBuilder> configureActiveMq = null,
             Action<IServiceCollection> configureServices = null,
             bool addActiveMqHostedService = true,
-            string connectionName = "my-test-artemis")
+            string connectionName = "my-test-artemis",
+            Endpoint[] clientEndpoints = null,
+            ActiveMqHostedServiceOptions hostedServiceOptions = null)
         {
             var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
             var endpoint = GetEndpoint();
@@ -45,14 +47,14 @@ namespace ActiveMQ.Artemis.Client.Extensions.AspNetCore.IntegrationTests
                                {
                                    services.AddSingleton<IServer>(serviceProvider => new TestServer(serviceProvider));
                                    configureServices?.Invoke(services);
-                                   var activeMqBuilder = services.AddActiveMq(connectionName, endpoints).ConfigureConnectionFactory((provider, factory) =>
+                                   var activeMqBuilder = services.AddActiveMq(connectionName, clientEndpoints ?? endpoints).ConfigureConnectionFactory((provider, factory) =>
                                    {
                                        factory.LoggerFactory = provider.GetService<ILoggerFactory>();
                                    });
                                    configureActiveMq?.Invoke(activeMqBuilder);
                                    if (addActiveMqHostedService)
                                    {
-                                       services.AddActiveMqHostedService();    
+                                       services.AddActiveMqHostedService(hostedServiceOptions ?? new ActiveMqHostedServiceOptions());
                                    }
                                })
                                .Configure(_ => { })

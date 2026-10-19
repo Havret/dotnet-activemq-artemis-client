@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
+using ActiveMQ.Artemis.Client.Extensions.DependencyInjection.InternalUtils;
 using ActiveMQ.Artemis.Client.Transactions;
 using Microsoft.Extensions.Logging;
 
@@ -9,7 +10,7 @@ namespace ActiveMQ.Artemis.Client.Extensions.DependencyInjection
     internal class TypedActiveMqAnonymousProducer<T> : IAnonymousProducer, IActiveMqProducer
     {
         private readonly ILogger<TypedActiveMqAnonymousProducer<T>> _logger;
-        private IAnonymousProducer _producer;
+        private AsyncValueLazy<IAnonymousProducer> _producer;
         private readonly Func<CancellationToken, Task<IAnonymousProducer>> _producerFactory;
         private readonly SendObservable _sendObservable;
 
@@ -18,16 +19,13 @@ namespace ActiveMQ.Artemis.Client.Extensions.DependencyInjection
             _logger = logger;
             _producerFactory = producerFactory;
             _sendObservable = sendObservable;
+            _producer = new AsyncValueLazy<IAnonymousProducer>(producerFactory);
         }
 
         public async ValueTask StartAsync(CancellationToken cancellationToken)
         {
-            if (_producer != null)
-            {
-                throw new InvalidOperationException($"Producer with type {typeof(T).FullName} has already been initialized.");
-            }
-
-            _producer = await _producerFactory(cancellationToken).ConfigureAwait(false);
+            _producer ??= new AsyncValueLazy<IAnonymousProducer>(_producerFactory);
+            await _producer.GetValueAsync(cancellationToken).ConfigureAwait(false);
         }
 
         public async ValueTask StopAsync()
@@ -49,18 +47,20 @@ namespace ActiveMQ.Artemis.Client.Extensions.DependencyInjection
         public async Task SendAsync(string address, RoutingType? routingType, Message message, Transaction transaction, CancellationToken cancellationToken)
         {
             CheckState();
+            var producer = await _producer.GetValueAsync(cancellationToken).ConfigureAwait(false);
             
             _sendObservable.PreSend(address, routingType, message);
-            await _producer.SendAsync(address, routingType, message, transaction, cancellationToken).ConfigureAwait(false);
+            await producer.SendAsync(address, routingType, message, transaction, cancellationToken).ConfigureAwait(false);
             _sendObservable.PostSend(address, routingType, message);
         }
 
         public void Send(string address, RoutingType? routingType, Message message, CancellationToken cancellationToken)
         {
             CheckState();
+            var producer = _producer.GetValue(cancellationToken);
             
             _sendObservable.PreSend(address, routingType, message);
-            _producer.Send(address, routingType, message, cancellationToken);
+            producer.Send(address, routingType, message, cancellationToken);
             _sendObservable.PostSend(address, routingType, message);
         }
         
@@ -74,9 +74,9 @@ namespace ActiveMQ.Artemis.Client.Extensions.DependencyInjection
 
         public async ValueTask DisposeAsync()
         {
-            if (_producer != null)
+            if (_producer != null && _producer.TryGetValue(out var producer))
             {
-                await _producer.DisposeAsync().ConfigureAwait(false);
+                await producer.DisposeAsync().ConfigureAwait(false);
             }
         }
     }
