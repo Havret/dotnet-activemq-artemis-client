@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using ActiveMQ.Artemis.Client.Exceptions;
 using ActiveMQ.Artemis.Client.Extensions.DependencyInjection;
 using ActiveMQ.Artemis.Client.TestUtils;
 using NScenario;
@@ -74,6 +75,39 @@ namespace ActiveMQ.Artemis.Client.Extensions.AspNetCore.IntegrationTests
             var result = await Task.WhenAny(stopHostTask, Task.Delay(TimeSpan.FromSeconds(5)));
 
             Assert.Equal(stopHostTask, result);
+        }
+
+        [Fact]
+        public async Task Should_continue_receiving_messages_after_message_handler_throws_consumer_closed_exception()
+        {
+            var address = Guid.NewGuid().ToString();
+
+            var tcs = new TaskCompletionSource<Message>();
+            await using var testFixture = await TestFixture.CreateAsync(_testOutputHelper, builder =>
+            {
+                builder.EnableAddressDeclaration()
+                       .EnableQueueDeclaration()
+                       .AddConsumer(address, RoutingType.Anycast, async (message, consumer, _, _) =>
+                       {
+                           if (message.GetBody<string>() == "foo")
+                           {
+                               // Simulates AcceptAsync failing while the connection is being recovered.
+                               throw new ConsumerClosedException();
+                           }
+
+                           await consumer.AcceptAsync(message);
+                           tcs.TrySetResult(message);
+                       });
+            });
+
+            await using var producer = await testFixture.Connection.CreateProducerAsync(address, RoutingType.Anycast, testFixture.CancellationToken);
+            await producer.SendAsync(new Message("foo"), testFixture.CancellationToken);
+            await producer.SendAsync(new Message("bar"), testFixture.CancellationToken);
+
+            var result = await Task.WhenAny(tcs.Task, Task.Delay(TimeSpan.FromSeconds(5)));
+
+            Assert.Equal(tcs.Task, result);
+            Assert.Equal("bar", (await tcs.Task).GetBody<string>());
         }
 
         [Fact]

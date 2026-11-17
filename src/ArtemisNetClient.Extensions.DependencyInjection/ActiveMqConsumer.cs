@@ -41,7 +41,19 @@ namespace ActiveMQ.Artemis.Client.Extensions.DependencyInjection
                 {
                     try
                     {
-                        var msg = await _consumer.ReceiveAsync(token).ConfigureAwait(false);
+                        Message msg;
+                        try
+                        {
+                            msg = await _consumer.ReceiveAsync(token).ConfigureAwait(false);
+                        }
+                        catch (ConsumerClosedException exception)
+                        {
+                            _logger.LogError(exception, "Consumer was closed. No more messages will be received.");
+
+                            // At this point the consumer is in non-recoverable state.
+                            return;
+                        }
+
                         _receiveObservable.PreReceive(msg);
                         await _handler(msg, _consumer, _serviceProvider, token).ConfigureAwait(false);
                         _receiveObservable.PostReceive(msg);
@@ -51,13 +63,7 @@ namespace ActiveMQ.Artemis.Client.Extensions.DependencyInjection
                     }
                     catch (Exception exception)
                     {
-                        _logger.LogError(exception, string.Empty);
-                        
-                        if (exception is ConsumerClosedException)
-                        {
-                            // At this point the consumer is in non-recoverable state.
-                            return;
-                        }
+                        _logger.LogError(exception, "Exception occurred during message processing.");
                     }
                 }
             }, token);
