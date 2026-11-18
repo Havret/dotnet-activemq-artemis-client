@@ -39,6 +39,23 @@ If the initial connection to an Artemis node fails, automatic connection recover
 
 :::
 
+## Creating Producers and Consumers During an Outage
+
+When you create a producer, a consumer, or a request-reply client while the connection is being recovered, the operation doesn't fail right away. It waits until the connection is reestablished and then completes as usual. If the recovery policy gives up, the operation fails with `ConnectionClosedException`, and if the connection gets disposed in the meantime, it fails with `ObjectDisposedException`.
+
+:::tip
+
+If your recovery policy is configured to try to recover forever, pass a `CancellationToken` to methods like `CreateProducerAsync` or `CreateConsumerAsync` to limit how long you are willing to wait:
+
+```csharp
+using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+var producer = await connection.CreateProducerAsync("a1", RoutingType.Anycast, cts.Token);
+```
+
+:::
+
+`IConnection.ConnectionRecovered` and `IConnection.ConnectionRecoveryError` handlers are invoked outside of the recovery process, so it's safe to create producers and consumers from within them. An exception thrown from a handler is logged and doesn't affect the connection.
+
 ## Recovery Policies
 
 There are 4 built-in recovery policies that are available via `RecoveryPolicyFactory` class:
