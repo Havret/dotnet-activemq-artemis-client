@@ -6,6 +6,8 @@ sidebar_label: Automatic Recovery
 
 A network connection between clients and Artemis nodes can fail. The client library supports the automatic recovery of connections, producers, and consumers. Automatic recovery is enabled by default.
 
+The connection is recovered whenever the broker closes it, whether because of an error or because the broker is shutting down. Only disposing the connection stops the recovery.
+
 Automatic recovery is controlled by `IRecoveryPolicy` interface:
 
 ```csharp

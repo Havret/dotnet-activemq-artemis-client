@@ -549,6 +549,30 @@ namespace ActiveMQ.Artemis.Client.UnitTests.AutoRecovering
         }
 
         [Fact]
+        public async Task Should_reconnect_when_connection_closed_by_peer_without_error()
+        {
+            var endpoint = GetUniqueEndpoint();
+            Amqp.Connection peerConnection = null;
+            using var host = CreateContainerHost(endpoint);
+            host.CreateTestLinkProcessor().SetHandler(context =>
+            {
+                peerConnection ??= context.Link.Session.Connection;
+                return false;
+            });
+            host.Open();
+            await using var connection = await CreateConnection(endpoint);
+            var connectionRecovered = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+            connection.ConnectionRecovered += (_, _) => connectionRecovered.TrySetResult(true);
+            await using var producer = await connection.CreateProducerAsync("a1", RoutingType.Anycast, CancellationToken);
+
+            // E.g. the broker shutting down
+            await peerConnection.CloseAsync();
+
+            await connectionRecovered.Task.WaitAsync(Timeout);
+            await producer.SendAsync(new Message("foo"), CancellationToken);
+        }
+
+        [Fact]
         public async Task Should_wait_for_event_handlers_when_disposed()
         {
             var endpoint = GetUniqueEndpoint();
