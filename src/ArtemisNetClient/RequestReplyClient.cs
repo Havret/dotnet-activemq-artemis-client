@@ -60,6 +60,21 @@ namespace ActiveMQ.Artemis.Client
                     _logger.LogError(e, "The response could not be matched with any of the pending requests.");
                 }
             });
+            _receiverLink.AddClosedCallback(OnReceiverLinkClosed);
+        }
+
+        private void OnReceiverLinkClosed(IAmqpObject sender, Error error)
+        {
+            // The reply-to address doesn't outlive the receiver link, so pending requests would never get a reply
+            FailPendingRequests(error);
+        }
+
+        private void FailPendingRequests(Error error)
+        {
+            foreach (var pendingRequest in _pendingRequests.Values)
+            {
+                pendingRequest.TrySetException(CreateClosedException(error));
+            }
         }
         
         private bool IsDetaching => _senderLink.IsDetaching() || _receiverLink.IsDetaching();
@@ -84,9 +99,22 @@ namespace ActiveMQ.Artemis.Client
             try
             {
                 _pendingRequests.TryAdd(correlationId, tcs);
+
+                // The receiver link may have been closed after the first check, before the request was registered,
+                // in which case nothing is going to fail it
+                CheckState();
+
                 _senderLink.Send(message.InnerMessage, null, _onOutcome, tcs);
-                var response = await tcs.Task.ConfigureAwait(false);
-                return response;
+                try
+                {
+                    return await tcs.Task.ConfigureAwait(false);
+                }
+                catch (RequestReplyClientClosedException e)
+                {
+                    // Failed only once sent, it may have been processed
+                    e.RequestSent = true;
+                    throw;
+                }
             }
             catch (AmqpException e) when (IsClosed || IsDetaching)
             {
@@ -100,7 +128,7 @@ namespace ActiveMQ.Artemis.Client
             {
                 throw new RequestReplyClientClosedException(e);
             }
-            catch (Exception e) when(e is not OperationCanceledException)
+            catch (Exception e) when (e is not OperationCanceledException and not ActiveMQArtemisClientException)
             {
                 throw new MessageSendException("Failed to send the message.", e);
             }
@@ -120,7 +148,7 @@ namespace ActiveMQ.Artemis.Client
             }
             else if (link.IsDetaching() || link.IsClosed)
             {
-                tcs.TrySetException(new ProducerClosedException());
+                tcs.TrySetException(CreateClosedException(link.Error));
             }
             else if (outcome.Descriptor.Code == MessageOutcomes.Rejected.Descriptor.Code)
             {
@@ -141,12 +169,19 @@ namespace ActiveMQ.Artemis.Client
         {
             if (_disposed)
             {
-                throw new ObjectDisposedException(nameof(ProducerBase));
+                throw new ObjectDisposedException(nameof(RequestReplyClient));
             }
-            if (_senderLink.IsDetaching() || _senderLink.IsClosed)
+            if (IsClosed || IsDetaching)
             {
-                throw new ProducerClosedException();
+                throw CreateClosedException(_senderLink.Error ?? _receiverLink.Error);
             }
+        }
+
+        private static RequestReplyClientClosedException CreateClosedException(Error error)
+        {
+            return error != null
+                ? new RequestReplyClientClosedException(error.Description, error.Condition, null)
+                : new RequestReplyClientClosedException();
         }
         
         public async ValueTask DisposeAsync()
@@ -155,14 +190,38 @@ namespace ActiveMQ.Artemis.Client
             {
                 return;
             }
-            
-            await ActionUtil.ExecuteAll(
-                () => _receiverLink.CloseAsync(),
-                () => _senderLink.CloseAsync(),
-                () => _senderLink.Session.CloseAsync()
-            ).ConfigureAwait(false);
-            
-            _disposed = true;
+
+            try
+            {
+                await ActionUtil.ExecuteAll(
+                    () => CloseIfOpen(_receiverLink),
+                    () => CloseIfOpen(_senderLink),
+                    () => CloseIfOpen(_senderLink.Session)
+                ).ConfigureAwait(false);
+            }
+            finally
+            {
+                _disposed = true;
+                FailPendingRequests(null);
+            }
+        }
+
+        private async Task CloseIfOpen(AmqpObject amqpObject)
+        {
+            // Already closed when the connection was lost
+            if (amqpObject.IsClosed)
+            {
+                return;
+            }
+
+            try
+            {
+                await amqpObject.CloseAsync().ConfigureAwait(false);
+            }
+            catch (AmqpException) when (_senderLink.Session.Connection.ConnectionState != ConnectionState.Opened)
+            {
+                // The connection was lost while closing, there is nothing left to close
+            }
         }
     }
 }

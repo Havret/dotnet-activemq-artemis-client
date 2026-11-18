@@ -6,6 +6,8 @@ sidebar_label: Automatic Recovery
 
 A network connection between clients and Artemis nodes can fail. The client library supports the automatic recovery of connections, producers, and consumers. Automatic recovery is enabled by default.
 
+The connection is recovered whenever the broker closes it, whether because of an error or because the broker is shutting down. Only disposing the connection stops the recovery.
+
 Automatic recovery is controlled by `IRecoveryPolicy` interface:
 
 ```csharp
@@ -38,6 +40,27 @@ To retry indefinite amount of times `RetryCount` should return `int.MaxValue`.
 If the initial connection to an Artemis node fails, automatic connection recovery will kick in as well. It may be problematic in some scenarios, as `ConnectionFactory.CreateAsync` won't signal any issues until the recovery policy gives up. If your recovery policy is configured to try to recover forever it may even never happen. That means you would be asynchronously waiting for the result of `CreateAsync` forever. To address this issue you can pass `CancellationToken` to `CreateAsync`. This allows you to arbitrarily break the operation at any point.
 
 :::
+
+## Creating Producers and Consumers During an Outage
+
+When you create a producer, a consumer, or a request-reply client while the connection is being recovered, the operation doesn't fail right away. It waits until the connection is reestablished and then completes as usual. If the recovery policy gives up, the operation fails with `ConnectionClosedException`, and if the connection gets disposed in the meantime, it fails with `ObjectDisposedException`.
+
+:::tip
+
+If your recovery policy is configured to try to recover forever, pass a `CancellationToken` to methods like `CreateProducerAsync` or `CreateConsumerAsync` to limit how long you are willing to wait:
+
+```csharp
+using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+var producer = await connection.CreateProducerAsync("a1", RoutingType.Anycast, cts.Token);
+```
+
+:::
+
+`IConnection.ConnectionRecovered` and `IConnection.ConnectionRecoveryError` handlers are invoked outside of the recovery process, so it's safe to create producers and consumers from within them. An exception thrown from a handler is logged and doesn't affect the connection.
+
+## Request-Reply During an Outage
+
+A request-reply client is recovered along with the connection. A request that hasn't been sent yet waits for the recovery and is sent once it's done. A request that has already been sent fails with `RequestReplyClientClosedException` instead, because the broker or the responder may have processed it already. It's up to you whether it's safe to send it again.
 
 ## Recovery Policies
 

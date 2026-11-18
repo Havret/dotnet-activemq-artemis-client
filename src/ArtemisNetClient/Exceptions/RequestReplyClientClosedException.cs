@@ -19,4 +19,9 @@ public class RequestReplyClientClosedException : ActiveMQArtemisClientException
     public RequestReplyClientClosedException(string message, string errorCode, Exception innerException) : base(message, errorCode, innerException)
     {
     }
+
+    /// <summary>
+    /// True when the client was closed after the request had been sent, i.e. it may have been processed.
+    /// </summary>
+    internal bool RequestSent { get; set; }
 }

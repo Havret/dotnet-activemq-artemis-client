@@ -2,6 +2,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using ActiveMQ.Artemis.Client.Exceptions;
+using Amqp;
 using Microsoft.Extensions.Logging;
 using Nito.AsyncEx;
 
@@ -11,7 +12,11 @@ internal class AutoRecoveringRequestReplyClient : IRequestReplyClient, IRecovera
 {
     private readonly RequestReplyClientConfiguration _configuration;
     private readonly AsyncManualResetEvent _manualResetEvent = new(true);
-    private bool _closed;
+
+    // Makes replacing the client mutually exclusive with suspending or terminating on its failure, and with disposal
+    private readonly object _syncRoot = new();
+    private volatile bool _closed;
+    private volatile bool _disposed;
     private volatile Exception _failureCause;
     private volatile IRequestReplyClient _requestReplyClient;
     private readonly ILogger<AutoRecoveringRequestReplyClient> _logger;
@@ -27,22 +32,70 @@ internal class AutoRecoveringRequestReplyClient : IRequestReplyClient, IRecovera
         while (true)
         {
             CheckState();
+            var requestReplyClient = _requestReplyClient;
 
             try
             {
-                return await _requestReplyClient.SendAsync(address, routingType, message, cancellationToken).ConfigureAwait(false);
+                return await requestReplyClient.SendAsync(address, routingType, message, cancellationToken).ConfigureAwait(false);
             }
-            catch (RequestReplyClientClosedException)
+            catch (RequestReplyClientClosedException e)
             {
+                if (IsTerminal(e) && await TryTerminateAsync(requestReplyClient, e).ConfigureAwait(false))
+                {
+                    // The client cannot be recovered for terminal broker-side close reasons.
+                    throw;
+                }
+
                 CheckState();
+                RequestRecovery(requestReplyClient);
+
+                if (e.RequestSent)
+                {
+                    // The request may have been processed already, sending it again could make it be processed twice.
+                    // Leave it up to the caller.
+                    throw new RequestReplyClientClosedException(
+                        "The RequestReplyClient was closed before the reply arrived. The request may have been processed.",
+                        e.ErrorCode, e);
+                }
 
                 Log.RetryingSendAsync(_logger);
-
-                Suspend();
-                RecoveryRequested?.Invoke();
+                await _manualResetEvent.WaitAsync(cancellationToken).ConfigureAwait(false);
+            }
+            catch (ObjectDisposedException) when (!ReferenceEquals(requestReplyClient, _requestReplyClient))
+            {
+                // The client was replaced and disposed by the recovery before the request was sent, wait until the
+                // replacement is resumed
+                CheckState();
+                Log.RetryingSendAsync(_logger);
                 await _manualResetEvent.WaitAsync(cancellationToken).ConfigureAwait(false);
             }
         }
+    }
+
+    /// <summary>
+    /// Suspends the client and requests its recovery, unless the failed client has already been replaced. A late
+    /// failure of a replaced client, e.g. of a request that was pending on it, must not suspend its healthy
+    /// replacement, as that would make it be replaced as well, failing the requests already sent over it.
+    /// </summary>
+    private void RequestRecovery(IRequestReplyClient failedClient)
+    {
+        lock (_syncRoot)
+        {
+            if (_closed || _disposed || !ReferenceEquals(failedClient, _requestReplyClient))
+            {
+                return;
+            }
+
+            Suspend();
+        }
+
+        RecoveryRequested?.Invoke();
+    }
+
+    private static bool IsTerminal(RequestReplyClientClosedException exception)
+    {
+        // Unlike for a producer, not found isn't terminal, the client sends to any address and replies to a temporary one
+        return exception.ErrorCode is ErrorCode.UnauthorizedAccess;
     }
 
     private void CheckState()
@@ -58,12 +111,33 @@ internal class AutoRecoveringRequestReplyClient : IRequestReplyClient, IRecovera
                 throw new RequestReplyClientClosedException();
             }
         }
+
+        if (_disposed)
+        {
+            throw new ObjectDisposedException(nameof(AutoRecoveringRequestReplyClient));
+        }
     }
 
     public async Task RecoverAsync(IConnection connection, CancellationToken cancellationToken)
     {
         var oldRpcClient = _requestReplyClient;
-        _requestReplyClient = await connection.CreateRequestReplyClientAsync(_configuration, cancellationToken).ConfigureAwait(false);
+        var newRpcClient = await connection.CreateRequestReplyClientAsync(_configuration, cancellationToken).ConfigureAwait(false);
+        lock (_syncRoot)
+        {
+            if (!_closed && !_disposed)
+            {
+                _requestReplyClient = newRpcClient;
+                newRpcClient = null;
+            }
+        }
+
+        if (newRpcClient != null)
+        {
+            // Terminated or disposed in the meantime, nobody is going to use it
+            await DisposeUnderlyingRpcClientSafe(newRpcClient).ConfigureAwait(false);
+            return;
+        }
+
         await DisposeUnderlyingRpcClientSafe(oldRpcClient).ConfigureAwait(false);
         if (oldRpcClient == null)
         {
@@ -77,18 +151,27 @@ internal class AutoRecoveringRequestReplyClient : IRequestReplyClient, IRecovera
 
     public void Suspend()
     {
-        var wasSuspended = IsSuspended();
-        _manualResetEvent.Reset();
-
-        if (!wasSuspended)
+        lock (_syncRoot)
         {
-            Log.RequestReplyClientSuspended(_logger);                
+            // Nothing is going to resume it anymore, the requests waiting for it would wait forever
+            if (_closed || _disposed)
+            {
+                return;
+            }
+
+            var wasSuspended = IsSuspended;
+            _manualResetEvent.Reset();
+
+            if (!wasSuspended)
+            {
+                Log.RequestReplyClientSuspended(_logger);
+            }
         }
     }
 
     public void Resume()
     {
-        var wasSuspended = IsSuspended();
+        var wasSuspended = IsSuspended;
         _manualResetEvent.Set();
 
         if (wasSuspended)
@@ -97,10 +180,7 @@ internal class AutoRecoveringRequestReplyClient : IRequestReplyClient, IRecovera
         }
     }
     
-    private bool IsSuspended()
-    {
-        return !_manualResetEvent.IsSet;
-    }
+    public bool IsSuspended => !_manualResetEvent.IsSet;
 
     public event Closed Closed;
 
@@ -108,15 +188,54 @@ internal class AutoRecoveringRequestReplyClient : IRequestReplyClient, IRecovera
 
     public async Task TerminateAsync(Exception exception)
     {
-        _closed = true;
-        _failureCause = exception;
-        _manualResetEvent.Set();
+        lock (_syncRoot)
+        {
+            MarkClosed(exception);
+        }
+
         await DisposeUnderlyingRpcClientSafe(_requestReplyClient).ConfigureAwait(false);
         Closed?.Invoke(this);
     }
 
+    /// <summary>
+    /// Terminates the client on a terminal failure, unless the failed client has already been replaced. A late
+    /// failure of a replaced client must not terminate its healthy replacement.
+    /// </summary>
+    /// <returns>True when the client was terminated.</returns>
+    private async Task<bool> TryTerminateAsync(IRequestReplyClient failedClient, Exception exception)
+    {
+        lock (_syncRoot)
+        {
+            if (!ReferenceEquals(failedClient, _requestReplyClient))
+            {
+                return false;
+            }
+
+            MarkClosed(exception);
+        }
+
+        await DisposeUnderlyingRpcClientSafe(failedClient).ConfigureAwait(false);
+        Closed?.Invoke(this);
+        return true;
+    }
+
+    private void MarkClosed(Exception exception)
+    {
+        _failureCause = exception;
+        _closed = true;
+        _manualResetEvent.Set();
+    }
+
     public async ValueTask DisposeAsync()
     {
+        lock (_syncRoot)
+        {
+            _disposed = true;
+        }
+
+        // Wake up the requests waiting for the recovery, it's not going to happen anymore
+        _manualResetEvent.Set();
+
         await DisposeUnderlyingRpcClient(_requestReplyClient).ConfigureAwait(false);
         Closed?.Invoke(this);
     }

@@ -35,8 +35,25 @@ namespace ActiveMQ.Artemis.Client.Builders
 
             var session = new Session(_connection, begin, OnBegin);
             session.AddClosedCallback(OnClosed);
-            await _tcs.Task.ConfigureAwait(false);
-            session.Closed -= OnClosed;
+
+            // A session created just as the connection ends is never notified, the connection only ends the sessions
+            // it already had. Checked after subscribing, so that the connection ending at any point is noticed.
+            _connection.AddClosedCallback(OnClosed);
+            if (_connection.IsClosed)
+            {
+                OnClosed(_connection, _connection.Error);
+            }
+
+            try
+            {
+                await _tcs.Task.ConfigureAwait(false);
+            }
+            finally
+            {
+                session.Closed -= OnClosed;
+                _connection.Closed -= OnClosed;
+            }
+
             return session;
         }
 
@@ -47,10 +64,10 @@ namespace ActiveMQ.Artemis.Client.Builders
         
         private void OnClosed(IAmqpObject sender, Error error)
         {
-            if (error != null)
-            {
-                _tcs.TrySetException(new CreateSessionException(error.Description, error.Condition));
-            }
+            // The error is null when the connection was closed cleanly, which still means the session will never begin
+            _tcs.TrySetException(error != null
+                ? new CreateSessionException(error.Description, error.Condition)
+                : new CreateSessionException("The session was closed before it was established.", null));
         }
     }
 }

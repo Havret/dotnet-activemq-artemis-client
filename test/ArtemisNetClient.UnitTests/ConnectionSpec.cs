@@ -86,23 +86,15 @@ namespace ActiveMQ.Artemis.Client.UnitTests
         public async Task Should_toggle_IsOpened_property_to_false_when_connection_closed_by_remote_peer()
         {
             var endpoint = GetUniqueEndpoint();
-            var connectionClosed = new ManualResetEvent(false);
-
-            var testHandler = new TestHandler(@event =>
-            {
-                switch (@event.Id)
-                {
-                    case EventId.ConnectionRemoteClose:
-                        connectionClosed.Set();
-                        break;
-                }
-            });
-
-            var host = CreateOpenedContainerHost(endpoint, testHandler);
+            var host = CreateOpenedContainerHost(endpoint);
 
             var connection = await CreateConnectionWithoutAutomaticRecovery(endpoint);
 
-            // Explicitly dispose host to trigger notification indicating that remote peer closed the connection. 
+            // Wait on the client side, the host gets the client's close frame before the client marks itself as closed
+            var connectionClosed = new ManualResetEvent(false);
+            connection.ConnectionClosed += (_, _) => connectionClosed.Set();
+
+            // Explicitly dispose host to trigger notification indicating that remote peer closed the connection.
             host.Dispose();
 
             Assert.True(connectionClosed.WaitOne());
