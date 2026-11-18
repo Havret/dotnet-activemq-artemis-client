@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using ActiveMQ.Artemis.Client.Exceptions;
 using ActiveMQ.Artemis.Client.UnitTests.Utils;
 using Amqp.Framing;
 using Amqp.Handler;
@@ -174,6 +175,18 @@ namespace ActiveMQ.Artemis.Client.UnitTests
             await Assert.ThrowsAnyAsync<OperationCanceledException>(() => connection.CreateProducerAsync("a1", RoutingType.Multicast, cancellationTokenSource.Token));
         }
         
+        [Fact]
+        public async Task Throws_when_connection_closed_without_error_instead_of_beginning_session()
+        {
+            var endpoint = GetUniqueEndpoint();
+            using var peer = new CloseOnBeginPeer(endpoint);
+            await using var connection = await CreateConnectionWithoutAutomaticRecovery(endpoint);
+
+            // Fails rather than waiting for a session that is never going to begin
+            using var cts = new CancellationTokenSource(Timeout);
+            await Assert.ThrowsAsync<CreateSessionException>(() => connection.CreateProducerAsync("a1", RoutingType.Anycast, cts.Token));
+        }
+
         [Fact]
         public async Task Throws_when_created_with_null_configuration()
         {

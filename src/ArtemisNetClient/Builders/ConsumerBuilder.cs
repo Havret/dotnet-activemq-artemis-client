@@ -126,10 +126,8 @@ namespace ActiveMQ.Artemis.Client.Builders
 
         private void OnClosed(IAmqpObject sender, Error error)
         {
-            if (error != null)
-            {
-                _tcs.TrySetException(new CreateConsumerException(error.Description, error.Condition));
-            }
+            // The error is null when closed cleanly, which still means it is never going to be established
+            _tcs.TrySetException(new CreateConsumerException(error?.Description ?? "The link was closed before it was attached.", error?.Condition));
         }
     }
 }
