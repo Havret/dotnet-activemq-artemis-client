@@ -174,10 +174,30 @@ namespace ActiveMQ.Artemis.Client.AutoRecovering
                 return;
             }
 
-            // If the connection is already opened it means that there may be some suspended recoverables that need to be resumed
-            foreach (var recoverable in _recoverables.Values)
+            // The connection is fine, but some recoverables may have been suspended because their own links were closed,
+            // e.g. detached by the broker. Resuming them as they are would make them fail again straight away.
+            var connection = _connection;
+            foreach (var recoverable in _recoverables.Values.Where(x => x.IsSuspended))
             {
-                recoverable.Resume();
+                try
+                {
+                    await recoverable.RecoverAsync(connection, cancellationToken).ConfigureAwait(false);
+                    recoverable.Resume();
+                }
+                catch (Exception e) when (IsConnectionLoss(e, connection, CancellationToken.None, cancellationToken))
+                {
+                    // The connection was lost in the meantime, recover it along with all the recoverables
+                    await RecoverConnection(cancellationToken).ConfigureAwait(false);
+                    return;
+                }
+                catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+                {
+                    throw;
+                }
+                catch (Exception e)
+                {
+                    await recoverable.TerminateAsync(e).ConfigureAwait(false);
+                }
             }
         }
 

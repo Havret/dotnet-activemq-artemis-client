@@ -77,7 +77,7 @@ internal class AutoRecoveringRequestReplyClient : IRequestReplyClient, IRecovera
 
     public void Suspend()
     {
-        var wasSuspended = IsSuspended();
+        var wasSuspended = IsSuspended;
         _manualResetEvent.Reset();
 
         if (!wasSuspended)
@@ -88,7 +88,7 @@ internal class AutoRecoveringRequestReplyClient : IRequestReplyClient, IRecovera
 
     public void Resume()
     {
-        var wasSuspended = IsSuspended();
+        var wasSuspended = IsSuspended;
         _manualResetEvent.Set();
 
         if (wasSuspended)
@@ -97,10 +97,7 @@ internal class AutoRecoveringRequestReplyClient : IRequestReplyClient, IRecovera
         }
     }
     
-    private bool IsSuspended()
-    {
-        return !_manualResetEvent.IsSet;
-    }
+    public bool IsSuspended => !_manualResetEvent.IsSet;
 
     public event Closed Closed;
 
