@@ -56,6 +56,10 @@ var producer = await connection.CreateProducerAsync("a1", RoutingType.Anycast, c
 
 `IConnection.ConnectionRecovered` and `IConnection.ConnectionRecoveryError` handlers are invoked outside of the recovery process, so it's safe to create producers and consumers from within them. An exception thrown from a handler is logged and doesn't affect the connection.
 
+## Request-Reply During an Outage
+
+A request-reply client is recovered along with the connection. A request that hasn't been sent yet waits for the recovery and is sent once it's done. A request that has already been sent fails with `RequestReplyClientClosedException` instead, because the broker or the responder may have processed it already. It's up to you whether it's safe to send it again.
+
 ## Recovery Policies
 
 There are 4 built-in recovery policies that are available via `RecoveryPolicyFactory` class:
