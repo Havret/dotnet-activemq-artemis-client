@@ -14,7 +14,11 @@ namespace ActiveMQ.Artemis.Client.AutoRecovering
         private readonly ILogger<AutoRecoveringConsumer> _logger;
         private readonly ConsumerConfiguration _configuration;
         private readonly AsyncManualResetEvent _manualResetEvent = new(true);
-        private bool _closed;
+
+        // Makes replacing the consumer mutually exclusive with suspending on its failure, termination and disposal
+        private readonly object _syncRoot = new();
+        private volatile bool _closed;
+        private volatile bool _disposed;
         private volatile Exception _failureCause;
         private volatile IConsumer _consumer;
 
@@ -29,22 +33,43 @@ namespace ActiveMQ.Artemis.Client.AutoRecovering
             while (true)
             {
                 CheckState();
+                var consumer = _consumer;
 
                 try
                 {
-                    return await _consumer.ReceiveAsync(cancellationToken).ConfigureAwait(false);
+                    return await consumer.ReceiveAsync(cancellationToken).ConfigureAwait(false);
                 }
-                catch (ConsumerClosedException exception) when (IsRecoverable(exception))
+                // ObjectDisposedException means the consumer was replaced and disposed by the recovery in the meantime
+                catch (Exception e) when (e is ConsumerClosedException exception && IsRecoverable(exception) || e is ObjectDisposedException && !ReferenceEquals(consumer, _consumer))
                 {
                     CheckState();
 
                     Log.RetryingReceiveAsync(_logger);
 
-                    Suspend();
-                    RecoveryRequested?.Invoke();
+                    RequestRecovery(consumer);
                     await _manualResetEvent.WaitAsync(cancellationToken).ConfigureAwait(false);
                 }
             }
+        }
+
+        /// <summary>
+        /// Suspends the consumer and requests its recovery, unless the failed consumer has already been replaced.
+        /// A late failure of a replaced consumer must not suspend its healthy replacement, as that would make it be
+        /// replaced as well.
+        /// </summary>
+        private void RequestRecovery(IConsumer failedConsumer)
+        {
+            lock (_syncRoot)
+            {
+                if (_closed || _disposed || !ReferenceEquals(failedConsumer, _consumer))
+                {
+                    return;
+                }
+
+                Suspend();
+            }
+
+            RecoveryRequested?.Invoke();
         }
 
         private static bool IsRecoverable(ConsumerClosedException exception)
@@ -90,22 +115,36 @@ namespace ActiveMQ.Artemis.Client.AutoRecovering
                     throw new ConsumerClosedException();
                 }
             }
+
+            if (_disposed)
+            {
+                throw new ObjectDisposedException(nameof(AutoRecoveringConsumer));
+            }
         }
 
         public void Suspend()
         {
-            var wasSuspended = IsSuspended();
-            _manualResetEvent.Reset();
-
-            if (!wasSuspended)
+            lock (_syncRoot)
             {
-                Log.ConsumerSuspended(_logger);
+                // Nothing is going to resume it anymore, the receives waiting for it would wait forever
+                if (_closed || _disposed)
+                {
+                    return;
+                }
+
+                var wasSuspended = IsSuspended;
+                _manualResetEvent.Reset();
+
+                if (!wasSuspended)
+                {
+                    Log.ConsumerSuspended(_logger);
+                }
             }
         }
 
         public void Resume()
         {
-            var wasSuspended = IsSuspended();
+            var wasSuspended = IsSuspended;
             _manualResetEvent.Set();
 
             if (wasSuspended)
@@ -114,15 +153,28 @@ namespace ActiveMQ.Artemis.Client.AutoRecovering
             }
         }
 
-        private bool IsSuspended()
-        {
-            return !_manualResetEvent.IsSet;
-        }
+        public bool IsSuspended => !_manualResetEvent.IsSet;
 
         public async Task RecoverAsync(IConnection connection, CancellationToken cancellationToken)
         {
             var oldConsumer = _consumer;
-            _consumer = await connection.CreateConsumerAsync(_configuration, cancellationToken).ConfigureAwait(false);
+            var newConsumer = await connection.CreateConsumerAsync(_configuration, cancellationToken).ConfigureAwait(false);
+            lock (_syncRoot)
+            {
+                if (!_closed && !_disposed)
+                {
+                    _consumer = newConsumer;
+                    newConsumer = null;
+                }
+            }
+
+            if (newConsumer != null)
+            {
+                // Terminated or disposed in the meantime, nobody is going to use it
+                await DisposeUnderlyingConsumerSafe(newConsumer).ConfigureAwait(false);
+                return;
+            }
+
             await DisposeUnderlyingConsumerSafe(oldConsumer).ConfigureAwait(false);
             if (oldConsumer == null)
             {
@@ -136,8 +188,12 @@ namespace ActiveMQ.Artemis.Client.AutoRecovering
 
         public async Task TerminateAsync(Exception exception)
         {
-            _closed = true;
-            _failureCause = exception;
+            lock (_syncRoot)
+            {
+                _failureCause = exception;
+                _closed = true;
+            }
+
             _manualResetEvent.Set();
             Log.ConsumerTerminated(_logger, exception);
             await DisposeUnderlyingConsumerSafe(_consumer).ConfigureAwait(false);
@@ -146,6 +202,13 @@ namespace ActiveMQ.Artemis.Client.AutoRecovering
 
         public async ValueTask DisposeAsync()
         {
+            lock (_syncRoot)
+            {
+                _disposed = true;
+            }
+
+            // Wake up the receives waiting for the recovery, it's not going to happen anymore
+            _manualResetEvent.Set();
             await DisposeUnderlyingConsumer(_consumer).ConfigureAwait(false);
             Closed?.Invoke(this);
         }

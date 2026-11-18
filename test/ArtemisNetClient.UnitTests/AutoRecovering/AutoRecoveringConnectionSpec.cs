@@ -618,6 +618,51 @@ namespace ActiveMQ.Artemis.Client.UnitTests.AutoRecovering
             await Assert.ThrowsAsync<ProducerClosedException>(() => producer.SendAsync("a1", new Message("foo"), CancellationToken));
         }
 
+        [Fact]
+        public async Task Should_recreate_producer_when_its_link_closed_while_connection_stays_open()
+        {
+            // The client replies to the broker's detach only after it has processed it
+            var producerDetached = new ManualResetEvent(false);
+            var testHandler = new TestHandler(@event =>
+            {
+                if (@event.Id == EventId.LinkRemoteClose)
+                {
+                    producerDetached.Set();
+                }
+            });
+            var endpoint = GetUniqueEndpoint();
+            var attachCount = 0;
+            ListenerLink producerLink = null;
+            using var host = CreateContainerHost(endpoint, testHandler);
+            host.CreateTestLinkProcessor().SetHandler(context =>
+            {
+                if (Interlocked.Increment(ref attachCount) == 1)
+                {
+                    producerLink = context.Link;
+                }
+
+                return false;
+            });
+            host.Open();
+            await using var connection = await CreateConnection(endpoint);
+            await using var producer = await connection.CreateAnonymousProducerAsync(CancellationToken);
+
+            try
+            {
+                await producerLink.CloseAsync(Timeout, new Error(ErrorCode.InternalError) { Description = "Closed by the broker" });
+            }
+            catch (Exception)
+            {
+                // CloseAsync throws without waiting for the client
+            }
+
+            Assert.True(producerDetached.WaitOne(Timeout));
+
+            using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(10));
+            await producer.SendAsync("a1", new Message("foo"), cts.Token);
+            Assert.Equal(2, Volatile.Read(ref attachCount));
+        }
+
         private static (TestContainerHost host, AutoResetEvent connected) CreateHost()
         {
             var endpoint = GetUniqueEndpoint();

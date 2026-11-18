@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
+using ActiveMQ.Artemis.Client.AutoRecovering;
 using ActiveMQ.Artemis.Client.AutoRecovering.RecoveryPolicy;
 using ActiveMQ.Artemis.Client.Exceptions;
 using ActiveMQ.Artemis.Client.InternalUtilities;
@@ -9,6 +10,7 @@ using Amqp;
 using Amqp.Framing;
 using Amqp.Handler;
 using Amqp.Listener;
+using Microsoft.Extensions.Logging.Abstractions;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -18,6 +20,68 @@ namespace ActiveMQ.Artemis.Client.UnitTests.AutoRecovering
     {
         public AutoRecoveringConsumerSpec(ITestOutputHelper output) : base(output)
         {
+        }
+
+        [Fact]
+        public async Task Should_not_suspend_consumer_when_receive_fails_on_consumer_already_replaced()
+        {
+            using var host = CreateOpenedContainerHost();
+            var messageSource = host.CreateMessageSource("a1");
+            await using var connection = await CreateConnectionWithoutAutomaticRecovery(host.Endpoint);
+            var configuration = new ConsumerConfiguration { Address = "a1", RoutingType = RoutingType.Anycast };
+            await using var consumer = new AutoRecoveringConsumer(NullLoggerFactory.Instance, configuration);
+            var recoveryRequested = false;
+            consumer.RecoveryRequested += () => recoveryRequested = true;
+            await consumer.RecoverAsync(connection, CancellationToken);
+
+            using var cts = new CancellationTokenSource(Timeout);
+            var receiveTask = consumer.ReceiveAsync(cts.Token).AsTask();
+
+            // Replacing the consumer disposes the old one, which fails the receive pending on it. The failure comes
+            // late, the consumer has already been replaced.
+            await consumer.RecoverAsync(connection, CancellationToken);
+
+            // The receive is retried on the replacement, which is left as it is
+            messageSource.Enqueue(new Message("foo"));
+            var message = await receiveTask.WaitAsync(Timeout);
+            Assert.Equal("foo", message.GetBody<string>());
+            Assert.False(consumer.IsSuspended);
+            Assert.False(recoveryRequested);
+        }
+
+        [Fact]
+        public async Task Should_fail_receive_waiting_for_recovery_when_consumer_disposed()
+        {
+            var underlyingConsumer = new FakeConsumer();
+            var consumer = new AutoRecoveringConsumer(NullLoggerFactory.Instance, new ConsumerConfiguration());
+            var recoveryRequested = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+            consumer.RecoveryRequested += () => recoveryRequested.TrySetResult(true);
+            await consumer.RecoverAsync(new FakeConnection(underlyingConsumer), CancellationToken);
+
+            var receiveTask = consumer.ReceiveAsync(CancellationToken).AsTask();
+            await underlyingConsumer.ReceiveCalled.Task.WaitAsync(Timeout);
+
+            // The receive waits for the recovery
+            underlyingConsumer.PendingReceive.SetException(new ConsumerClosedException());
+            await recoveryRequested.Task.WaitAsync(Timeout);
+
+            await consumer.DisposeAsync();
+
+            // There is not going to be any recovery, the receive must not wait for it
+            await Assert.ThrowsAsync<ObjectDisposedException>(() => receiveTask.WaitAsync(Timeout));
+        }
+
+        [Fact]
+        public async Task Should_not_suspend_consumer_once_disposed()
+        {
+            var consumer = new AutoRecoveringConsumer(NullLoggerFactory.Instance, new ConsumerConfiguration());
+            await consumer.RecoverAsync(new FakeConnection(new FakeConsumer()), CancellationToken);
+            await consumer.DisposeAsync();
+
+            // E.g. the connection suspending all its recoverables at the same time
+            consumer.Suspend();
+
+            Assert.False(consumer.IsSuspended);
         }
 
         [Fact]

@@ -13,6 +13,11 @@ namespace ActiveMQ.Artemis.Client.AutoRecovering
         Task RecoverAsync(IConnection connection, CancellationToken cancellationToken);
         void Suspend();
         void Resume();
+
+        /// <summary>
+        /// True when the recoverable has been suspended, e.g. because its underlying link was closed, and is waiting to be recovered.
+        /// </summary>
+        bool IsSuspended { get; }
         event Closed Closed;
         event RecoveryRequested RecoveryRequested;
         Task TerminateAsync(Exception exception);

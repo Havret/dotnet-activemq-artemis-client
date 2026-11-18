@@ -7,12 +7,17 @@ using Nito.AsyncEx;
 
 namespace ActiveMQ.Artemis.Client.AutoRecovering
 {
-    internal abstract class AutoRecoveringProducerBase : IRecoverable
+    internal abstract class AutoRecoveringProducerBase<TProducer> : IRecoverable where TProducer : class, IAsyncDisposable
     {
         protected readonly ILogger Logger;
         private readonly AsyncManualResetEvent _manualResetEvent = new(true);
-        private bool _closed;
-        private Exception _failureCause;
+
+        // Makes replacing the producer mutually exclusive with suspending or terminating on its failure, and with disposal
+        private readonly object _syncRoot = new();
+        private volatile TProducer _producer;
+        private volatile bool _closed;
+        private volatile bool _disposed;
+        private volatile Exception _failureCause;
 
         protected AutoRecoveringProducerBase(ILoggerFactory loggerFactory)
         {
@@ -21,26 +26,41 @@ namespace ActiveMQ.Artemis.Client.AutoRecovering
 
         public void Resume()
         {
-            var wasSuspended = IsSuspended();
+            var wasSuspended = IsSuspended;
             _manualResetEvent.Set();
-            
+
             if (wasSuspended)
             {
-                Log.ProducerResumed(Logger);    
+                Log.ProducerResumed(Logger);
             }
         }
 
-        private bool IsSuspended()
-        {
-            return !_manualResetEvent.IsSet;
-        }
+        public bool IsSuspended => !_manualResetEvent.IsSet;
+
+        protected TProducer Producer => _producer;
 
         public async Task RecoverAsync(IConnection connection, CancellationToken cancellationToken)
         {
-            var underlyingResource = UnderlyingResource;
-            await RecoverUnderlyingProducer(connection, cancellationToken).ConfigureAwait(false);
-            await DisposeResourceSafe(underlyingResource).ConfigureAwait(false);
-            if (underlyingResource == null)
+            var oldProducer = _producer;
+            var newProducer = await CreateUnderlyingProducer(connection, cancellationToken).ConfigureAwait(false);
+            lock (_syncRoot)
+            {
+                if (!_closed && !_disposed)
+                {
+                    _producer = newProducer;
+                    newProducer = null;
+                }
+            }
+
+            if (newProducer != null)
+            {
+                // Terminated or disposed in the meantime, nobody is going to use it
+                await DisposeResourceSafe(newProducer).ConfigureAwait(false);
+                return;
+            }
+
+            await DisposeResourceSafe(oldProducer).ConfigureAwait(false);
+            if (oldProducer == null)
             {
                 Log.ProducerCreated(Logger);
             }
@@ -50,20 +70,43 @@ namespace ActiveMQ.Artemis.Client.AutoRecovering
             }
         }
 
-        protected void HandleProducerClosed()
+        /// <summary>
+        /// Suspends the producer and requests its recovery, unless the failed producer has already been replaced.
+        /// A late failure of a replaced producer must not suspend its healthy replacement, as that would make it be
+        /// replaced as well.
+        /// </summary>
+        protected void HandleProducerClosed(TProducer failedProducer)
         {
-            Suspend();
+            lock (_syncRoot)
+            {
+                if (_closed || _disposed || !ReferenceEquals(failedProducer, _producer))
+                {
+                    return;
+                }
+
+                Suspend();
+            }
+
             RecoveryRequested?.Invoke();
         }
 
         public void Suspend()
         {
-            var wasSuspended = IsSuspended();
-            _manualResetEvent.Reset();
-
-            if (!wasSuspended)
+            lock (_syncRoot)
             {
-                Log.ProducerSuspended(Logger);                
+                // Nothing is going to resume it anymore, the sends waiting for it would wait forever
+                if (_closed || _disposed)
+                {
+                    return;
+                }
+
+                var wasSuspended = IsSuspended;
+                _manualResetEvent.Reset();
+
+                if (!wasSuspended)
+                {
+                    Log.ProducerSuspended(Logger);
+                }
             }
         }
 
@@ -82,17 +125,59 @@ namespace ActiveMQ.Artemis.Client.AutoRecovering
         
         public async Task TerminateAsync(Exception exception)
         {
-            _closed = true;
+            lock (_syncRoot)
+            {
+                MarkClosed(exception);
+            }
+
+            await CompleteTermination(exception).ConfigureAwait(false);
+        }
+
+        /// <summary>
+        /// Terminates the producer on a terminal failure, unless the failed producer has already been replaced.
+        /// A late failure of a replaced producer must not terminate its healthy replacement.
+        /// </summary>
+        /// <returns>True when the producer was terminated.</returns>
+        protected async Task<bool> TryTerminateAsync(TProducer failedProducer, Exception exception)
+        {
+            lock (_syncRoot)
+            {
+                if (!ReferenceEquals(failedProducer, _producer))
+                {
+                    return false;
+                }
+
+                MarkClosed(exception);
+            }
+
+            await CompleteTermination(exception).ConfigureAwait(false);
+            return true;
+        }
+
+        private void MarkClosed(Exception exception)
+        {
             _failureCause = exception;
+            _closed = true;
             _manualResetEvent.Set();
+        }
+
+        private async Task CompleteTermination(Exception exception)
+        {
             Log.ProducerTerminated(Logger, exception);
-            await DisposeResourceSafe(UnderlyingResource).ConfigureAwait(false);
+            await DisposeResourceSafe(_producer).ConfigureAwait(false);
             Closed?.Invoke(this);
         }
 
         public async ValueTask DisposeAsync()
         {
-            await DisposeResource(UnderlyingResource).ConfigureAwait(false);
+            lock (_syncRoot)
+            {
+                _disposed = true;
+            }
+
+            // Wake up the sends waiting for the recovery, it's not going to happen anymore
+            _manualResetEvent.Set();
+            await DisposeResource(_producer).ConfigureAwait(false);
             Closed?.Invoke(this);
         }
 
@@ -129,10 +214,14 @@ namespace ActiveMQ.Artemis.Client.AutoRecovering
                     throw new ProducerClosedException();
                 }
             }
+
+            if (_disposed)
+            {
+                throw new ObjectDisposedException(GetType().Name);
+            }
         }
 
-        protected abstract IAsyncDisposable UnderlyingResource { get; }
-        protected abstract Task RecoverUnderlyingProducer(IConnection connection, CancellationToken cancellationToken);
+        protected abstract Task<TProducer> CreateUnderlyingProducer(IConnection connection, CancellationToken cancellationToken);
 
         protected static class Log
         {
