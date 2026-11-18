@@ -428,16 +428,18 @@ namespace ActiveMQ.Artemis.Client.AutoRecovering
 
         private void OnConnectionClosed(object sender, ConnectionClosedEventArgs args)
         {
+            // The connection is always unsubscribed from before it is closed locally, so it's the peer that closed it,
+            // with or without an error, e.g. when shutting down. Either way, it's up to the recovery to bring it back.
             if (args.ClosedByPeer)
             {
                 Log.ConnectionClosedByPeer(_logger, args.Error);
-                _writer.TryWrite(ConnectCommand.Instance);
             }
             else
             {
                 Log.ConnectionClosed(_logger);
             }
 
+            _writer.TryWrite(ConnectCommand.Instance);
             ConnectionClosed?.Invoke(sender, args);
         }
 
@@ -631,7 +633,7 @@ namespace ActiveMQ.Artemis.Client.AutoRecovering
             private static readonly Action<ILogger, Exception> _connectionClosed = LoggerMessage.Define(
                 LogLevel.Information,
                 0,
-                "Connection closed. Reconnect won't be scheduled.");            
+                "Connection closed by peer. Reconnect scheduled.");            
 
             private static readonly Action<ILogger, Exception> _connectionRecovered = LoggerMessage.Define(
                 LogLevel.Information,
