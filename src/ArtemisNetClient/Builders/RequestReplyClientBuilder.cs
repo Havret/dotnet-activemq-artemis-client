@@ -51,10 +51,8 @@ namespace ActiveMQ.Artemis.Client.Builders
 
             void OnClosed(IAmqpObject sender, Error error)
             {
-                if (error != null)
-                {
-                    tcs.TrySetException(new CreateRpcClientException(error.Description, error.Condition));
-                }
+                // The error is null when closed cleanly, which still means it is never going to be established
+                tcs.TrySetException(new CreateRpcClientException(error?.Description ?? "The link was closed before it was attached.", error?.Condition));
             }
         }
 
@@ -81,10 +79,8 @@ namespace ActiveMQ.Artemis.Client.Builders
 
             void OnClosed(IAmqpObject sender, Error error)
             {
-                if (error != null)
-                {
-                    tcs.TrySetException(new CreateRpcClientException(error.Description, error.Condition));
-                }
+                // The error is null when closed cleanly, which still means it is never going to be established
+                tcs.TrySetException(new CreateRpcClientException(error?.Description ?? "The link was closed before it was attached.", error?.Condition));
             }
         }
     }
