@@ -7,6 +7,9 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write # upload the packages to the release
+      id-token: write # exchange a GitHub OIDC token for a short-lived NuGet API key (Trusted Publishing)
     strategy:
       matrix:
         package:
@@ -42,8 +45,15 @@ jobs:
           name: ${{ matrix.package }}-symbols
           path: ./src/${{ matrix.package }}/bin/Release/${{ matrix.package }}.${{ github.event.release.name }}.snupkg
           
+      # The API key is valid for an hour only, so get it right before pushing
+      - name: NuGet Login
+        uses: NuGet/login@v1
+        id: nuget-login
+        with:
+          user: ${{ secrets.NUGET_USER }}
+
       - name: Publish NuGet Package
-        run: dotnet nuget push ./src/${{ matrix.package }}/bin/Release/${{ matrix.package }}.${{ github.event.release.name }}.nupkg --api-key ${{ secrets.nuget_api_key }} --source https://api.nuget.org/v3/index.json
+        run: dotnet nuget push ./src/${{ matrix.package }}/bin/Release/${{ matrix.package }}.${{ github.event.release.name }}.nupkg --api-key ${{ steps.nuget-login.outputs.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json
         
       - name: Upload NuGet Package
         uses: actions/upload-release-asset@v1
