@@ -46,11 +46,10 @@ namespace ActiveMQ.Artemis.Client.Extensions.DependencyInjection
                         {
                             msg = await _consumer.ReceiveAsync(token).ConfigureAwait(false);
                         }
-                        catch (ConsumerClosedException exception)
+                        // The consumer was closed for good, or disposed along with the connection, any further receive would fail again
+                        catch (Exception exception) when (exception is ConsumerClosedException or ObjectDisposedException)
                         {
                             _logger.LogError(exception, "Consumer was closed. No more messages will be received.");
-
-                            // At this point the consumer is in non-recoverable state.
                             return;
                         }
 
