@@ -30,6 +30,14 @@ Run a single test class:
 dotnet test --filter "FullyQualifiedName~FilterExpressionsSpec"
 ```
 
+### Chaos Suite (Jepsen-style, local only)
+Runs workloads through Toxiproxy while injecting network and broker faults, then checks the recorded history against
+the delivery and recovery promises. See `chaos/README.md`.
+```bash
+docker compose -f chaos/docker-compose.yml up -d
+dotnet run -c Release --project chaos/ArtemisNetClient.Chaos -- --duration 120
+```
+
 ### Integration Test Configuration
 The broker endpoint is resolved from environment variables with these defaults:
 - `ARTEMIS_HOST` → `localhost`

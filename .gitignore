@@ -350,3 +350,6 @@ MigrationBackup/
 .ionide/
 .idea
 .DS_Store
+
+# Chaos suite run output
+chaos/out/

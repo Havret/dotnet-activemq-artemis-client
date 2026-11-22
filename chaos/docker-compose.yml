@@ -1,0 +1,20 @@
+name: artemis-chaos
+services:
+  artemis:
+    container_name: artemis-chaos
+    image: havret/dotnet-activemq-artemis-client-test-broker:2.35.0
+    ports:
+      # direct access, used for setup and for the final drain
+      - 25672:5672
+      # Jolokia, used by the broker-close nemesis
+      - 28161:8161
+    volumes:
+      - ../test/artemis/broker.xml:/artemis/amq/etc/broker.xml
+  toxiproxy:
+    container_name: toxiproxy-chaos
+    image: ghcr.io/shopify/toxiproxy:2.9.0
+    ports:
+      # Toxiproxy API
+      - 8474:8474
+      # proxied AMQP, used by the workload clients; the runner creates the proxy on startup
+      - 25673:25673
