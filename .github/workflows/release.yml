@@ -7,6 +7,8 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    # The NuGet Trusted Publishing policy accepts only the jobs running in this environment
+    environment: production
     permissions:
       contents: write # upload the packages to the release
       id-token: write # exchange a GitHub OIDC token for a short-lived NuGet API key (Trusted Publishing)
