@@ -1,0 +1,11 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <RootNamespace>ActiveMQ.Artemis.Client.Chaos.UnitTests</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\chaos\ArtemisNetClient.Chaos\ArtemisNetClient.Chaos.csproj" />
+  </ItemGroup>
+
+</Project>
