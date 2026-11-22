@@ -6,6 +6,8 @@ using System.Threading.Tasks;
 using ActiveMQ.Artemis.Client.Exceptions;
 using ActiveMQ.Artemis.Client.Extensions.DependencyInjection;
 using ActiveMQ.Artemis.Client.TestUtils;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using NScenario;
 using Xunit;
 using Xunit.Abstractions;
@@ -91,7 +93,7 @@ namespace ActiveMQ.Artemis.Client.Extensions.AspNetCore.IntegrationTests
                        {
                            if (message.GetBody<string>() == "foo")
                            {
-                               // Simulates AcceptAsync failing while the connection is being recovered.
+                               // Only the consumer's own receive tells whether it's closed for good, e.g. this one may come from another consumer
                                throw new ConsumerClosedException();
                            }
 
@@ -108,6 +110,56 @@ namespace ActiveMQ.Artemis.Client.Extensions.AspNetCore.IntegrationTests
 
             Assert.Equal(tcs.Task, result);
             Assert.Equal("bar", (await tcs.Task).GetBody<string>());
+        }
+
+        [Fact]
+        public async Task Should_stop_receiving_messages_once_connection_disposed()
+        {
+            var address = Guid.NewGuid().ToString();
+            var loggerProvider = new ErrorCollectingLoggerProvider("ActiveMQ.Artemis.Client.Extensions.DependencyInjection.ActiveMqConsumer");
+
+            await using var testFixture = await TestFixture.CreateAsync(_testOutputHelper, builder =>
+            {
+                builder.EnableAddressDeclaration()
+                       .EnableQueueDeclaration()
+                       .AddConsumer(address, RoutingType.Anycast, async (message, consumer, _, _) => await consumer.AcceptAsync(message));
+            }, services => services.AddSingleton<ILoggerProvider>(loggerProvider));
+
+            var connection = await testFixture.Services.GetRequiredService<ConnectionProvider>().GetConnectionAsync("my-test-artemis", testFixture.CancellationToken);
+            await connection.DisposeAsync();
+
+            // Give a spinning receive loop the time to show up
+            await Task.Delay(TimeSpan.FromMilliseconds(500));
+
+            Assert.Equal(new[] { "Consumer was closed. No more messages will be received." }, loggerProvider.Errors);
+        }
+
+        private class ErrorCollectingLoggerProvider : ILoggerProvider, ILogger
+        {
+            private readonly string _categoryName;
+            private readonly ConcurrentQueue<string> _errors = new();
+
+            public ErrorCollectingLoggerProvider(string categoryName) => _categoryName = categoryName;
+
+            public string[] Errors => _errors.ToArray();
+
+            public ILogger CreateLogger(string categoryName) => categoryName == _categoryName ? this : Microsoft.Extensions.Logging.Abstractions.NullLogger.Instance;
+
+            public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter)
+            {
+                if (logLevel >= LogLevel.Error)
+                {
+                    _errors.Enqueue(formatter(state, exception));
+                }
+            }
+
+            public bool IsEnabled(LogLevel logLevel) => true;
+
+            public IDisposable BeginScope<TState>(TState state) => null;
+
+            public void Dispose()
+            {
+            }
         }
 
         [Fact]
