@@ -65,16 +65,35 @@ namespace ActiveMQ.Artemis.Client.Extensions.DependencyInjection
 
         public async Task StopAsync()
         {
+            if (_cts == null)
+            {
+                // The consumer was never started.
+                return;
+            }
+
             try
             {
                 _cts.Cancel();
-                await _task.ConfigureAwait(false);
+                if (_task != null)
+                {
+                    await _task.ConfigureAwait(false);
+                }
+                
                 _cts.Dispose();
-                await _consumer.DisposeAsync().ConfigureAwait(false);
+                if (_consumer != null)
+                {
+                    await _consumer.DisposeAsync().ConfigureAwait(false);
+                }
             }
             catch (Exception e)
             {
                 _logger.LogError(e, "Exception occured during consumer stopping.");
+            }
+            finally
+            {
+                _cts = null;
+                _task = null;
+                _consumer = null;
             }
         }
     }

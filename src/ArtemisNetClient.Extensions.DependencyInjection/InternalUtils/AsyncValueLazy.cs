@@ -34,5 +34,16 @@ namespace ActiveMQ.Artemis.Client.Extensions.DependencyInjection.InternalUtils
                 return _value;
             }
         }
+
+        public T GetValue(CancellationToken cancellationToken)
+        {
+            return _value ?? GetValueAsync(cancellationToken).AsTask().GetAwaiter().GetResult();
+        }
+
+        public bool TryGetValue(out T value)
+        {
+            value = _value;
+            return value != null;
+        }
     }
 }

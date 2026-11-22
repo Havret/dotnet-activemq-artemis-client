@@ -8,5 +8,12 @@ namespace ActiveMQ.Artemis.Client.Extensions.Hosting
         {
             return services.AddHostedService<ActiveMqHostedService>();
         }
+
+        public static IServiceCollection AddActiveMqHostedService(this IServiceCollection services, ActiveMqHostedServiceOptions hostedServiceOptions)
+        {
+            return hostedServiceOptions.WaitUntilStarted
+                ? services.AddHostedService<ActiveMqHostedService>()
+                : services.AddHostedService<ActiveMqBackgroundService>();
+        }
     }
 }

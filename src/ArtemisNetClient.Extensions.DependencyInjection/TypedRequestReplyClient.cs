@@ -1,6 +1,7 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using ActiveMQ.Artemis.Client.Extensions.DependencyInjection.InternalUtils;
 using Microsoft.Extensions.Logging;
 
 namespace ActiveMQ.Artemis.Client.Extensions.DependencyInjection
@@ -10,7 +11,7 @@ namespace ActiveMQ.Artemis.Client.Extensions.DependencyInjection
         private readonly ILogger<TypedRequestReplyClient<T>> _logger;
         private readonly Func<CancellationToken, Task<IRequestReplyClient>> _requestReplyClientFactory;
         private readonly SendObservable _sendObservable;
-        private IRequestReplyClient _requestReplyClient;
+        private AsyncValueLazy<IRequestReplyClient> _requestReplyClient;
 
         public TypedRequestReplyClient(ILogger<TypedRequestReplyClient<T>> logger,
             Func<CancellationToken, Task<IRequestReplyClient>> requestReplyClientFactory,
@@ -19,14 +20,16 @@ namespace ActiveMQ.Artemis.Client.Extensions.DependencyInjection
             _logger = logger;
             _requestReplyClientFactory = requestReplyClientFactory;
             _sendObservable = sendObservable;
+            _requestReplyClient = new AsyncValueLazy<IRequestReplyClient>(requestReplyClientFactory);
         }
 
         public async Task<Message> SendAsync(string address, RoutingType? routingType, Message message, CancellationToken cancellationToken)
         {
             CheckState();
+            var requestReplyClient = await _requestReplyClient.GetValueAsync(cancellationToken).ConfigureAwait(false);
 
             _sendObservable.PreSend(address, routingType, message);
-            var response = await _requestReplyClient.SendAsync(address, routingType, message, cancellationToken).ConfigureAwait(false);
+            var response = await requestReplyClient.SendAsync(address, routingType, message, cancellationToken).ConfigureAwait(false);
             _sendObservable.PostSend(address, routingType, message);
             return response;
         }
@@ -41,12 +44,8 @@ namespace ActiveMQ.Artemis.Client.Extensions.DependencyInjection
 
         public async ValueTask StartAsync(CancellationToken cancellationToken)
         {
-            if (_requestReplyClient != null)
-            {
-                throw new InvalidOperationException($"Request Reply Client with type {typeof(T).FullName} has already been initialized.");
-            }
-
-            _requestReplyClient = await _requestReplyClientFactory(cancellationToken).ConfigureAwait(false);
+            _requestReplyClient ??= new AsyncValueLazy<IRequestReplyClient>(_requestReplyClientFactory);
+            await _requestReplyClient.GetValueAsync(cancellationToken).ConfigureAwait(false);
         }
 
         public async ValueTask StopAsync()
@@ -67,9 +66,9 @@ namespace ActiveMQ.Artemis.Client.Extensions.DependencyInjection
 
         public async ValueTask DisposeAsync()
         {
-            if (_requestReplyClient != null)
+            if (_requestReplyClient != null && _requestReplyClient.TryGetValue(out var requestReplyClient))
             {
-                await _requestReplyClient.DisposeAsync().ConfigureAwait(false);
+                await requestReplyClient.DisposeAsync().ConfigureAwait(false);
             }
         }
     }
