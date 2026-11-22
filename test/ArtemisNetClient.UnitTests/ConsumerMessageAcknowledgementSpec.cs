@@ -1,4 +1,5 @@
 ﻿using System.Threading.Tasks;
+using ActiveMQ.Artemis.Client.Exceptions;
 using Amqp.Framing;
 using Xunit;
 using Xunit.Abstractions;
@@ -91,6 +92,25 @@ namespace ActiveMQ.Artemis.Client.UnitTests
             var dispositionContext = messageSource.GetNextDisposition(Timeout);
             Assert.IsType<Rejected>(dispositionContext.DeliveryState);
             Assert.True(dispositionContext.Settled);
+        }
+
+        [Fact]
+        public async Task Throws_when_message_accepted_by_consumer_that_did_not_receive_it()
+        {
+            var endpoint = GetUniqueEndpoint();
+            using var host = CreateOpenedContainerHost(endpoint);
+
+            var messageSource = host.CreateMessageSource("a1");
+            host.CreateMessageSource("a2");
+            await using var connection = await CreateConnection(endpoint);
+            var consumer1 = await connection.CreateConsumerAsync("a1", RoutingType.Anycast);
+            var consumer2 = await connection.CreateConsumerAsync("a2", RoutingType.Anycast);
+
+            messageSource.Enqueue(new Message("foo"));
+            var message = await consumer1.ReceiveAsync();
+
+            await Assert.ThrowsAsync<MessageSettlementException>(async () => await consumer2.AcceptAsync(message));
+            Assert.Null(messageSource.GetNextDisposition(ShortTimeout));
         }
     }
 }

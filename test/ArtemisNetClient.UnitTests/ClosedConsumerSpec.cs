@@ -88,6 +88,25 @@ namespace ActiveMQ.Artemis.Client.UnitTests
 
             await DisposeHostAndWaitUntilConnectionNotified(host, connection);
 
+            // The consumer is going to be recovered, only the message's delivery is gone
+            await Assert.ThrowsAsync<MessageSettlementException>(async () => await consumer.AcceptAsync(msg));
+        }
+
+        [Fact]
+        public async Task Throws_on_attempt_to_accept_message_when_connection_without_automatic_recovery_disconnected()
+        {
+            using var host = CreateOpenedContainerHost();
+            var messageSource = host.CreateMessageSource("a1");
+
+            await using var connection = await CreateConnectionWithoutAutomaticRecovery(host.Endpoint);
+            await using var consumer = await connection.CreateConsumerAsync("a1", RoutingType.Anycast);
+
+            messageSource.Enqueue(new Message("foo"));
+
+            var msg = await consumer.ReceiveAsync(CancellationToken);
+
+            await DisposeHostAndWaitUntilConnectionNotified(host, connection);
+
             await Assert.ThrowsAsync<ConsumerClosedException>(async () => await consumer.AcceptAsync(msg));
         }
 
@@ -143,7 +162,8 @@ namespace ActiveMQ.Artemis.Client.UnitTests
 
             await DisposeHostAndWaitUntilConnectionNotified(host, connection);
 
-            Assert.Throws<ConsumerClosedException>(() => consumer.Reject(msg));
+            // The consumer is going to be recovered, only the message's delivery is gone
+            Assert.Throws<MessageSettlementException>(() => consumer.Reject(msg));
         }
 
         [Fact]

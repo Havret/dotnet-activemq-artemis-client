@@ -32,7 +32,7 @@ namespace ActiveMQ.Artemis.Client
             _writer = channel.Writer;
             _receiverLink.Start(configuration.Credit, (_, m) =>
             {
-                var message = new Message(m);
+                var message = new Message(m) { ReceivedOn = _receiverLink };
                 if (_writer.TryWrite(message))
                 {
                     Log.MessageBuffered(_logger, message, _receiverLink);
@@ -67,6 +67,7 @@ namespace ActiveMQ.Artemis.Client
         public async ValueTask AcceptAsync(Message message, Transaction transaction, CancellationToken cancellationToken = default)
         {
             CheckState();
+            CheckReceivedOnThisLink(message);
 
             var txnId = await _transactionsManager.GetTxnIdAsync(transaction, cancellationToken).ConfigureAwait(false);
             var deliveryState = txnId != null
@@ -79,6 +80,7 @@ namespace ActiveMQ.Artemis.Client
         public void Modify(Message message, bool deliveryFailed, bool undeliverableHere)
         {
             CheckState();
+            CheckReceivedOnThisLink(message);
 
             _receiverLink.Modify(message.InnerMessage, deliveryFailed: deliveryFailed, undeliverableHere: undeliverableHere);
             Log.MessageModified(_logger, message, _receiverLink);
@@ -87,6 +89,7 @@ namespace ActiveMQ.Artemis.Client
         public void Reject(Message message)
         {
             CheckState();
+            CheckReceivedOnThisLink(message);
 
             _receiverLink.Reject(message.InnerMessage);
             Log.MessageRejected(_logger, message, _receiverLink);
@@ -103,6 +106,25 @@ namespace ActiveMQ.Artemis.Client
             {
                 throw GetConsumerClosedException(_receiverLink.Error);
             }
+        }
+
+        /// <summary>
+        /// A message received on another link can't be settled on this one. With the automatic recovery it happens when the
+        /// link the message was received on was closed and the consumer was recovered on a new link in the meantime.
+        /// </summary>
+        private void CheckReceivedOnThisLink(Message message)
+        {
+            if (message.ReceivedOn == null || message.ReceivedOn == _receiverLink)
+            {
+                return;
+            }
+
+            if (message.ReceivedOn.IsClosed || message.ReceivedOn.IsDetaching())
+            {
+                throw new MessageSettlementException();
+            }
+
+            throw new MessageSettlementException("The message can't be settled, because it was received by another consumer.");
         }
 
         private void OnClosed(IAmqpObject sender, Error error)

@@ -62,6 +62,25 @@ var producer = await connection.CreateProducerAsync("a1", RoutingType.Anycast, c
 
 A request-reply client is recovered along with the connection. A request that hasn't been sent yet waits for the recovery and is sent once it's done. A request that has already been sent fails with `RequestReplyClientClosedException` instead, because the broker or the responder may have processed it already. It's up to you whether it's safe to send it again.
 
+## Settling Messages During an Outage
+
+A consumer is recovered along with the connection, but the messages it received before the connection was lost can't be settled anymore. Their deliveries belonged to the link that is gone. Accepting, rejecting, or modifying such a message fails with `MessageSettlementException`, whether the consumer is still waiting for the recovery or has already been recovered on a new link. The consumer itself keeps working. The message stays unsettled, so the broker may redeliver it. Whether it does depends on the broker, e.g. the message may expire, or be sent to the dead letter address once it exceeds the maximum delivery attempts.
+
+```csharp
+var message = await consumer.ReceiveAsync();
+try
+{
+    await HandleAsync(message);
+    await consumer.AcceptAsync(message);
+}
+catch (MessageSettlementException)
+{
+    // The message may be redelivered, so make sure handling it twice is safe
+}
+```
+
+`ConsumerClosedException` is thrown only when the consumer is closed for good, e.g. when the recovery policy gives up, or when the queue it consumes from gets deleted.
+
 ## Recovery Policies
 
 There are 4 built-in recovery policies that are available via `RecoveryPolicyFactory` class:
