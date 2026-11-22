@@ -18,7 +18,10 @@
     "trim": ">=1.0.1"
   },
   "resolutions": {
-    "webpack": "5.96.1"
+    "webpack": "5.113.0",
+    "tinypool": "^2.1.2",
+    "serialize-javascript": "^7.0.5",
+    "uuid": "^11.1.1"
   },
   "browserslist": {
     "production": [
