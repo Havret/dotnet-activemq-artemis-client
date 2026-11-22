@@ -39,8 +39,7 @@ namespace ActiveMQ.Artemis.Client.AutoRecovering
                 {
                     return await consumer.ReceiveAsync(cancellationToken).ConfigureAwait(false);
                 }
-                // ObjectDisposedException means the consumer was replaced and disposed by the recovery in the meantime
-                catch (Exception e) when (e is ConsumerClosedException exception && IsRecoverable(exception) || e is ObjectDisposedException && !ReferenceEquals(consumer, _consumer))
+                catch (Exception e) when (IsRecoverableFailure(e, consumer))
                 {
                     CheckState();
 
@@ -72,34 +71,74 @@ namespace ActiveMQ.Artemis.Client.AutoRecovering
             RecoveryRequested?.Invoke();
         }
 
-        private static bool IsRecoverable(ConsumerClosedException exception)
+        /// <summary>
+        /// Whether the consumer failed, because its link was lost, and is going to be recovered.
+        /// ObjectDisposedException means the consumer was replaced and disposed by the recovery in the meantime.
+        /// </summary>
+        private bool IsRecoverableFailure(Exception exception, IConsumer consumer)
         {
-            return exception.ErrorCode switch
+            return exception switch
             {
-                ErrorCode.ResourceDeleted => false,
-                _ => true
+                ConsumerClosedException { ErrorCode: ErrorCode.ResourceDeleted } => false,
+                ConsumerClosedException => true,
+                ObjectDisposedException => !ReferenceEquals(consumer, _consumer),
+                _ => false
             };
         }
 
-        public ValueTask AcceptAsync(Message message, Transaction transaction, CancellationToken cancellationToken = default)
+        public async ValueTask AcceptAsync(Message message, Transaction transaction, CancellationToken cancellationToken = default)
         {
             CheckState();
+            var consumer = _consumer;
 
-            return _consumer.AcceptAsync(message, transaction, cancellationToken);
+            try
+            {
+                await consumer.AcceptAsync(message, transaction, cancellationToken).ConfigureAwait(false);
+            }
+            catch (Exception e) when (IsRecoverableFailure(e, consumer))
+            {
+                throw CreateSettlementException(e);
+            }
         }
 
         public void Modify(Message message, bool deliveryFailed, bool undeliverableHere)
         {
             CheckState();
+            var consumer = _consumer;
 
-            _consumer.Modify(message, deliveryFailed, undeliverableHere);
+            try
+            {
+                consumer.Modify(message, deliveryFailed, undeliverableHere);
+            }
+            catch (Exception e) when (IsRecoverableFailure(e, consumer))
+            {
+                throw CreateSettlementException(e);
+            }
         }
 
         public void Reject(Message message)
         {
             CheckState();
+            var consumer = _consumer;
 
-            _consumer.Reject(message);
+            try
+            {
+                consumer.Reject(message);
+            }
+            catch (Exception e) when (IsRecoverableFailure(e, consumer))
+            {
+                throw CreateSettlementException(e);
+            }
+        }
+
+        /// <summary>
+        /// The link the message was received on is gone, but the consumer is going to be recovered. Unless it was closed
+        /// for good in the meantime, which is what the caller has to learn about.
+        /// </summary>
+        private Exception CreateSettlementException(Exception exception)
+        {
+            CheckState();
+            return new MessageSettlementException(exception);
         }
 
         private void CheckState()

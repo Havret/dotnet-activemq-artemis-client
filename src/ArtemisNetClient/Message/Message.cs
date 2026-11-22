@@ -57,6 +57,11 @@ namespace ActiveMQ.Artemis.Client
 
         internal Amqp.Message InnerMessage { get; }
 
+        /// <summary>
+        /// The link the message was received on, or null if it wasn't received by a consumer.
+        /// </summary>
+        internal Amqp.Link ReceivedOn { get; set; }
+
         private Header Header => _header ??= new Header(InnerMessage);
 
         internal Properties Properties => _properties ??= new Properties(InnerMessage);

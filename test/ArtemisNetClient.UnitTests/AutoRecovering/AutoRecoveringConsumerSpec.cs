@@ -390,6 +390,104 @@ namespace ActiveMQ.Artemis.Client.UnitTests.AutoRecovering
             await DisposeUtil.DisposeAll(connection, host2);
         }
 
+        [Theory]
+        [InlineData(Settlement.Accept)]
+        [InlineData(Settlement.Reject)]
+        [InlineData(Settlement.Modify)]
+        public async Task Throws_MessageSettlementException_when_message_settled_while_connection_is_being_recovered(Settlement settlement)
+        {
+            var host = CreateOpenedContainerHost();
+            var messageSource = host.CreateMessageSource("a1");
+            await using var connection = await CreateConnection(host.Endpoint);
+            await using var consumer = await connection.CreateConsumerAsync("a1", RoutingType.Anycast);
+            messageSource.Enqueue(new Message("foo"));
+            var message = await consumer.ReceiveAsync(CancellationToken);
+
+            await DisposeHostAndWaitUntilConnectionNotified(host, connection);
+
+            await Assert.ThrowsAsync<MessageSettlementException>(() => Settle(consumer, message, settlement));
+        }
+
+        [Theory]
+        [InlineData(Settlement.Accept)]
+        [InlineData(Settlement.Reject)]
+        [InlineData(Settlement.Modify)]
+        public async Task Throws_MessageSettlementException_when_message_settled_after_consumer_recovered_on_new_link(Settlement settlement)
+        {
+            var endpoint = GetUniqueEndpoint();
+            var host1 = CreateOpenedContainerHost(endpoint);
+            var messageSource1 = host1.CreateMessageSource("a1");
+            var connection = await CreateConnection(endpoint);
+            var consumer = await connection.CreateConsumerAsync("a1", RoutingType.Anycast);
+            messageSource1.Enqueue(new Message("foo"));
+            var message = await consumer.ReceiveAsync(CancellationToken);
+
+            await DisposeHostAndWaitUntilConnectionNotified(host1, connection);
+            var connectionRecovered = WaitUntilConnectionRecovered(connection);
+            var host2 = CreateContainerHost(endpoint);
+            var messageSource2 = host2.CreateMessageSource("a1");
+            host2.Open();
+            await connectionRecovered;
+
+            await Assert.ThrowsAsync<MessageSettlementException>(() => Settle(consumer, message, settlement));
+
+            // The consumer keeps working, and nothing was settled on the new link on behalf of the old message
+            messageSource2.Enqueue(new Message("bar"));
+            var nextMessage = await consumer.ReceiveAsync(CancellationToken);
+            await consumer.AcceptAsync(nextMessage);
+            var dispositionContext = messageSource2.GetNextDisposition(Timeout);
+            Assert.Equal("bar", nextMessage.GetBody<string>());
+            Assert.IsType<Accepted>(dispositionContext.DeliveryState);
+
+            await DisposeUtil.DisposeAll(consumer, connection, host2);
+        }
+
+        [Theory]
+        [InlineData(Settlement.Accept)]
+        [InlineData(Settlement.Reject)]
+        [InlineData(Settlement.Modify)]
+        public async Task Throws_ConsumerClosedException_when_message_settled_after_recovery_policy_gave_up(Settlement settlement)
+        {
+            var host = CreateOpenedContainerHost();
+            var messageSource = host.CreateMessageSource("a1");
+            var connectionFactory = CreateConnectionFactory();
+            connectionFactory.RecoveryPolicy = RecoveryPolicyFactory.ConstantBackoff(TimeSpan.FromMilliseconds(100), 1);
+            await using var connection = await connectionFactory.CreateAsync(host.Endpoint);
+            await using var consumer = await connection.CreateConsumerAsync("a1", RoutingType.Anycast);
+            messageSource.Enqueue(new Message("foo"));
+            var message = await consumer.ReceiveAsync(CancellationToken);
+            var recoveryFailed = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+            connection.ConnectionRecoveryError += (_, _) => recoveryFailed.TrySetResult(true);
+
+            await DisposeHostAndWaitUntilConnectionNotified(host, connection);
+            await recoveryFailed.Task.WaitAsync(Timeout);
+
+            await Assert.ThrowsAsync<ConsumerClosedException>(() => Settle(consumer, message, settlement));
+        }
+
+        public enum Settlement
+        {
+            Accept,
+            Reject,
+            Modify
+        }
+
+        private static async Task Settle(IConsumer consumer, Message message, Settlement settlement)
+        {
+            switch (settlement)
+            {
+                case Settlement.Accept:
+                    await consumer.AcceptAsync(message);
+                    break;
+                case Settlement.Reject:
+                    consumer.Reject(message);
+                    break;
+                case Settlement.Modify:
+                    consumer.Modify(message, deliveryFailed: true, undeliverableHere: false);
+                    break;
+            }
+        }
+
         private async Task<(IConsumer consumer, MessageSource messageSource, TestContainerHost host, IConnection connection)> CreateReattachedConsumer()
         {
             var endpoint = GetUniqueEndpoint();
