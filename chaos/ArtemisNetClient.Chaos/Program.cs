@@ -65,7 +65,7 @@ catch (Exception e) when (!interrupted.IsCancellationRequested)
 await toxiproxy.ResetAsync(interrupted.Token);
 await toxiproxy.RecreateProxyAsync(ToxiproxyFaults.Proxy, $"0.0.0.0:{options.ProxyPort}", options.ProxyUpstream, interrupted.Token);
 
-IWorkload workload = options.Workload == "queue" ? new QueueWorkload(context) : new RequestReplyWorkload(context);
+IWorkload workload = options.Workload == "queue" ? new QueueWorkload(context, jolokia) : new RequestReplyWorkload(context);
 await workload.SetupAsync(interrupted.Token);
 
 var faults = options.Faults.Select(IFault (name) => name switch

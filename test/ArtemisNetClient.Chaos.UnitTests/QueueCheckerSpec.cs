@@ -56,6 +56,22 @@ public class QueueCheckerSpec
     }
 
     [Fact]
+    public void Should_report_received_message_without_a_body_as_unreadable()
+    {
+        var ops = new HistoryBuilder()
+            .Sent("p0-0")
+            .Received("p0-0")
+            .Received(null)
+            .Build();
+
+        var result = QueueChecker.Check(ops);
+
+        Assert.True(result.SafetyViolated);
+        Assert.Equal("unreadable", Assert.Single(result.Anomalies).Kind);
+        Assert.Equal(1, result.Counts["received-distinct"]);
+    }
+
+    [Fact]
     public void Should_report_message_whose_send_definitely_failed_but_was_received()
     {
         var ops = new HistoryBuilder()

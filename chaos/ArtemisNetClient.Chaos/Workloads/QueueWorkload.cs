@@ -8,7 +8,7 @@ namespace ActiveMQ.Artemis.Client.Chaos;
 /// them. After the run a drain collects whatever is left on the queue, and the checker verifies that every
 /// acknowledged message was received at least once.
 /// </summary>
-public sealed class QueueWorkload(RunContext context) : IWorkload
+public sealed class QueueWorkload(RunContext context, JolokiaClient jolokia) : IWorkload
 {
     private readonly List<IConnection> _connections = new();
     private readonly List<IAsyncDisposable> _resources = new();
@@ -19,6 +19,7 @@ public sealed class QueueWorkload(RunContext context) : IWorkload
 
     public async Task SetupAsync(CancellationToken ct)
     {
+        await DisableDeadLetteringAsync(ct);
         await using var connection = await context.ConnectAsync(context.DirectEndpoint, ct);
         await using var topologyManager = await connection.CreateTopologyManagerAsync(ct);
         await topologyManager.DeclareQueueAsync(new QueueConfiguration
@@ -29,6 +30,29 @@ public sealed class QueueWorkload(RunContext context) : IWorkload
             AutoCreateAddress = true,
             Durable = true
         }, ct);
+    }
+
+    /// <summary>
+    /// A fault can take a consumer down many times while it holds the same message. By default the broker moves such a
+    /// message to the dead letter queue after a number of delivery attempts, where the checker would take it for lost.
+    /// </summary>
+    private async Task DisableDeadLetteringAsync(CancellationToken ct)
+    {
+        using var cts = CancellationTokenSource.CreateLinkedTokenSource(ct);
+        cts.CancelAfter(TimeSpan.FromMinutes(1));
+        while (true)
+        {
+            try
+            {
+                await jolokia.ExecAsync("addAddressSettings(java.lang.String,java.lang.String)", [Address, "{\"maxDeliveryAttempts\":-1}"], cts.Token);
+                return;
+            }
+            // The management API can come up a moment after the broker starts accepting AMQP connections
+            catch (HttpRequestException) when (!cts.IsCancellationRequested)
+            {
+                await Task.Delay(250, cts.Token);
+            }
+        }
     }
 
     public async Task<Task> StartAsync(CancellationToken stop)
@@ -146,15 +170,7 @@ public sealed class QueueWorkload(RunContext context) : IWorkload
                     }
                 }
 
-                var value = message.GetBody<string>();
-                if (Sabotaged(value))
-                {
-                    History.Fail(invoke, "sabotage");
-                }
-                else
-                {
-                    History.Ok(invoke, value, deliveryCount: message.DeliveryCount);
-                }
+                var value = RecordReceived(invoke, message);
 
                 if (random.NextDouble() < Options.AbandonRate)
                 {
@@ -184,6 +200,23 @@ public sealed class QueueWorkload(RunContext context) : IWorkload
     private Task<IConsumer> CreateConsumer(IConnection connection, CancellationToken ct)
     {
         return connection.CreateConsumerAsync(new ConsumerConfiguration { Address = Address, RoutingType = RoutingType.Anycast, Credit = 50 }, ct);
+    }
+
+    private string RecordReceived(Op invoke, Message message)
+    {
+        // Null if the body isn't a string, which no producer of this workload sends. The checker reports it.
+        var value = message.GetBody<string>();
+        if (value != null && Sabotaged(value))
+        {
+            History.Fail(invoke, "sabotage");
+        }
+        else
+        {
+            var details = value == null ? $"message-id: '{message.MessageId}', creation-time: '{message.CreationTime:O}'" : null;
+            History.Ok(invoke, value, details, message.DeliveryCount);
+        }
+
+        return value;
     }
 
     /// <summary>
@@ -232,16 +265,7 @@ public sealed class QueueWorkload(RunContext context) : IWorkload
                 return;
             }
 
-            var value = message.GetBody<string>();
-            if (Sabotaged(value))
-            {
-                History.Fail(invoke, "sabotage");
-            }
-            else
-            {
-                History.Ok(invoke, value, deliveryCount: message.DeliveryCount);
-            }
-
+            RecordReceived(invoke, message);
             await consumer.AcceptAsync(message);
         }
     }

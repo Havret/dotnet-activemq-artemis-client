@@ -17,8 +17,9 @@ public static class QueueChecker
         var acked = Values(ops, Fn.Send, OpType.Ok);
         var failed = Values(ops, Fn.Send, OpType.Fail);
         var indeterminate = Values(ops, Fn.Send, OpType.Info);
-        var received = ops
-            .Where(x => x.Type == OpType.Ok && x.F is Fn.Receive or Fn.Drain)
+        var deliveries = ops.Where(x => x.Type == OpType.Ok && x.F is Fn.Receive or Fn.Drain).ToArray();
+        var received = deliveries
+            .Where(x => x.Value != null)
             .GroupBy(x => x.Value)
             .ToDictionary(x => x.Key, x => x.Count());
 
@@ -33,6 +34,12 @@ public static class QueueChecker
                 $"'{value}' was acknowledged at {time:0.000}s ({HistoryAnalysis.NemesisContext(ops, time)}) but never received");
         }
 
+        foreach (var delivery in deliveries.Where(x => x.Value == null))
+        {
+            result.Add(Severity.Safety, "unreadable",
+                $"'{delivery.Process}' received a message without a string body at {delivery.Time:0.000}s ({HistoryAnalysis.NemesisContext(ops, delivery.Time)}), delivery count {delivery.DeliveryCount}, {delivery.Result}");
+        }
+
         foreach (var value in received.Keys.Where(x => !attempted.Contains(x)))
         {
             result.Add(Severity.Safety, "unexpected", $"'{value}' was received but never sent");
@@ -45,7 +52,7 @@ public static class QueueChecker
 
         var duplicates = received.Where(x => x.Value > 1).ToArray();
         var recovered = indeterminate.Count(received.ContainsKey);
-        var redelivered = ops.Count(x => x.Type == OpType.Ok && x.F is Fn.Receive or Fn.Drain && x.DeliveryCount > 0);
+        var redelivered = deliveries.Count(x => x.DeliveryCount > 0);
 
         result.Counts["attempted"] = attempted.Count;
         result.Counts["acknowledged"] = acked.Count;
@@ -58,6 +65,7 @@ public static class QueueChecker
         result.Counts["duplicate-deliveries"] = duplicates.Sum(x => x.Value - 1);
         result.Counts["redelivered"] = redelivered;
         result.Counts["lost"] = result.Anomalies.Count(x => x.Kind == "lost");
+        result.Counts["unreadable"] = result.Anomalies.Count(x => x.Kind == "unreadable");
 
         if (attempted.Count == 0)
         {
