@@ -74,7 +74,15 @@ public sealed class RequestReplyWorkload(RunContext context) : IWorkload
                 History.Record(process, Fn.Lifecycle, OpType.Info, $"reply to '{value}' failed", RunContext.Describe(e));
             }
 
-            await consumer.AcceptAsync(request);
+            try
+            {
+                await consumer.AcceptAsync(request);
+            }
+            catch (MessageSettlementException e)
+            {
+                // The link the request was received on was closed, the broker may redeliver it
+                History.Record(process, Fn.Lifecycle, OpType.Info, $"accepting '{value}' failed", RunContext.Describe(e));
+            }
         }
     }
 
