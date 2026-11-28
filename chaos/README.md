@@ -16,7 +16,7 @@ kinds of violation separately:
 |---|---|---|---|
 | A completed durable `SendAsync` is delivered **at least once** ([message-durability](../docs/message-durability.md)) | `queue` | `queue` | an acknowledged message was never received (`lost`) |
 | Unsettled messages are redelivered when a consumer goes away, not lost ([message-acknowledgment](../docs/message-acknowledgment.md)) | `queue` (consumers sometimes dispose themselves without accepting) | `queue` | `lost` |
-| Nothing is delivered that wasn't sent | `queue` | `queue` | `unexpected`, `failed-but-delivered` |
+| Nothing is delivered that wasn't sent | `queue` | `queue` | `unexpected`, `failed-but-delivered`, `unreadable` (a message without a string body) |
 | A request completes only with its own reply ([auto-recovery](../docs/auto-recovery.md#request-reply-during-an-outage)) | `request-reply` | `request-reply` | `crossed-reply`, `phantom-reply` |
 | Connections, producers, consumers and request-reply clients recover once the broker is reachable again ([auto-recovery](../docs/auto-recovery.md)) | both | `liveness` | a worker made no progress after the final heal (`no-progress`), an operation never completed (`hung`), or an operation outlived its own timeout (`ignored-cancellation`) |
 
@@ -51,7 +51,8 @@ final drain connect to the broker directly.
 A run goes through these phases:
 
 1. Toxiproxy is reset and the broker is started if a previous run left it down.
-2. A queue unique to the run is declared, so leftovers from earlier runs can't interfere.
+2. A queue unique to the run is declared, so leftovers from earlier runs can't interfere. The `queue` workload turns
+   dead-lettering off for it, because faults can use up a message's delivery attempts.
 3. The workers start. For `--duration` seconds the nemesis alternates healthy periods (3–8 s) with a random fault
    held for 2–10 s.
 4. The final heal removes every fault, then the clients get `--recovery-deadline` seconds to show they recovered.
